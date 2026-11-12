@@ -209,6 +209,8 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`4EverRPG rodando em http://localhost:${PORT}`);
+// HOST=127.0.0.1 em produção (atrás do proxy do Apache); padrão: todas as interfaces.
+const HOST = process.env.HOST || undefined;
+server.listen(PORT, HOST, () => {
+  console.log(`4EverRPG rodando em http://${HOST || 'localhost'}:${PORT}`);
 });
