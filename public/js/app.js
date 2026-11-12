@@ -1,6 +1,9 @@
 'use strict';
 
-const socket = io();
+// Caminho base relativo: o jogo funciona tanto na raiz (localhost:3000/) quanto
+// atrás de um proxy num subcaminho (ex: janeri.com.br/4everrpg/).
+const BASE = location.pathname.replace(/[^/]*$/, '');
+const socket = io({ path: BASE + 'socket.io' });
 
 const estado = {
   config: null,
@@ -16,7 +19,33 @@ const estado = {
 };
 
 function meuNomeExibicao() {
+  const eu = estado.roomState?.personagens.find((p) => p.nome === estado.nomeJogador);
+  if (eu && eu.personagem) return eu.personagem.nome;
   return estado.meuPersonagemNome || estado.nomeJogador;
+}
+
+let mestreNarrando = false;
+function atualizarControleTurno() {
+  const rs = estado.roomState;
+  if (!rs || rs.status !== 'em_jogo') return;
+  const input = document.getElementById('input-acao');
+  const botao = document.querySelector('#form-acao button');
+  const aviso = document.getElementById('aviso-turno');
+  const meuNome = meuNomeExibicao();
+
+  let bloqueio = null;
+  if (mestreNarrando) bloqueio = 'O Mestre está narrando — aguarde...';
+  else if (rs.pendingTest) {
+    bloqueio = rs.pendingTest.nomePersonagem.toLowerCase() === meuNome.toLowerCase()
+      ? 'Role o dado acima para continuar.'
+      : `Teste de ${rs.pendingTest.nomePersonagem} — Aguardando`;
+  } else if (rs.turnoAtual && rs.turnoAtual !== meuNome) bloqueio = `Turno de ${rs.turnoAtual} — Aguardando`;
+
+  input.disabled = !!bloqueio;
+  botao.disabled = !!bloqueio;
+  input.placeholder = bloqueio || 'Sua vez! O que você faz?';
+  aviso.classList.toggle('escondido', !bloqueio);
+  aviso.textContent = bloqueio || '';
 }
 
 function outrosJogadoresConectados() {
@@ -59,7 +88,7 @@ function mostrarTela(id) {
 // Carrega configuração do servidor (classes, atributos, regras de pontos)
 // ---------------------------------------------------------------------------
 async function carregarConfig() {
-  const res = await fetch('/api/config');
+  const res = await fetch(BASE + 'api/config');
   estado.config = await res.json();
   renderGradeClasses();
   renderGradeAventuras();
@@ -290,7 +319,9 @@ socket.on('estadoAtualizado', (roomState) => {
 });
 
 socket.on('mestreDigitando', (ligado) => {
+  mestreNarrando = ligado;
   document.getElementById('mestre-digitando').classList.toggle('escondido', !ligado);
+  atualizarControleTurno();
 });
 
 function renderEstado(roomState) {
@@ -308,6 +339,7 @@ function renderEstado(roomState) {
     renderChatLog(roomState.log);
     renderAreaTeste(roomState);
     atualizarSeletoresDestino();
+    atualizarControleTurno();
 
     if (!estado.chatCarregado && roomState.chatGeral && roomState.chatGeral.length) {
       estado.chatMensagens = roomState.chatGeral.map((m) => ({ ...m, escopo: 'geral', tipo: 'texto' }));
@@ -479,7 +511,7 @@ function renderChatLog(log) {
   const novasMensagens = log.slice(ultimoLogRenderizado);
 
   container.innerHTML = '';
-  log.forEach((msg) => {
+  log.forEach((msg, idxMsg) => {
     const div = document.createElement('div');
     div.className = `msg ${msg.tipo}`;
     const avatarChave = msg.tipo === 'mestre' ? 'mestre' : msg.tipo === 'sistema' ? 'sistema' : personagemAvatarPorAutor(msg.autor);
@@ -491,13 +523,29 @@ function renderChatLog(log) {
         <div class="texto">${formatarTexto(msg.texto)}</div>
       </div>
     `;
+    if (msg.tipo === 'mestre') {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-ouvir';
+      btn.textContent = '▶ Ouvir';
+      btn.addEventListener('click', () => falarNarracao(msg.texto, idxMsg, btn));
+      div.querySelector('.conteudo').appendChild(btn);
+    }
     container.appendChild(div);
   });
   container.scrollTop = container.scrollHeight;
   ultimoLogRenderizado = log.length;
 
   if (document.getElementById('chk-narracao-voz').checked) {
-    novasMensagens.filter((m) => m.tipo === 'mestre').forEach((m) => falarNarracao(m.texto));
+    const inicio = log.length - novasMensagens.length;
+    // Toca só a fala mais recente do Mestre (evita enfileirar o histórico ao entrar na sala).
+    for (let i = novasMensagens.length - 1; i >= 0; i--) {
+      if (novasMensagens[i].tipo === 'mestre') {
+        const botoes = container.querySelectorAll('.msg')[inicio + i]?.querySelector('.btn-ouvir');
+        falarNarracao(novasMensagens[i].texto, inicio + i, botoes);
+        break;
+      }
+    }
   }
 }
 
@@ -514,10 +562,44 @@ if ('speechSynthesis' in window) {
   speechSynthesis.onvoiceschanged = carregarVozesPt;
 }
 
-function falarNarracao(texto) {
-  if (!('speechSynthesis' in window)) return;
+// Narração preferencial: voz ElevenLabs gerada no servidor (com cache).
+// Se o servidor não tiver TTS configurado ou der erro, cai na voz do navegador.
+let audioNarracao = null;
+let botaoTocando = null;
+function marcarBotao(btn, tocando) {
+  if (!btn) return;
+  btn.textContent = tocando ? '⏸ Parar' : '▶ Ouvir';
+  btn.classList.toggle('tocando', tocando);
+}
+function pararNarracao() {
+  if (audioNarracao) { audioNarracao.pause(); audioNarracao = null; }
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  marcarBotao(botaoTocando, false);
+  botaoTocando = null;
+}
+function falarNarracao(texto, idxLog, btn) {
+  if (btn && btn === botaoTocando) { pararNarracao(); return; } // clique de novo = parar
+  pararNarracao();
+  botaoTocando = btn || null;
+  marcarBotao(botaoTocando, true);
+
+  if (estado.config?.ttsDisponivel && Number.isInteger(idxLog)) {
+    const audio = new Audio(`${BASE}api/tts?codigo=${encodeURIComponent(estado.codigo)}&idx=${idxLog}`);
+    audioNarracao = audio;
+    audio.onended = () => { if (audioNarracao === audio) pararNarracao(); };
+    audio.onerror = () => { if (audioNarracao === audio) falarNarracaoNavegador(texto); };
+    audio.play().catch(() => { if (audioNarracao === audio) falarNarracaoNavegador(texto); });
+    return;
+  }
+  falarNarracaoNavegador(texto);
+}
+
+function falarNarracaoNavegador(texto) {
+  audioNarracao = null;
+  if (!('speechSynthesis' in window)) { pararNarracao(); return; }
   speechSynthesis.cancel(); // evita sobrepor falas anteriores
-  const utter = new SpeechSynthesisUtterance(texto);
+  const utter = new SpeechSynthesisUtterance(texto.replace(/[*`_#]/g, ''));
+  utter.onend = () => pararNarracao();
   const vozBr = vozesPt.find((v) => v.lang.toLowerCase() === 'pt-br') || vozesPt[0];
   if (vozBr) utter.voice = vozBr;
   utter.lang = vozBr ? vozBr.lang : 'pt-BR';
@@ -658,9 +740,11 @@ document.getElementById('form-acao').addEventListener('submit', (ev) => {
   const texto = input.value.trim();
   if (!texto) return;
   input.value = '';
-  socket.emit('acaoJogadorPreview', { codigo: estado.codigo });
   socket.emit('acaoJogador', { codigo: estado.codigo, texto }, (resp) => {
-    if (!resp.ok) alert(resp.erro);
+    if (!resp.ok) {
+      input.value = texto; // devolve o texto para não perder o que foi digitado
+      alert(resp.erro);
+    }
   });
 });
 

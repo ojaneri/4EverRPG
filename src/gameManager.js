@@ -27,6 +27,8 @@ function createRoom({ hostSocketId, hostName, tema, aventuraTitulo }) {
     chatGeral: [], // bate-papo OOC entre jogadores (não vai para a IA): {autor, texto, ts}
     pendingTest: null, // { nomePersonagem, atributo, dificuldade }
     cena: null, // { local, descricao, clima } — para o painel de cena
+    turnoAtual: null, // nome de exibição de quem pode agir agora
+    processando: false, // true enquanto a IA está respondendo (trava novas ações)
     criadoEm: Date.now(),
   };
 
@@ -54,12 +56,36 @@ function joinRoom({ codigo, socketId, nome }) {
   return room;
 }
 
+function nomeExibicao(p) {
+  return p.personagem ? p.personagem.nome : p.nome;
+}
+
+// Acha o próximo jogador conectado e com personagem, a partir de um índice
+// (round-robin, pula desconectados).
+function proximoTurno(room, indiceAtual) {
+  const n = room.personagens.length;
+  if (n === 0) return null;
+  for (let i = 1; i <= n; i++) {
+    const idx = (indiceAtual + i) % n;
+    const candidato = room.personagens[idx];
+    if (candidato.conectado && candidato.personagem) return nomeExibicao(candidato);
+  }
+  return null;
+}
+
+function avancarTurno(room) {
+  const idxAtual = room.turnoAtual ? room.personagens.findIndex((p) => nomeExibicao(p) === room.turnoAtual) : -1;
+  room.turnoAtual = proximoTurno(room, idxAtual);
+}
+
 function disconnectPlayer(socketId) {
   for (const room of rooms.values()) {
     const p = room.personagens.find((p) => p.socketId === socketId);
     if (p) {
       p.conectado = false;
-      return { room, nome: p.personagem ? p.personagem.nome : p.nome };
+      const nome = nomeExibicao(p);
+      if (room.status === 'em_jogo' && room.turnoAtual === nome) avancarTurno(room);
+      return { room, nome };
     }
   }
   return null;
@@ -145,8 +171,9 @@ async function startAdventure(codigo) {
   if (!allReady(room)) throw new Error('Nem todos os jogadores escolheram um personagem ainda.');
 
   room.status = 'em_jogo';
+  room.turnoAtual = proximoTurno(room, -1);
   const abertura =
-    'Inicie a aventura agora: descreva a cena de abertura, o local onde o grupo se encontra e um gancho inicial que os convide a agir. Termine perguntando o que o grupo deseja fazer.';
+    `Inicie a aventura agora: descreva a cena de abertura, o local onde o grupo se encontra e um gancho inicial que os convide a agir. O jogo é por turnos: termine perguntando a ${room.turnoAtual} o que faz primeiro.`;
   room.historico.push({ role: 'user', content: abertura });
 
   const resposta = await callMaster({ room, history: room.historico });
@@ -157,22 +184,58 @@ async function startAdventure(codigo) {
   return resposta;
 }
 
-async function sendPlayerAction({ codigo, socketId, texto }) {
+// Lança erro se o jogador não puder agir agora (não é a vez dele, IA ocupada,
+// ou há um teste de dado pendente). Usado antes de mostrar "Mestre digitando".
+function validarAcao({ codigo, socketId }) {
   const room = getRoom(codigo);
   if (!room) throw new Error('Jogo não encontrado.');
   const jogador = room.personagens.find((p) => p.socketId === socketId);
   if (!jogador) throw new Error('Jogador não encontrado.');
+  if (room.status !== 'em_jogo') throw new Error('A aventura ainda não começou.');
+  if (room.processando) throw new Error('O Mestre ainda está narrando. Aguarde.');
+  if (room.pendingTest) throw new Error(`Aguardando o teste de ${room.pendingTest.nomePersonagem}.`);
+  const nome = nomeExibicao(jogador);
+  if (room.turnoAtual && room.turnoAtual !== nome) {
+    throw new Error(`Não é sua vez. Turno de ${room.turnoAtual}.`);
+  }
+  return { room, jogador, nome };
+}
 
-  const nomeExibicao = jogador.personagem ? jogador.personagem.nome : jogador.nome;
-  room.logPublico.push({ autor: nomeExibicao, tipo: 'jogador', texto, ts: Date.now() });
-  room.historico.push({ role: 'user', content: `${nomeExibicao}: ${texto}` });
+// Instrução extra para a IA: a quem ela deve passar a vez ao terminar.
+function instrucaoProximo(nomeProximo) {
+  if (!nomeProximo) return '';
+  return `TURNO: ao terminar esta narração (se não pedir nenhum TESTE), termine dirigindo-se a ${nomeProximo}, perguntando o que ${nomeProximo} faz — é a vez dessa pessoa agir.`;
+}
 
-  const resposta = await callMaster({ room, history: room.historico });
-  room.historico.push({ role: 'assistant', content: resposta });
-  room.logPublico.push({ autor: 'Mestre', tipo: 'mestre', texto: limparTags(resposta), ts: Date.now() });
-  detectPendingTest(room, resposta);
-  detectCena(room, resposta);
-  return resposta;
+async function sendPlayerAction({ codigo, socketId, texto }) {
+  const { room, nome: nomeDoJogador } = validarAcao({ codigo, socketId });
+
+  room.processando = true;
+  room.logPublico.push({ autor: nomeDoJogador, tipo: 'jogador', texto, ts: Date.now() });
+  room.historico.push({ role: 'user', content: `${nomeDoJogador}: ${texto}` });
+
+  try {
+    const idxAtual = room.personagens.findIndex((p) => nomeExibicao(p) === nomeDoJogador);
+    const proximo = proximoTurno(room, idxAtual);
+    const resposta = await callMaster({
+      room,
+      history: room.historico,
+      sistemaAdicional: instrucaoProximo(proximo),
+    });
+    room.historico.push({ role: 'assistant', content: resposta });
+    room.logPublico.push({ autor: 'Mestre', tipo: 'mestre', texto: limparTags(resposta), ts: Date.now() });
+    detectPendingTest(room, resposta);
+    detectCena(room, resposta);
+    if (!room.pendingTest) avancarTurno(room);
+    return resposta;
+  } catch (e) {
+    // Desfaz a ação no histórico da IA para não deixar duas mensagens "user" seguidas.
+    room.historico.pop();
+    room.logPublico.push({ autor: 'Sistema', tipo: 'sistema', texto: 'O Mestre não conseguiu responder agora. Tente enviar sua ação de novo.', ts: Date.now() });
+    throw e;
+  } finally {
+    room.processando = false;
+  }
 }
 
 async function sendRollResult({ codigo, socketId, rollResult }) {
@@ -191,6 +254,7 @@ async function sendRollResult({ codigo, socketId, rollResult }) {
   room.logPublico.push({ autor: 'Mestre', tipo: 'mestre', texto: limparTags(resposta), ts: Date.now() });
   detectPendingTest(room, resposta);
   detectCena(room, resposta);
+  if (!room.pendingTest) avancarTurno(room);
   return resposta;
 }
 
@@ -202,6 +266,7 @@ function roomPublicState(room) {
     status: room.status,
     pendingTest: room.pendingTest,
     cena: room.cena,
+    turnoAtual: room.turnoAtual,
     personagens: room.personagens.map((p) => ({
       nome: p.nome,
       conectado: p.conectado,
@@ -218,6 +283,7 @@ module.exports = {
   joinRoom,
   disconnectPlayer,
   resolvePlayerSocket,
+  validarAcao,
   addChatGeral,
   setCharacter,
   allReady,

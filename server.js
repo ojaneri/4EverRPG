@@ -15,6 +15,7 @@ const {
   rollCheck,
 } = require('./src/characterSystem');
 const { ADVENTURES, getAdventureById } = require('./src/adventures');
+const tts = require('./src/tts');
 
 const app = express();
 const server = http.createServer(app);
@@ -24,7 +25,25 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 app.get('/api/config', (req, res) => {
-  res.json({ CLASSES, ATTRIBUTES, ATTRIBUTE_LABELS, POINT_BUY, ADVENTURES });
+  res.json({ CLASSES, ATTRIBUTES, ATTRIBUTE_LABELS, POINT_BUY, ADVENTURES, ttsDisponivel: tts.disponivel() });
+});
+
+// Narração do Mestre por voz (ElevenLabs). Só sintetiza falas do Mestre que
+// existem na sala (por índice do log), para não virar um proxy de TTS aberto.
+app.get('/api/tts', async (req, res) => {
+  try {
+    const room = gameManager.getRoom(String(req.query.codigo || ''));
+    const idx = parseInt(req.query.idx, 10);
+    const msg = room && room.logPublico[idx];
+    if (!msg || msg.tipo !== 'mestre') return res.status(404).json({ erro: 'Fala não encontrada.' });
+    const audio = await tts.sintetizar(msg.texto);
+    res.set('Content-Type', 'audio/mpeg');
+    res.set('Cache-Control', 'private, max-age=3600');
+    res.send(audio);
+  } catch (e) {
+    console.error('[tts]', e.message);
+    res.status(502).json({ erro: e.message });
+  }
 });
 
 io.on('connection', (socket) => {
@@ -88,18 +107,23 @@ io.on('connection', (socket) => {
 
   socket.on('acaoJogador', async ({ codigo, texto }, cb) => {
     try {
-      await gameManager.sendPlayerAction({ codigo, socketId: socket.id, texto });
+      gameManager.validarAcao({ codigo, socketId: socket.id });
+      const roomAntes = gameManager.getRoom(codigo);
+      io.to(codigo).emit('mestreDigitando', true);
+      // Mostra a ação do jogador para todos já, antes da resposta da IA.
+      const promessa = gameManager.sendPlayerAction({ codigo, socketId: socket.id, texto });
+      io.to(codigo).emit('estadoAtualizado', gameManager.roomPublicState(roomAntes));
+      await promessa;
       const room = gameManager.getRoom(codigo);
       io.to(codigo).emit('estadoAtualizado', gameManager.roomPublicState(room));
       cb({ ok: true });
     } catch (e) {
+      const room = gameManager.getRoom(codigo);
+      if (room) io.to(codigo).emit('estadoAtualizado', gameManager.roomPublicState(room));
       cb({ ok: false, erro: e.message });
+    } finally {
+      io.to(codigo).emit('mestreDigitando', false);
     }
-  });
-
-  // Dá feedback imediato ("digitando...") antes da resposta da IA chegar.
-  socket.on('acaoJogadorPreview', ({ codigo }) => {
-    io.to(codigo).emit('mestreDigitando', true);
   });
 
   socket.on('rolarDado', async ({ codigo, atributo }, cb) => {

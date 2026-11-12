@@ -452,3 +452,26 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
   .painel-bate-papo { width: 100%; flex-direction: row; }
   .caixa-voz, .caixa-chat { flex: 1; }
 }
+
+/* --- Aviso de turno --- */
+.aviso-turno {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #2a2550;
+  border: 1px dashed var(--acento);
+  color: var(--texto-fraco);
+  font-size: 0.85rem;
+  text-align: center;
+}
+#form-acao input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* --- Botão de ouvir a narração do Mestre --- */
+.btn-ouvir {
+  margin-top: 6px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  background: #2a2550;
+  border: 1px solid var(--acento);
+}
+.btn-ouvir.tocando { background: var(--acento); }

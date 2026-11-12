@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>4EverRPG — Aventuras com Mestre de IA</title>
-<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <div id="app">
@@ -95,8 +95,8 @@
         <header class="jogo-cabecalho">
           <strong>4EverRPG</strong> — Sala <span id="codigo-jogo-ativo"></span>
           <label class="chk-narracao">
-            <input type="checkbox" id="chk-narracao-voz" />
-            🔊 Narração por voz
+            <input type="checkbox" id="chk-narracao-voz" checked />
+            🔊 Tocar narração automaticamente
           </label>
         </header>
 
@@ -118,6 +118,7 @@
           <button type="button" id="btn-rolar-dado"></button>
         </div>
 
+        <div id="aviso-turno" class="aviso-turno escondido"></div>
         <form id="form-acao" class="form-acao">
           <input type="text" id="input-acao" placeholder="O que você faz?" maxlength="500" autocomplete="off" />
           <button type="submit">Enviar</button>
@@ -148,7 +149,7 @@
 
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/js/app.js"></script>
+  <script src="socket.io/socket.io.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
