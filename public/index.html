@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>4EverRPG — Aventuras com Mestre de IA</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- TELA: INÍCIO -->
+    <section id="tela-inicio" class="tela tela-ativa">
+      <div class="hero">
+        <h1>4Ever<span>RPG</span></h1>
+        <p class="subtitulo">Aventuras de RPG multiplayer narradas por uma IA Mestre</p>
+      </div>
+
+      <div class="cartoes-inicio">
+        <div class="cartao-acao">
+          <h2>Criar um novo jogo</h2>
+          <form id="form-criar">
+            <label>Seu nome
+              <input type="text" id="criar-nome" maxlength="20" required placeholder="Ex: Osvaldo" />
+            </label>
+            <label>Escolha um roteiro de aventura
+              <div id="grade-aventuras" class="grade-aventuras"></div>
+            </label>
+            <label id="rotulo-tema-personalizado" class="escondido">Descreva sua aventura
+              <input type="text" id="criar-tema" maxlength="300" placeholder="Ex: ruínas élficas perdidas na neblina" />
+            </label>
+            <button type="submit">Criar jogo</button>
+          </form>
+        </div>
+
+        <div class="divisor">ou</div>
+
+        <div class="cartao-acao">
+          <h2>Entrar em um jogo</h2>
+          <form id="form-entrar">
+            <label>Código do jogo
+              <input type="text" id="entrar-codigo" maxlength="5" required placeholder="Ex: AB12C" style="text-transform:uppercase" />
+            </label>
+            <label>Seu nome
+              <input type="text" id="entrar-nome" maxlength="20" required placeholder="Ex: Maria" />
+            </label>
+            <button type="submit">Entrar</button>
+          </form>
+        </div>
+      </div>
+      <p class="erro" id="erro-inicio"></p>
+    </section>
+
+    <!-- TELA: CRIAÇÃO DE PERSONAGEM -->
+    <section id="tela-personagem" class="tela">
+      <div class="cabecalho-sala">
+        <span>Código do jogo:</span>
+        <strong id="codigo-exibido">------</strong>
+        <button type="button" id="btn-copiar-codigo" title="Copiar código">Copiar</button>
+      </div>
+
+      <h2 style="text-align:center">Escolha sua classe</h2>
+      <div id="grade-classes" class="grade-classes"></div>
+
+      <div id="ficha-personagem" class="ficha-personagem escondido">
+        <h3>Ficha de personagem</h3>
+        <label>Nome do personagem
+          <input type="text" id="personagem-nome" maxlength="30" placeholder="Ex: Thalrik" />
+        </label>
+
+        <div class="atributos-editor" id="atributos-editor"></div>
+        <p class="pontos-restantes">Pontos restantes: <span id="pontos-restantes">0</span></p>
+
+        <label>História / motivação (opcional)
+          <textarea id="personagem-historia" maxlength="500" rows="3" placeholder="Quem é esse aventureiro? O que busca?"></textarea>
+        </label>
+
+        <button type="button" id="btn-confirmar-personagem">Confirmar personagem</button>
+      </div>
+
+      <div class="sala-espera">
+        <h3>Grupo</h3>
+        <div id="lista-grupo" class="lista-grupo"></div>
+        <button type="button" id="btn-iniciar-aventura" class="escondido">Iniciar aventura</button>
+        <p id="msg-espera" class="msg-espera"></p>
+      </div>
+      <p class="erro" id="erro-personagem"></p>
+    </section>
+
+    <!-- TELA: JOGO -->
+    <section id="tela-jogo" class="tela">
+      <aside id="painel-grupo" class="painel-grupo"></aside>
+
+      <main class="area-jogo">
+        <header class="jogo-cabecalho">
+          <strong>4EverRPG</strong> — Sala <span id="codigo-jogo-ativo"></span>
+          <label class="chk-narracao">
+            <input type="checkbox" id="chk-narracao-voz" />
+            🔊 Narração por voz
+          </label>
+        </header>
+
+        <div id="painel-cena" class="painel-cena escondido">
+          <div class="cena-icone" id="cena-icone">🌄</div>
+          <div class="cena-texto">
+            <div class="cena-local" id="cena-local"></div>
+            <div class="cena-descricao" id="cena-descricao"></div>
+          </div>
+          <div class="cena-fichas" id="cena-fichas"></div>
+        </div>
+
+        <div id="chat-log" class="chat-log"></div>
+        <div id="mestre-digitando" class="mestre-digitando escondido">O Mestre está narrando...</div>
+
+        <div id="area-teste" class="area-teste escondido">
+          <p id="texto-teste"></p>
+          <div class="dado-visual" id="dado-visual">?</div>
+          <button type="button" id="btn-rolar-dado"></button>
+        </div>
+
+        <form id="form-acao" class="form-acao">
+          <input type="text" id="input-acao" placeholder="O que você faz?" maxlength="500" autocomplete="off" />
+          <button type="submit">Enviar</button>
+        </form>
+      </main>
+
+      <aside class="painel-bate-papo">
+        <div class="caixa-chat">
+          <h4>Bate-papo</h4>
+          <label class="linha-opcao linha-autoplay">
+            <input type="checkbox" id="chk-autoplay-voz" checked />
+            Tocar áudios recebidos automaticamente
+          </label>
+          <div id="chat-lateral-lista" class="chat-lateral-lista"></div>
+          <form id="form-chat-lateral" class="form-chat-lateral">
+            <select id="chat-destino">
+              <option value="">Geral</option>
+            </select>
+            <div class="linha-envio">
+              <input type="text" id="chat-lateral-texto" placeholder="Mensagem..." maxlength="500" autocomplete="off" />
+              <button type="button" id="btn-gravar-audio" class="btn-gravar" title="Segure para gravar um áudio">🎤</button>
+              <button type="submit">➤</button>
+            </div>
+          </form>
+        </div>
+      </aside>
+    </section>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
