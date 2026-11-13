@@ -247,6 +247,57 @@ const AMBIENTES = {
       'alienígena, mimetismo, colmeia, parasitas e comunicação por padrões de luz. Tensão claustrofóbica: oxigênio, energia e ' +
       'tempo são recursos escassos; corredores escuros, sons no duto de ventilação, sinais vitais que somem no monitor.',
   },
+  pericia: {
+    id: 'pericia',
+    nome: 'Perícia e investigação (Brasil atual)',
+    estiloImagem:
+      'Realistic cinematic crime-drama photograph, contemporary Brazil, moody noir lighting, police station, forensic lab, ' +
+      'city streets at night, evidence boards, shallow depth of field, no gore, no text, no letters, no logos, no watermark, no UI. Scene: ',
+    musicaPrefixo: 'cyber-', // trilhas eletrônicas de suspense combinam com investigação
+    classes: {
+      guerreiro: { nome: 'Agente de Operações', descricao: 'Polícia tática: entra primeiro, cumpre mandados e protege a equipe em campo.', recurso: 'Adrenalina', itensIniciais: ['Pistola .40', 'Colete balístico', 'Algemas'] },
+      batedor: { nome: 'Investigador OSINT', descricao: 'Campana, fontes abertas e redes sociais: encontra qualquer pessoa e qualquer rastro.', recurso: 'Faro', itensIniciais: ['Canivete tático', 'Pistola compacta', 'Notebook de OSINT'] },
+      arcanista: { nome: 'Perito Forense Digital', descricao: 'Extrai celulares, lê logs e metadados e transforma vestígio digital em prova.', recurso: 'Análise', itensIniciais: ['Taser', 'Extrator forense', 'Bolsa de Faraday'] },
+      guardiao: { nome: 'Perito Criminal', descricao: 'Local de crime, cadeia de custódia e entrevistas: garante que a prova vale no tribunal.', recurso: 'Método', itensIniciais: ['Lanterna tática', 'Kit de coleta de vestígios', 'Luz forense'] },
+    },
+    habilidades: {
+      golpe_furioso: { nome: 'Entrada Tática', descricao: '+3 no próximo teste. Arromba, domina o ambiente e garante a cena.' },
+      grito_guerra: { nome: 'Voz de Comando', descricao: '+1 no próximo teste de cada aliado.' },
+      ataque_preciso: { nome: 'Rastro Digital', descricao: '+3 no próximo teste. Cruza perfis, fotos e horários até achar o alvo.' },
+      sumir_sombras: { nome: 'Campana', descricao: '+2 no próximo teste; observa sem ser visto.' },
+      raio_arcano: { nome: 'Extração Completa', descricao: '+3 no próximo teste. Recupera do aparelho o que parecia apagado.' },
+      clarividencia: { nome: 'Análise de Metadados', descricao: '+2 no próximo teste; descobre quando, onde e com o que algo foi feito.' },
+      cura_sagrada: { nome: 'Primeiros Socorros', descricao: 'Cura 1d6+2 PV do aliado mais ferido.' },
+      bencao: { nome: 'Briefing', descricao: '+1 no próximo teste de cada aliado.' },
+    },
+    itens: {
+      pocao_vida: ['Kit de primeiros socorros', '🩹'], elixir_energia: ['Café da delegacia', '☕'], pao_viajante: ['Marmita', '🍱'],
+      pedra_afiar: ['Ordem judicial', '📜'], pergaminho_protecao: ['Dica de informante', '🗒️'], tonico_revigorante: ['Desfibrilador portátil', '❤️‍🩹'],
+      pocao_vida_maior: ['Atendimento do SAMU', '🚑'], elixir_superior: ['Madrugada de cafeína', '🥤'],
+      anel_arcano: ['Servidor de análise', '🖥️'], botas_elficas: ['Tênis de campana', '👟'], talisma_aurora: ['Fonte da imprensa', '📰'],
+      amuleto_vida: ['Colete nível III', '🦺'], manopla_tita: ['Aríete', '🔨'], coroa_estrelas: ['Acesso ao sistema do tribunal', '⚖️'], olho_vidente: ['Lupa de perito', '🔍'],
+      espada_longa: ['Pistola .40', '🔫'], duas_adagas: ['Canivete tático', '🔪'], arco_curto: ['Pistola compacta', '🔫'], cajado_entalhado: ['Taser', '⚡'],
+      maca_abencoada: ['Lanterna tática', '🔦'], machado_guerra: ['Escopeta calibre 12', '💥'], besta_leve: ['Carabina', '🎯'], varinha_faiscas: ['Taser de longo alcance', '⚡'],
+      espada_runica: ['Fuzil da equipe tática', '🔫'], arco_elfico: ['Rifle de precisão', '🎯'], martelo_sagrado: ['Escudo balístico', '🛡️'],
+      lamina_sombria: ['Faca de combate', '🗡️'], cetro_tempestade: ['Arma de choque da tática', '⚡'],
+    },
+    trocasDescricao: [
+      ['Ataque arcano', 'Ataque de choque'], ['forte contra mortos-vivos', 'imobiliza suspeitos'],
+      ['brilha contra mortos-vivos', 'imobiliza suspeitos'], ['de luz sagrada', 'de impacto'], ['de raio', 'elétrico'], ['Energia arcana pura', 'Foco total'],
+    ],
+    busca: { bau: ['Cofre', '🔐'], gaveta: ['Gaveta', '🗄️'], bolsa: ['Mochila', '🎒'], estante: ['Computador', '💻'] },
+    instrucoes:
+      'AMBIENTE DE PERÍCIA E INVESTIGAÇÃO (Brasil atual, estilo true crime, tudo FICTÍCIO — não cite casos, pessoas, empresas ' +
+      'ou marcas reais): não existe magia. O grupo é uma equipe de investigação: agentes, investigadores, peritos digitais e ' +
+      'peritos criminais. Use termos reais de forma acessível: cadeia de custódia (lacre, ata, hash SHA-256), extração forense ' +
+      'de celular, bloqueador de escrita, bolsa de Faraday, backup e banco de dados do WhatsApp, metadados EXIF, logs, IP, ' +
+      'geolocalização, dados de antena (ERB), trilha de auditoria de assinatura eletrônica, prova de vida em selfie, deepfake, ' +
+      'quebra de sigilo bancário/telemático (sempre com ORDEM JUDICIAL), laudo pericial. Regras de ouro: prova mal coletada ' +
+      'ou obtida sem ordem judicial pode ser derrubada no tribunal (e isso é uma consequência real da cena); suspeitos mentem, ' +
+      'testemunhas se contradizem, e todo vestígio digital tem data, hora e origem. Testes de Mente cobrem análises técnicas; ' +
+      'Espírito, entrevistas e interrogatórios; Agilidade, campana e perseguições; Força, operações e buscas. Violência sem ' +
+      'detalhes gráficos; o foco é a investigação.',
+  },
 };
 
 function getAmbiente(id) {

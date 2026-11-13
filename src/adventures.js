@@ -217,6 +217,115 @@ const ADVENTURES = [
       ],
     },
   },
+  {
+    id: 'o-print-que-mentia',
+    titulo: 'O Print que Mentia',
+    icone: '📱',
+    ambiente: 'pericia',
+    resumoCurto: 'Um print de WhatsApp pôs um jovem de 19 anos na cadeia por um latrocínio. O júri é na sexta. A família jura que a conversa nunca existiu.',
+    premissa:
+      'Cenário: uma cidade média do interior paulista, nos dias de hoje — fórum lotado, delegacia sem verba, laboratório de ' +
+      'perícia improvisado e uma comunidade dividida. Davi Nogueira, 19 anos, está preso há 40 dias acusado de combinar o ' +
+      'assalto que terminou na morte de um comerciante. A principal prova é um print de conversa de WhatsApp entregue à polícia ' +
+      'pelo "amigo" Kauã. O júri popular é na sexta-feira. A equipe (os jogadores) é chamada pela Defensoria para uma perícia ' +
+      'independente — ou, se preferirem, pela própria Polícia Civil, para reforçar a acusação. NPCs-chave: Dra. Helena Prado, ' +
+      'defensora pública exausta e brilhante; Delegado Moura, pressionado para encerrar o caso e pouco disposto a admitir erro; ' +
+      'Kauã Ribeiro, o amigo nervoso que entregou o print; e a mãe de Davi, que vende bolo na porta do fórum. Segredo: o print ' +
+      'foi montado num aplicativo de "conversa falsa" — os IDs das mensagens, os horários e o histórico do celular de Davi não ' +
+      'batem. Quem montou foi o próprio Kauã, que deve dinheiro ao verdadeiro autor do crime e foi ameaçado por ele. O verdadeiro ' +
+      'autor ainda está solto. Tom: drama de tribunal contra o relógio e perícia minuciosa; cada atalho (provas sem lacre, ' +
+      'acesso a celular sem ordem judicial) pode derrubar o caso inteiro.',
+    missao: {
+      objetivo: 'Provar a verdade sobre o print antes do veredito do júri.',
+      etapas: [
+        'Garantir a cadeia de custódia do celular de Davi (lacre, hash e ata)',
+        'Comparar o print com o backup e o banco de dados do WhatsApp',
+        'Rastrear a origem da montagem até quem a fez',
+        'Apresentar o laudo no júri e resistir ao contra-ataque da acusação',
+      ],
+    },
+  },
+  {
+    id: 'golpe-do-pix-fantasma',
+    titulo: 'Golpe do PIX Fantasma',
+    icone: '💸',
+    ambiente: 'pericia',
+    resumoCurto: 'Em uma semana, 37 idosos perderam R$ 1,2 milhão para uma falsa "central de segurança do banco". O dinheiro some em minutos.',
+    premissa:
+      'Cenário: Campinas e região, nos dias de hoje. Em uma semana, 37 idosos receberam ligações de uma suposta "central de ' +
+      'segurança" do banco — o número na tela parecia oficial, a voz sabia nome, CPF e últimas compras de cada um — e foram ' +
+      'convencidos a fazer PIX para "contas seguras". Prejuízo: R$ 1,2 milhão, espalhado por dezenas de contas laranja e ' +
+      'convertido em criptomoedas. A equipe (os jogadores) integra uma força-tarefa de crimes cibernéticos. NPCs-chave: Dona ' +
+      'Cida, 74 anos, vítima que gravou a ligação inteira no celular; Ruan, 20 anos, "laranja" que alugou a conta por R$ 300 e ' +
+      'está apavorado; "Professor", o líder da quadrilha, que comanda tudo de dentro de um presídio por celulares contrabandeados; ' +
+      'e Patrícia, analista antifraude do banco, que quer ajudar mas esbarra no jurídico. Segredo: um funcionário terceirizado ' +
+      'do call center do banco vende os dados dos clientes para a quadrilha, e a próxima leva de ligações já está marcada. ' +
+      'Tom: caça à quadrilha seguindo o dinheiro — gravações, números falsificados, extratos, carteiras de cripto e uma operação ' +
+      'de prisão; toda quebra de sigilo exige ordem judicial, e o tempo corre contra o saque das carteiras.',
+    missao: {
+      objetivo: 'Desarticular a quadrilha do falso PIX e recuperar parte do dinheiro antes do saque.',
+      etapas: [
+        'Analisar a gravação de Dona Cida e o número falsificado',
+        'Seguir o rastro do PIX pelas contas laranja até a corretora de criptomoedas',
+        'Descobrir de onde vazam os dados dos clientes',
+        'Montar a operação de prisão e bloquear as carteiras antes do saque',
+      ],
+    },
+  },
+  {
+    id: 'o-contrato-assinado-por-um-morto',
+    titulo: 'O Contrato Assinado por um Morto',
+    icone: '✍️',
+    ambiente: 'pericia',
+    resumoCurto: 'Seu Arlindo morreu na segunda. Na quinta, "assinou" um empréstimo de R$ 480 mil com selfie e tudo. O banco cobra a viúva.',
+    premissa:
+      'Cenário: Belo Horizonte, nos dias de hoje — escritórios de advocacia, agências bancárias, um velório recente e uma família ' +
+      'em guerra pela herança. Seu Arlindo Valadares, 81 anos, morreu numa segunda-feira. Na quinta-feira seguinte, um contrato ' +
+      'de empréstimo de R$ 480 mil foi assinado eletronicamente em nome dele, com selfie de reconhecimento facial, código por SMS ' +
+      'e aceite digital. O banco agora cobra a viúva. A equipe (os jogadores) é contratada para uma perícia em contrato digital ' +
+      '— ou nomeada pelo juiz da causa. NPCs-chave: Dona Rosa, a viúva, doce e desconfiada de todo mundo; Fábio, o sobrinho ' +
+      'prestativo demais, que "cuidava das contas do tio"; Jéssica, a gerente que aprovou o crédito em tempo recorde; e o ' +
+      'advogado do banco, que jura que o sistema é infalível. Segredo: a selfie é uma foto antiga de Arlindo animada por ' +
+      'inteligência artificial para enganar a prova de vida; o celular usado na assinatura está na casa de Fábio, e a gerente ' +
+      'levou comissão para acelerar a aprovação. Tom: investigação técnica com mistério familiar — trilha de auditoria da ' +
+      'assinatura (IP, geolocalização, aparelho, horários), perícia na selfie, contradições nos depoimentos e uma herança em jogo.',
+    missao: {
+      objetivo: 'Provar que o contrato é fraude e descobrir quem o forjou.',
+      etapas: [
+        'Obter e analisar a trilha de auditoria da assinatura eletrônica',
+        'Periciar a selfie de reconhecimento facial e a prova de vida',
+        'Ligar o aparelho e o IP da assinatura a um suspeito',
+        'Fechar o laudo e confrontar os culpados',
+      ],
+    },
+  },
+  {
+    id: 'sinal-perdido-na-serra',
+    titulo: 'Sinal Perdido na Serra',
+    icone: '📍',
+    ambiente: 'pericia',
+    resumoCurto: 'Bianca saiu de uma festa na serra às 2h17 e sumiu. O celular parou de dar sinal às 2h41. A família tem 72 horas de esperança.',
+    premissa:
+      'Cenário: Petrópolis, na serra fluminense, nos dias de hoje — neblina, estradas sinuosas, casarões, condomínios fechados ' +
+      'e muitas câmeras que ninguém olha. Bianca Teles, 23 anos, saiu de uma festa num casarão às 2h17 de sábado e desapareceu. ' +
+      'O celular dela deu o último sinal às 2h41, numa antena perto da estrada velha. A equipe (os jogadores) assume o caso de ' +
+      'desaparecimento; cada hora conta. NPCs-chave: Seu Jorge, o pai, que não dorme e vigia a delegacia; Téo, o namorado, com ' +
+      'um álibi perfeito demais; Wesley, o motorista de aplicativo que "não lembra" da corrida; e Lara, a melhor amiga, que ' +
+      'sabe mais do que diz. Segredo: Bianca está VIVA e escondida — fugiu de alguém que a ameaçava (decidam vocês, Mestre, ' +
+      'entre o namorado controlador e um chefe com quem ela ia denunciar um esquema). O relógio inteligente dela continua ' +
+      'enviando batimentos para a nuvem, e uma foto postada por engano tem metadados de localização. Tom: true crime de ' +
+      'desaparecimento, angústia e corrida contra o tempo — linha do tempo da noite, câmeras, stories, dados de antena e ' +
+      'histórico de localização (com ordem judicial); o desfecho exige protegê-la sem expô-la a mais perigo.',
+    missao: {
+      objetivo: 'Encontrar Bianca antes que seja tarde.',
+      etapas: [
+        'Reconstruir a linha do tempo da noite (fotos, stories, câmeras)',
+        'Obter e interpretar os dados de antena e o histórico de localização',
+        'Descobrir de quem Bianca está fugindo',
+        'Chegar até Bianca e protegê-la sem colocá-la em mais perigo',
+      ],
+    },
+  },
 ];
 
 function getAdventureById(id) {

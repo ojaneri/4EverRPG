@@ -2,6 +2,21 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.11.0 — 2026-11-13
+
+### Histórias de perícia e investigação (agora são 12 roteiros)
+- Ambiente novo **Perícia** (Brasil atual, estilo true crime e totalmente fictício):
+  - classes: Agente de Operações, Investigador OSINT, Perito Forense Digital e Perito Criminal;
+  - poderes: Entrada Tática, Rastro Digital, Extração Completa, Análise de Metadados, Briefing...;
+  - itens: café da delegacia, ordem judicial, bolsa de Faraday...;
+  - o Mestre segue regras de cadeia de custódia e de ordem judicial;
+  - ilustrações em fotografia noir realista e trilhas eletrônicas de suspense.
+- Novos roteiros, cada um com missão em 4 etapas:
+  - 📱 **O Print que Mentia**: um print de WhatsApp forjado e um júri na sexta;
+  - 💸 **Golpe do PIX Fantasma**: a falsa central do banco e o rastro do dinheiro até as criptomoedas;
+  - ✍️ **O Contrato Assinado por um Morto**: empréstimo digital com selfie de quem já tinha morrido;
+  - 📍 **Sinal Perdido na Serra**: um desaparecimento, com dados de antena e uma corrida contra o tempo.
+
 ## v0.10.2 — 2026-11-13
 
 ### Bate-papo

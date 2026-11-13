@@ -355,6 +355,10 @@ async function fase1() {
     'a-noite-do-boitata': ['folclore', 'Tropeiro'],
     'sertao-de-ferro': ['sertao', 'Pistoleiro'],
     'estacao-orion-7': ['espacial', 'Fuzileira Espacial'],
+    'o-print-que-mentia': ['pericia', 'Agente de Operações'],
+    'golpe-do-pix-fantasma': ['pericia', 'Agente de Operações'],
+    'o-contrato-assinado-por-um-morto': ['pericia', 'Agente de Operações'],
+    'sinal-perdido-na-serra': ['pericia', 'Agente de Operações'],
   };
   for (const [id, [amb, classe]] of Object.entries(esperado)) {
     const r = await emit(B, 'criarJogo', { aventuraId: id });
