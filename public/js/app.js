@@ -1929,7 +1929,27 @@ function renderAreaTeste(rs) {
     : (ehCelular() ? 'Aguardando…' : `Aguardando ${teste.nomePersonagem} rolar...`);
   btn.disabled = !souEu || mestreNarrando || rolando;
   btn.onclick = souEu ? rolarDado : null;
+  // Desistir: só quem vai rolar, e só antes de rolar.
+  const desistir = $('btn-desistir-teste');
+  desistir.classList.toggle('escondido', !souEu || !!teste.jaRolado);
+  desistir.disabled = mestreNarrando || rolando || desistindo;
 }
+
+let desistindo = false;
+$('btn-desistir-teste').addEventListener('click', async () => {
+  if (desistindo || rolando) return;
+  if (!confirm('Desistir desta ação?\n\nVocê não rola o dado, perde a vez, e o Mestre pode narrar consequências de recuar.')) return;
+  desistindo = true;
+  $('btn-desistir-teste').disabled = true;
+  $('btn-rolar-dado').disabled = true;
+  try {
+    await emitir('desistirTeste', {}, 90000);
+  } catch (e) {
+    alert(e.message);
+  } finally {
+    desistindo = false;
+  }
+});
 
 // ---------------------------------------------------------------------------
 // Modal do dado: abre no meio da tela, rola até parar, mostra o veredito e só

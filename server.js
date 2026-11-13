@@ -343,6 +343,8 @@ io.on('connection', (socket) => {
     rollResult: await gameManager.sendRollResult({ codigo: codigoAtual(p), userId: socket.data.userId }),
   })));
 
+  socket.on('desistirTeste', handler((p) => gameManager.desistirTeste({ codigo: codigoAtual(p), userId: socket.data.userId })));
+
   socket.on('passarVez', handler((p) => gameManager.passarVez({ codigo: codigoAtual(p), userId: socket.data.userId })));
 
   socket.on('voltei', handler((p) => {

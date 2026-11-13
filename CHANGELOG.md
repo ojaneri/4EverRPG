@@ -2,6 +2,15 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.3.0 — 2026-11-13
+
+### Jogo
+- Desistir do teste: antes de rolar o d20, quem foi chamado ao teste pode tocar em 🏳️ Desistir. Não há rolagem, a vez passa adiante (sem contar como pulo por inatividade) e o Mestre narra o recuo e as consequências que a situação pedir, ou nenhuma.
+  - Um ataque declarado é cancelado.
+  - Se o Mestre falhar ao responder, o teste volta a valer.
+- "Como Jogar" explica a regra nova; as estatísticas da mesa contam as desistências.
+- Testes automáticos de desistência: recusa sem teste pendente, recusa do teste alheio, passagem da vez e pulos.
+
 ## v0.2.1 — 2026-11-13
 
 ### Celular

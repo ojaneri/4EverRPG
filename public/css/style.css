@@ -1074,7 +1074,9 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   /* Caixa de teste numa faixa só: texto + relógio à esquerda, botão à direita. */
   .area-teste { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; }
   .area-teste .dado-visual { display: none; }
-  .area-teste #btn-rolar-dado { grid-row: 1 / span 2; grid-column: 2; padding: 10px 14px; }
+  .area-teste .botoes-teste { grid-row: 1 / span 2; grid-column: 2; flex-direction: column; gap: 6px; }
+  .area-teste .botoes-teste button { padding: 8px 12px; }
+  #btn-desistir-teste { font-size: 0.8rem; }
   .aviso-turno { padding: 4px 10px; font-size: 0.82rem; }
   /* Chat: sem título (a aba já diz "Chat"); destino e mensagem na mesma linha. */
   .caixa-chat h4 { display: none; }
@@ -1086,3 +1088,6 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   /* Com a caixa do teste na tela, a faixa de aviso repetiria o mesmo relógio. */
   .area-teste:not(.escondido) ~ .aviso-turno { display: none; }
 }
+
+.botoes-teste { display: flex; gap: 8px; align-items: center; }
+.botoes-teste button { margin: 0; }

@@ -246,6 +246,27 @@ async function fase1() {
   ok(/FALHA automática/.test(logFalha) && !A2.estado.pendingTest, 'sem rolar a tempo: falha automática e o jogo segue');
   ok(A2.estado.personagens.find((p) => p.id === idA).pulos === 1, 'falha por tempo conta como pulo');
 
+  // --- Desistir do teste (antes de rolar) ---
+  {
+    const daVez = A2.estado.turnoAtual === 'Thalrik' ? A2 : B;
+    const outro = daVez === A2 ? B : A2;
+    const nomeVez = A2.estado.turnoAtual;
+    const semTeste = await emit(daVez, 'desistirTeste', { codigo });
+    ok(!semTeste.ok, `desistir sem teste pendente é recusado: ${semTeste.erro}`);
+    ok((await emit(daVez, 'acaoJogador', { codigo, texto: 'Eu ataco o vulto' })).ok, `${nomeVez} ataca (teste para desistir)`);
+    await sleep(200);
+    ok(daVez.estado.pendingTest?.nomePersonagem === nomeVez, 'teste pendente para quem atacou');
+    const alheio = await emit(outro, 'desistirTeste', { codigo });
+    ok(!alheio.ok, `outro jogador não pode desistir do teste alheio: ${alheio.erro}`);
+    const desiste = await emit(daVez, 'desistirTeste', { codigo });
+    await sleep(200);
+    const logDes = (await emit(daVez, 'pedirLog', { codigo })).state.log.map((m) => m.texto).join('\n');
+    ok(desiste.ok && !daVez.estado.pendingTest && /desistiu da ação/.test(logDes), 'desistir encerra o teste sem rolar e avisa a mesa');
+    const ativos = daVez.estado.personagens.filter((p) => p.personagem && !p.personagem.morto && !p.afastado && p.conectado);
+    ok(ativos.length < 2 || daVez.estado.turnoAtual !== nomeVez, `a vez passa adiante (agora: ${daVez.estado.turnoAtual}; ativos: ${ativos.map((p) => p.personagem.nome + (p.afastado ? '/afastado' : '') + (p.conectado ? '' : '/offline')).join(', ')})`);
+    ok(daVez.estado.personagens.find((p) => p.personagem?.nome === nomeVez).pulos === 0, 'desistir não conta como pulo por inatividade');
+  }
+
   // --- Encerrar ---
   const encB = await emit(B, 'encerrarAventura', { codigo });
   ok(!encB.ok, 'só o anfitrião encerra');

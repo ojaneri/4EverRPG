@@ -1306,6 +1306,60 @@ async function sendRollResult({ codigo, userId }) {
 
 const NOMES_DIFICULDADE = { facil: 'fácil', medio: 'médio', dificil: 'difícil', muito_dificil: 'muito difícil' };
 
+// O jogador desiste da ação antes de rolar: não há rolagem, a vez passa adiante e o
+// Mestre narra a desistência e as consequências que a situação pedir (ou nenhuma).
+async function desistirTeste({ codigo, userId }) {
+  const room = exigirSala(codigo);
+  const jogador = exigirJogador(room, userId);
+  if (room.status !== 'em_jogo') throw new Error('A aventura não está em andamento.');
+  if (room.processando) throw new Error('O Mestre ainda está narrando. Aguarde.');
+  const teste = room.pendingTest;
+  if (!teste) throw new Error('Não há nenhum teste pendente.');
+  if (atorAtual(room) !== jogador) throw new Error(`Este teste é de ${teste.nomePersonagem}.`);
+  if (jogador.afastado) throw new Error('Você está como Afastado. Confirme que voltou para jogar.');
+  if (teste.rolagem) throw new Error('O dado já foi rolado; não dá mais para desistir.');
+
+  const c = jogador.personagem;
+  const label = ATTRIBUTE_LABELS[teste.atributo] || teste.atributo;
+  const dif = NOMES_DIFICULDADE[teste.dificuldade] || teste.dificuldade;
+  const ataqueAntes = c.ataquePendente;
+  delete c.ataquePendente; // o ataque declarado não acontece
+  jogador.pulos = 0; // desistir é uma escolha, não inatividade
+
+  const st = stats(room);
+  st.desistencias = (st.desistencias || 0) + 1;
+  const logAntes = room.logPublico.length;
+  logSistema(room, `🏳️ ${c.nome} desistiu da ação (teste de ${label}, ${dif}) e passou a vez.`);
+  room.pendingTest = null;
+  const conteudo = montarMensagem(room,
+    `[Sistema: ${c.nome} DESISTIU da ação que pedia o teste de ${label} (dificuldade ${dif}), antes de rolar o dado. ` +
+    'Narre a desistência e, se a situação pedir, as consequências de recuar (o perigo avança, um inimigo aproveita a brecha, ' +
+    'uma oportunidade se perde, alguém se decepciona...) — ou nenhuma, se recuar era seguro. ' +
+    `Não peça outro teste a ${c.nome} agora: a vez passa ao próximo jogador.]`);
+  try {
+    await rodadaDoMestre(room, {
+      conteudo,
+      sistemaAdicional: instrucaoProximo(proximoTurno(room, indiceDe(room, room.turnoAtual))),
+      ator: c.nome,
+    });
+  } catch (e) {
+    room.pendingTest = teste;
+    if (ataqueAntes) c.ataquePendente = ataqueAntes;
+    st.desistencias -= 1;
+    room.logPublico.splice(logAntes);
+    logSistema(room, 'O Mestre não conseguiu responder agora; o teste continua valendo (role ou desista de novo).');
+    reiniciarTimer(room);
+    tocar(room);
+    throw e;
+  }
+  if (room.status === 'em_jogo' && !room.pendingTest) {
+    avancarTurno(room);
+    reiniciarTimer(room);
+    tocar(room);
+  }
+  return { ok: true };
+}
+
 // Envia o resultado de um teste ao Mestre. `automatico` = o jogador não rolou a tempo (falha).
 async function resolverTeste(room, jogador, teste, roll, { automatico = false } = {}) {
   const c = jogador.personagem;
@@ -1830,6 +1884,7 @@ setInterval(() => {
 carregarDoDisco();
 
 module.exports = {
+  desistirTeste,
   eventos,
   TEMPO_TURNO_MS,
   TEMPO_DADO_MS,

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>4Ever — Aventuras de RPG com Mestre de IA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎲%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/style.css?v=1794576942" />
+<link rel="stylesheet" href="css/style.css?v=1794577844" />
 </head>
 <body>
   <header class="topo-site">
@@ -134,6 +134,7 @@
           <li><strong>O anfitrião inicia a aventura</strong> e a IA Mestre narra a cena de abertura.</li>
           <li><strong>Jogue na sua vez:</strong> descreva o que seu personagem faz, use uma das sugestões ou uma habilidade de classe. Você tem <strong>1 minuto</strong> por vez; se não agir, é pulado. Depois de <strong>3 pulos</strong> você fica como <em>Afastado</em> até confirmar que voltou.</li>
           <li><strong>Testes de dado:</strong> quando algo pode dar errado, o Mestre pede um d20 + modificador do atributo. O sistema compara com a dificuldade (fácil 10, médio 13, difícil 16, muito difícil 19). 20 natural é sempre sucesso; 1 natural, sempre falha.</li>
+          <li><strong>Desistir:</strong> antes de rolar, você pode desistir da ação (🏳️ Desistir). Não há rolagem, você perde a vez e o Mestre decide se recuar teve consequências.</li>
           <li><strong>Ficha viva:</strong> dano, cura, itens e XP mudam sua ficha de verdade. Com 0 PV você cai inconsciente até alguém socorrer. A cada nível: +3 PV, +2 de recurso e tudo restaurado.</li>
           <li><strong>Habilidades de classe</strong> gastam Fúria, Foco, Mana ou Fé e dão bônus ou cura imediata.</li>
           <li><strong>Trilha sonora:</strong> o Mestre troca a música conforme a cena (taverna, masmorra, batalha...). Ajuste o volume ou silencie no 🔊 do topo da tela.</li>
@@ -291,7 +292,10 @@
           <p id="texto-teste"></p>
           <p id="relogio-dado" class="relogio-dado"></p>
           <div class="dado-visual" id="dado-visual">?</div>
-          <button type="button" id="btn-rolar-dado"></button>
+          <div class="botoes-teste">
+            <button type="button" id="btn-rolar-dado"></button>
+            <button type="button" id="btn-desistir-teste" class="botao-secundario escondido" title="Desistir da ação: você perde a vez e o Mestre pode narrar consequências">🏳️ Desistir</button>
+          </div>
         </div>
 
         <div id="aviso-turno" class="aviso-turno escondido"></div>
@@ -433,7 +437,7 @@
   </div>
 
   <script src="socket.io/socket.io.js"></script>
-  <script src="js/musica.js?v=1794576942"></script>
-  <script src="js/app.js?v=1794576942"></script>
+  <script src="js/musica.js?v=1794577844"></script>
+  <script src="js/app.js?v=1794577844"></script>
 </body>
 </html>
