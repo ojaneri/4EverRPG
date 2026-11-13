@@ -2,6 +2,13 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.6.0 — 2026-11-13
+
+### Som e preferências
+- Som de "sua vez" (`public/sfx/sua-vez.mp3`, sininho de duas notas feito para o 4Ever). Toca só no aparelho de quem recebeu a vez, a cada início de vez, inclusive na primeira da aventura. Os outros jogadores não ouvem. Respeita o som desligado.
+- As caixas "Tocar narração automaticamente" e "Tocar áudios recebidos automaticamente" ficam salvas no navegador: sobrevivem a recarregar a página e a fechar e abrir o navegador, como já acontecia com "Música e efeitos" e o volume.
+- Teste no navegador com 2 jogadores: `tools/teste_som_vez.py`.
+
 ## v0.5.1 — 2026-11-13
 
 ### Dado

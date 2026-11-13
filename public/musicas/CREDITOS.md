@@ -21,6 +21,7 @@ CC0 não exige atribuição; os créditos ficam aqui (e na página "Como Jogar")
 | dado-agitar, dado-lancar | 54 Casino sound effects | Kenney | https://opengameart.org/node/12742 |
 | etapa, nivel, vitoria, derrota, critico | 85 short music jingles | Kenney | https://opengameart.org/content/85-short-music-jingles |
 | ataque, empunhar, magia, pocao | RPG Sound Pack | artisticdude | https://opengameart.org/content/rpg-sound-pack |
+| sua-vez | Sininho de "sua vez" (duas notas sintetizadas com ffmpeg) | feito para o 4Ever | — |
 
 ## Músicas do ambiente cyber (`public/musicas/cyber-*.mp3`)
 | Arquivo | Faixa | Autor | Fonte |

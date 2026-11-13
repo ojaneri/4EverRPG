@@ -588,6 +588,7 @@ function abrirMesa({ state, meuId }) {
     estado.chatMensagens = (state.chatGeral || []).map((m) => ({ ...m, escopo: 'geral', tipo: 'texto' }));
     chatRenderadas = 0;
     chatPrimeiraCarga = true;
+    eraMinhaVez = null;
     trocarAbaMesa('mesa');
     $('chat-lateral-lista').innerHTML = '';
     estado.classeEscolhida = null;
@@ -722,6 +723,7 @@ function renderEstado(rs) {
 }
 
 function renderSalaEspera(rs) {
+  eraMinhaVez = false; // no lobby ninguém tem a vez: a primeira vez da aventura toca o som
   const lista = $('lista-grupo');
   lista.innerHTML = '';
   rs.personagens.forEach((p) => {
@@ -913,6 +915,21 @@ function renderPainelCena(rs) {
 // ---------------------------------------------------------------------------
 // Turno: quem age, contagem regressiva, sugestões e habilidades
 // ---------------------------------------------------------------------------
+// Preferências do jogador (caixas com data-lembrar) ficam salvas no navegador:
+// sobrevivem a recarregar a página e a fechar e abrir o navegador.
+document.querySelectorAll('input[type=checkbox][data-lembrar]').forEach((chk) => {
+  try {
+    const salvo = localStorage.getItem(chk.dataset.lembrar);
+    if (salvo !== null) chk.checked = salvo === '1';
+  } catch { /* sem storage: fica o padrão */ }
+  chk.addEventListener('change', () => {
+    try {
+      localStorage.setItem(chk.dataset.lembrar, chk.checked ? '1' : '0');
+    } catch { /* sem storage */ }
+  });
+});
+
+let eraMinhaVez = null; // null = ainda não avaliado nesta mesa (entrar já na sua vez não toca)
 function minhaVez() {
   const rs = estado.roomState;
   if (!rs || rs.status !== 'em_jogo' || mestreNarrando) return false;
@@ -957,6 +974,9 @@ function atualizarControleTurno() {
   else if (rs.turnoAtual !== meuNome) bloqueio = `Vez de ${rs.turnoAtual}${relogio}`;
 
   const vez = minhaVez();
+  // Som de "sua vez": toca só aqui, no aparelho de quem recebeu a vez.
+  if (eraMinhaVez === false && vez) Musica.efeito('sua-vez', 0.9);
+  eraMinhaVez = vez;
   input.disabled = !vez;
   document.querySelector('#form-acao button[type=submit]').disabled = !vez;
   $('btn-passar-vez').disabled = !vez;
