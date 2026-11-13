@@ -2,6 +2,12 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.6.1 — 2026-11-13
+
+### Correção
+- O dado rolado por um bot agora fecha sozinho para todos cerca de 6 s depois da rolagem. Antes, o bot só "continuava" depois que o Mestre terminava de narrar o resultado (20 a 30 s com a IA real), e o modal ficava aberto na tela dos humanos.
+- O Mestre simulado ganhou `MOCK_ATRASO_MS`, que imita a demora da narração. `tools/teste_dado_espectador.py` agora testa com 15 s de narração.
+
 ## v0.6.0 — 2026-11-13
 
 ### Som e preferências

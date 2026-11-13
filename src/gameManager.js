@@ -382,7 +382,8 @@ function disconnectSocket(socketId, codigo) {
 // ---------------------------------------------------------------------------
 const BOT_ESPERA_ACAO_MS = Number(process.env.RPG_BOT_ESPERA_MS) || 4000; // pausa para os humanos lerem
 const BOT_ESPERA_DADO_MS = Number(process.env.RPG_BOT_ESPERA_DADO_MS) || 2500;
-const BOT_FECHA_DADO_MS = Number(process.env.RPG_BOT_FECHA_DADO_MS) || 3500;
+// Contado a partir da rolagem (não do fim da narração): o dado gira ~3 s na tela e fica uns segundos parado.
+const BOT_FECHA_DADO_MS = Number(process.env.RPG_BOT_FECHA_DADO_MS) || 6000;
 const botTimers = new Map(); // codigo -> { chave, t }
 const botOcupado = new Set(); // codigos em que um bot está decidindo/agindo
 
@@ -508,9 +509,15 @@ async function botAgir(codigo) {
   try {
     if (room.pendingTest) {
       if (room.pendingTest.rolagem) return;
-      await sendRollResult({ codigo, userId: bot.userId });
-      // Deixa o dado na tela de todos por alguns segundos e libera o relógio.
-      setTimeout(() => fecharDado({ codigo, userId: bot.userId }), BOT_FECHA_DADO_MS);
+      // O bot "clica em Continuar" alguns segundos depois de rolar, como um jogador —
+      // sem esperar o Mestre terminar de narrar. Isso fecha o modal de todos.
+      const fechar = setTimeout(() => fecharDado({ codigo, userId: bot.userId }), BOT_FECHA_DADO_MS);
+      try {
+        await sendRollResult({ codigo, userId: bot.userId });
+      } catch (e) {
+        clearTimeout(fechar);
+        throw e;
+      }
       return;
     }
     const c = bot.personagem;

@@ -58,8 +58,12 @@ http.createServer((req, res) => {
       t = `A criatura se prepara. Role Força.\n[TESTE: ${nome} | Força | médio]\n[MUSICA: Batalha]\n[IMAGEM: uma criatura de névoa ergue as garras]`;
     } else if (/encerrar a sessão/.test(ultima)) t = 'E assim termina a lenda do grupo.\n[FIM]';
     else t = `O Mestre responde à ação. Ok.\n[SUGESTOES: Olhar em volta | Falar com o NPC | Descansar]`;
-    res.setHeader('content-type', 'application/json');
-    res.end(JSON.stringify({ content: [{ type: 'text', text: t }] }));
+    // MOCK_ATRASO_MS: simula a demora real do Mestre ao narrar o resultado de um teste.
+    const atraso = /Resultado do teste/.test(ultima) ? Number(process.env.MOCK_ATRASO_MS) || 0 : 0;
+    setTimeout(() => {
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ content: [{ type: 'text', text: t }] }));
+    }, atraso);
   });
 }).listen(portaIA, '127.0.0.1');
 

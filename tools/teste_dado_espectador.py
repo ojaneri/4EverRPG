@@ -5,11 +5,11 @@ import json, os, subprocess, tempfile, time, urllib.request
 from playwright.sync_api import sync_playwright
 RAIZ = "/var/www/html/admin.janeri.com.br/4everrpg"; BASE = "http://127.0.0.1:3495/"
 tmp = tempfile.mkdtemp(); em = os.path.join(tmp, "e.txt"); open(em, "w").close()
-procs = [subprocess.Popen(["node", "tools/mocks.js", "3496", "3497", em], cwd=RAIZ, stdout=subprocess.DEVNULL)]
+procs = [subprocess.Popen(["node", "tools/mocks.js", "3496", "3497", em], cwd=RAIZ, stdout=subprocess.DEVNULL, env=dict(os.environ, MOCK_ATRASO_MS="15000"))]
 env = dict(os.environ, PORT="3495", HOST="127.0.0.1", RPG_AI_PROXY="", RPG_AI_BASE_URL="http://127.0.0.1:3496", RPG_AI_API_PATH="/v1/messages",
            SMTP_PORT="3497", PUBLIC_URL=BASE.rstrip("/"), RPG_TEMPO_TURNO_MS="600000", RPG_TEMPO_DADO_MS="600000",
            RPG_IMG_BASE_URL="http://127.0.0.1:3496/v1", RPG_IMG_API_KEY="teste", RPG_BOT_ESPERA_MS="500", RPG_BOT_ESPERA_DADO_MS="500",
-           RPG_BOT_FECHA_DADO_MS="6000", RPG_DATA_DIR=os.path.join(tmp, "data"))
+           RPG_DATA_DIR=os.path.join(tmp, "data"))
 procs.append(subprocess.Popen(["node", "server.js"], cwd=RAIZ, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
 for _ in range(100):
     try: urllib.request.urlopen(BASE + "api/config"); break
@@ -34,7 +34,10 @@ try:
         print("espectador vê:", pg.text_content("#modal-dado-pausa"), "| botão:", pg.text_content("#btn-fechar-dado"))
         pg.screenshot(path=os.path.join(tmp, "espectador.png"))
         pg.wait_for_selector("#modal-dado.escondido", state="attached", timeout=15000)
-        print(f"modal fechou sozinho após {time.time() - t0:.1f}s (o bot fecha em ~6s)")
+        dt = time.time() - t0
+        print(f"modal fechou sozinho após {dt:.1f}s (o Mestre leva 15 s para narrar; o bot continua ~6 s após rolar)")
+        if dt > 10: raise SystemExit("FALHA: o modal esperou a narração do Mestre")
+        print("Tudo certo.")
         b.close()
 finally:
     for pr in procs: pr.kill()
