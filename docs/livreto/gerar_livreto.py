@@ -3,7 +3,7 @@
 
 Uso: python3 gerar_livreto.py
 Ilustrações em img/*.png (geradas com `gerar-imagem`); viram JPG leves aqui.
-Saída: 4Ever-livreto.pdf
+Saída: public/4Ever-livreto.pdf (baixado pela página inicial do jogo)
 Os textos não trazem segredos dos roteiros: são para os jogadores.
 """
 import html
@@ -13,6 +13,7 @@ import subprocess
 AQUI = pathlib.Path(__file__).resolve().parent
 IMG = AQUI / "img"
 URL = "4ever.janeri.com.br"
+PDF = AQUI.parent.parent / "public" / "4Ever-livreto.pdf"
 
 HISTORIAS = [
     dict(img="corvile", icone="🏘️", titulo="As Sombras de Corvile", genero="Fantasia · Mistério",
@@ -84,6 +85,42 @@ HISTORIAS = [
                ("O Passageiro", "inteligente, estranho… e com motivos próprios")],
          objetivo="Descobrir o que aconteceu na Órion-7, conter os alienígenas e tirar os sobreviventes antes que a órbita decaia.",
          classes="espacial", clima=["Suspense", "Horror sci-fi", "Sobrevivência"]),
+    dict(img="print", icone="📱", titulo="O Print que Mentia", genero="Perícia · Tribunal",
+         cor="#4cc9f0", cor2="#0b2233",
+         gancho="Um print de WhatsApp pôs um jovem de 19 anos na cadeia. O júri é na sexta. A família jura que a conversa nunca existiu.",
+         texto="Uma cidade do interior paulista, um fórum lotado e um laboratório de perícia improvisado. A sua equipe tem poucos dias para examinar o celular, o backup e cada pixel daquela conversa. Mas atenção: prova sem lacre, sem cadeia de custódia ou sem ordem judicial cai no tribunal. Drama de júri contra o relógio.",
+         npcs=[("Dra. Helena Prado", "defensora pública exausta e brilhante"),
+               ("Delegado Moura", "quer o caso encerrado, custe o que custar"),
+               ("Kauã", "o amigo nervoso que entregou o print")],
+         objetivo="Provar a verdade sobre o print antes do veredito do júri.",
+         classes="pericia", clima=["Perícia digital", "Tribunal", "Contra o relógio"]),
+    dict(img="pix", icone="💸", titulo="Golpe do PIX Fantasma", genero="Perícia · Crime financeiro",
+         cor="#7ae582", cor2="#0d2a17",
+         gancho="Em uma semana, 37 idosos perderam R$ 1,2 milhão para uma falsa central do banco. O dinheiro some em minutos.",
+         texto="Uma força-tarefa de crimes cibernéticos em Campinas. Uma voz que sabia nome, CPF e últimas compras de cada vítima, um número que parecia oficial e dezenas de contas laranja levando tudo para as criptomoedas. Siga o dinheiro, descubra de onde vazam os dados e chegue antes do saque.",
+         npcs=[("Dona Cida", "74 anos, gravou a ligação inteira"),
+               ("Ruan", "alugou a conta por R$ 300 e está apavorado"),
+               ("“Professor”", "comanda o golpe de dentro de um presídio")],
+         objetivo="Desarticular a quadrilha e recuperar parte do dinheiro antes do saque.",
+         classes="pericia", clima=["Rastro do dinheiro", "Operação", "Caça à quadrilha"]),
+    dict(img="contrato", icone="✍️", titulo="O Contrato Assinado por um Morto", genero="Perícia · Fraude digital",
+         cor="#f4a261", cor2="#2e1a0c",
+         gancho="Seu Arlindo morreu na segunda. Na quinta, “assinou” um empréstimo de R$ 480 mil, com selfie e tudo.",
+         texto="Belo Horizonte, um velório recente e uma família em guerra pela herança. O banco jura que a assinatura eletrônica é infalível e cobra a viúva. Trilha de auditoria, IP, aparelho, horários e uma selfie que não deveria existir: a perícia vai mostrar quem esteve do outro lado da tela.",
+         npcs=[("Dona Rosa", "a viúva, doce e desconfiada de todos"),
+               ("Fábio", "o sobrinho prestativo demais"),
+               ("Jéssica", "a gerente que aprovou o crédito num piscar de olhos")],
+         objetivo="Provar que o contrato é fraude e descobrir quem o forjou.",
+         classes="pericia", clima=["Mistério familiar", "Assinatura digital", "Herança"]),
+    dict(img="serra", icone="📍", titulo="Sinal Perdido na Serra", genero="Perícia · Desaparecimento",
+         cor="#e5989b", cor2="#2a1218",
+         gancho="Bianca saiu de uma festa na serra às 2h17 e sumiu. O celular parou de dar sinal às 2h41. Cada hora conta.",
+         texto="Petrópolis, neblina, estradas sinuosas e câmeras que ninguém olha. Reconstrua a linha do tempo da noite com fotos, stories, câmeras, dados de antena e histórico de localização (com ordem judicial, sempre). Um caso de desaparecimento contra o relógio, em que encontrar não basta: é preciso proteger.",
+         npcs=[("Seu Jorge", "o pai, que não sai da porta da delegacia"),
+               ("Téo", "o namorado, com um álibi perfeito demais"),
+               ("Wesley", "o motorista de aplicativo que “não lembra” da corrida")],
+         objetivo="Encontrar Bianca antes que seja tarde.",
+         classes="pericia", clima=["True crime", "Linha do tempo", "Corrida contra o tempo"]),
 ]
 
 CLASSES = {
@@ -97,6 +134,8 @@ CLASSES = {
                ("⚙️", "Inventor", "Fala a língua das engrenagens."), ("🕯️", "Rezadeira", "Fé e remédio do mato.")],
     "espacial": [("🪖", "Fuzileira Espacial", "Combate em gravidade zero."), ("🛰️", "Pilota", "Reflexos e plano de fuga."),
                  ("🔧", "Engenheira de Sistemas", "A estação obedece a ela."), ("🩺", "Médica de Bordo", "Mantém todos vivos.")],
+    "pericia": [("🚔", "Agente de Operações", "Mandados, buscas e proteção."), ("🕵️", "Investigador OSINT", "Campana e fontes abertas."),
+                ("💾", "Perito Forense Digital", "Celulares, logs e metadados."), ("🔬", "Perito Criminal", "Local de crime e custódia.")],
 }
 
 e = html.escape
@@ -125,7 +164,7 @@ def pagina_historia(i, h):
 <section class="pagina historia" style="--cor:{h['cor']};--cor2:{h['cor2']}">
   <div class="arte" style="background-image:url('{bg}')"></div>
   <div class="arte-sombra"></div>
-  <div class="num">{i:02d}<small>/08</small></div>
+  <div class="num">{i:02d}<small>/{len(HISTORIAS):02d}</small></div>
   <div class="conteudo">
     <div class="genero">{h['icone']} {e(h['genero'])}</div>
     <h2>{e(h['titulo'])}</h2>
@@ -164,7 +203,7 @@ def montar():
   <div class="capa-topo">RPG online · Mestre de Inteligência Artificial</div>
   <div class="capa-centro">
     <h1>4EVER</h1>
-    <p class="capa-sub">Oito mundos. Um Mestre que nunca cansa.<br>A história é sua e dos seus amigos.</p>
+    <p class="capa-sub">Doze histórias, seis mundos. Um Mestre que nunca cansa.<br>A história é sua e dos seus amigos.</p>
   </div>
   <div class="capa-base">
     <div><small>Livreto do jogador</small><b>{URL}</b></div>
@@ -191,10 +230,10 @@ def montar():
     <div><i>🎯</i><b>Missões</b><small>Cada história tem um objetivo e etapas a cumprir.</small></div>
     <div><i>🎵</i><b>Trilha sonora</b><small>O Mestre escolhe a música e os efeitos de cada cena.</small></div>
     <div><i>💀</i><b>Perigo real</b><small>Personagens podem morrer. Cuidado com o abismo.</small></div>
-    <div><i>⏳</i><b>Turnos</b><small>Cada um tem sua vez; ninguém fica esperando para sempre.</small></div>
+    <div><i>🤖</i><b>Bots com personalidade</b><small>Até 3 jogadores da IA, cada um com seu jeito e sua voz.</small></div>
     <div><i>🎙️</i><b>Chat da mesa</b><small>Converse com o grupo por texto ou áudio.</small></div>
   </div>
-  <h3 class="sec">As oito histórias</h3>
+  <h3 class="sec">As doze histórias</h3>
   <div class="sumario">{sumario}</div>
   <p class="dica">💡 <b>Dica de ouro:</b> descreva <i>como</i> você faz, não só <i>o que</i> faz. “Me esgueiro pela sombra do muro, de olho no guarda” rende muito mais que “passo pelo guarda”.</p>
   <div class="rodape"><span>4EVER</span><span>{URL}</span></div>
@@ -224,10 +263,10 @@ def main():
         pg = b.new_page()
         pg.goto((AQUI / "livreto.html").as_uri(), wait_until="networkidle")
         pg.wait_for_timeout(800)
-        pg.pdf(path=str(AQUI / "4Ever-livreto.pdf"), format="A4", print_background=True,
+        pg.pdf(path=str(PDF), format="A4", print_background=True,
                margin=dict(top="0", right="0", bottom="0", left="0"))
         b.close()
-    print("ok:", AQUI / "4Ever-livreto.pdf")
+    print("ok:", PDF)
 
 
 if __name__ == "__main__":

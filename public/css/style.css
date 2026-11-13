@@ -1101,3 +1101,25 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .legenda-audio { font-size: 0.75rem; color: var(--texto-fraco); font-style: italic; margin-top: 3px; line-height: 1.35; }
 .selo-tracos { background: #2c2140; color: #e0c8ff; border: 1px solid #9b7bd1; }
 .tracos-bot { color: #d6c2ff; }
+
+/* --- Cor de cada personagem (a variável --cor-p vem da folha #cores-personagens) --- */
+.campo-cor { display: grid; gap: 6px; margin: 4px 0 10px; }
+.campo-cor > span { font-size: 0.9rem; color: var(--texto-fraco); }
+.seletor-cor { display: flex; flex-wrap: wrap; gap: 8px; }
+.bolinha-cor { width: 30px; height: 30px; padding: 0; margin: 0; border-radius: 50%; background: var(--c); border: 2px solid rgba(255,255,255,0.15); box-shadow: none; cursor: pointer; }
+.bolinha-cor.marcada { border-color: #fff; box-shadow: 0 0 0 3px var(--c), 0 0 14px -2px var(--c); }
+.bolinha-cor:disabled { opacity: 0.25; cursor: not-allowed; background: repeating-linear-gradient(45deg, var(--c) 0 4px, transparent 4px 8px); }
+.trocar-cor { margin-top: 4px; }
+.trocar-cor summary { cursor: pointer; font-size: 0.78rem; color: var(--texto-fraco); }
+.trocar-cor .seletor-cor { margin-top: 6px; gap: 6px; }
+.trocar-cor .bolinha-cor { width: 24px; height: 24px; }
+.msg.jogador[data-pers] .conteudo { border-color: var(--cor-p, #2f9e5e); background: color-mix(in srgb, var(--cor-p, #2f9e5e) 20%, rgba(14, 13, 25, 0.82)); }
+.msg.jogador[data-pers] .autor { color: var(--cor-p); font-weight: 700; }
+.msg.mestre[data-pers] .conteudo, .msg.sistema[data-pers] .conteudo { box-shadow: inset 4px 0 0 var(--cor-p, transparent); }
+.autor-chat[data-pers] { color: var(--cor-p, var(--texto-fraco)); }
+.nome-colorido[data-pers] { color: var(--cor-p, inherit); font-weight: 600; }
+
+.link-livreto { display: flex; align-items: center; gap: 10px; margin: 2px 0 14px; padding: 10px 14px; border: 1px dashed var(--acento); border-radius: 10px; color: var(--texto); text-decoration: none; background: rgba(155, 123, 209, 0.08); font-size: 1.3rem; }
+.link-livreto span { display: grid; font-size: 0.9rem; }
+.link-livreto small { color: var(--texto-fraco); font-size: 0.78rem; }
+.link-livreto:hover { background: rgba(155, 123, 209, 0.16); }

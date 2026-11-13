@@ -7,7 +7,7 @@ const express = require('express');
 const { Server } = require('socket.io');
 
 const gameManager = require('./src/gameManager');
-const { CLASSES, ATTRIBUTES, ATTRIBUTE_LABELS, POINT_BUY, HABILIDADES, ITENS, RARIDADES, MAX_EQUIPADOS } = require('./src/characterSystem');
+const { CLASSES, ATTRIBUTES, ATTRIBUTE_LABELS, POINT_BUY, HABILIDADES, ITENS, RARIDADES, MAX_EQUIPADOS, CORES_PERSONAGEM, COR_PADRAO_CLASSE } = require('./src/characterSystem');
 const { ADVENTURES, getAdventureById } = require('./src/adventures');
 const tts = require('./src/tts');
 const auth = require('./src/auth');
@@ -59,6 +59,8 @@ const responder = (fn) => async (req, res) => {
 app.get('/api/config', (req, res) => {
   res.json({
     CLASSES,
+    CORES_PERSONAGEM,
+    COR_PADRAO_CLASSE,
     ATTRIBUTES,
     ATTRIBUTE_LABELS,
     POINT_BUY,
@@ -343,6 +345,8 @@ io.on('connection', (socket) => {
   socket.on('procurar', handler((p) => gameManager.procurar({ codigo: codigoAtual(p), userId: socket.data.userId, buscavelId: p.buscavelId })));
   socket.on('darItem', handler((p) => gameManager.darItem({ codigo: codigoAtual(p), userId: socket.data.userId, uid: p.uid, alvoId: p.alvoId })));
   socket.on('descartarItem', handler((p) => gameManager.descartarItem({ codigo: codigoAtual(p), userId: socket.data.userId, uid: p.uid })));
+  socket.on('mudarCor', handler((p) => gameManager.mudarCor({ codigo: codigoAtual(p), userId: socket.data.userId, cor: p.cor })));
+
   socket.on('equiparItem', handler((p) => gameManager.equiparItem({ codigo: codigoAtual(p), userId: socket.data.userId, uid: p.uid })));
 
   socket.on('rolarDado', handler(async (p) => ({

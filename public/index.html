@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>4Ever — Aventuras de RPG com Mestre de IA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎲%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/style.css?v=1794582315" />
+<link rel="stylesheet" href="css/style.css?v=1794588062" />
 </head>
 <body>
   <header class="topo-site">
@@ -79,6 +79,7 @@
             <label>Escolha um roteiro de aventura
               <div id="grade-aventuras" class="grade-aventuras"></div>
             </label>
+            <a class="link-livreto" href="4Ever-livreto.pdf" download="4Ever-livreto-do-jogador.pdf">📖 <span><b>Livreto do jogador (PDF)</b><small>Todas as histórias, sem spoilers, para entrar no clima e mandar para o grupo</small></span></a>
             <label id="rotulo-tema-personalizado" class="escondido">Descreva sua aventura
               <textarea id="criar-tema" rows="12" maxlength="9000" placeholder="-- DESCREVA O CENÁRIO AQUI&#10;Ex: ruínas élficas perdidas na neblina, no fim de um inverno que não acaba.&#10;&#10;-- DESCREVA AS CRIATURAS&#10;Ex: lobos de gelo, espíritos dos antigos guardiões, um dragão adormecido.&#10;&#10;-- DESCREVA A MISSÃO&#10;Ex: recuperar o cristal que mantém o inverno preso nas ruínas antes da lua cheia."></textarea>
             </label>
@@ -196,6 +197,10 @@
           <label>Nome do personagem
             <input type="text" id="personagem-nome" maxlength="30" placeholder="Ex: Thalrik" />
           </label>
+          <div class="campo-cor">
+            <span>Cor do personagem <small class="dica">(suas falas e seu cartão ficam nessa cor)</small></span>
+            <div id="seletor-cor" class="seletor-cor" role="radiogroup" aria-label="Cor do personagem"></div>
+          </div>
 
           <div class="atributos-editor" id="atributos-editor"></div>
           <p class="pontos-restantes">Pontos restantes: <span id="pontos-restantes">0</span></p>
@@ -449,7 +454,7 @@
   </div>
 
   <script src="socket.io/socket.io.js"></script>
-  <script src="js/musica.js?v=1794582315"></script>
-  <script src="js/app.js?v=1794582315"></script>
+  <script src="js/musica.js?v=1794588062"></script>
+  <script src="js/app.js?v=1794588062"></script>
 </body>
 </html>

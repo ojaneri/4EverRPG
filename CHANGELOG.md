@@ -2,6 +2,22 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.12.0 — 2026-11-13
+
+### Cor de cada personagem
+- Na ficha, o jogador escolhe uma entre 10 cores. Cores em uso por outro personagem vivo da mesa ficam bloqueadas, e bots e personagens antigos ganham uma cor livre automaticamente.
+- Onde a cor aparece:
+  - nos balões das ações do personagem (borda, fundo tingido e nome);
+  - numa faixa lateral nas narrações do Mestre sobre a ação dele e nos avisos do sistema que o citam;
+  - no cartão do grupo e no avatar;
+  - no nome no bate-papo e no lobby.
+- Dá para trocar a cor depois em "🎨 Cor", no próprio cartão do grupo. Uma folha de estilo gerada na hora liga nome e cor, então até as mensagens antigas acompanham a troca.
+- Servidor: paleta em `CORES_PERSONAGEM`, evento `mudarCor`, a narração do Mestre guarda quem agiu (`ator`), e há testes.
+
+### Livreto do jogador
+- O livreto foi atualizado com 12 histórias: 4 páginas novas das histórias de perícia, com ilustrações próprias, a seção "As doze histórias" e o card "Bots com personalidade".
+- O link de download do PDF fica na página inicial, junto da escolha da história. O PDF agora é gerado direto em `public/4Ever-livreto.pdf`.
+
 ## v0.11.0 — 2026-11-13
 
 ### Histórias de perícia e investigação (agora são 12 roteiros)

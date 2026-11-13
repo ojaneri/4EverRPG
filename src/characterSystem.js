@@ -407,7 +407,26 @@ function rollCheck(character, attribute, dificuldade) {
   return { die, mod, bonus, total, dc, dificuldade, sucesso, resultado, atributo: attribute };
 }
 
+// Cores que o jogador pode escolher para o personagem (legíveis no fundo escuro).
+// Cada personagem vivo da mesa tem uma cor diferente.
+const CORES_PERSONAGEM = [
+  { id: 'vermelho', nome: 'Vermelho', hex: '#e5534b' },
+  { id: 'laranja', nome: 'Laranja', hex: '#f0883e' },
+  { id: 'ambar', nome: 'Âmbar', hex: '#d4a72c' },
+  { id: 'verde', nome: 'Verde', hex: '#3fb950' },
+  { id: 'turquesa', nome: 'Turquesa', hex: '#2bb3a3' },
+  { id: 'azul', nome: 'Azul', hex: '#4c8ef7' },
+  { id: 'indigo', nome: 'Índigo', hex: '#8b7cf6' },
+  { id: 'roxo', nome: 'Roxo', hex: '#c060f0' },
+  { id: 'rosa', nome: 'Rosa', hex: '#e85aad' },
+  { id: 'ardosia', nome: 'Ardósia', hex: '#9aa7b8' },
+];
+// Cor inicial sugerida por classe (a primeira livre a partir dela).
+const COR_PADRAO_CLASSE = { guerreiro: 'vermelho', batedor: 'verde', arcanista: 'azul', guardiao: 'ambar' };
+
 module.exports = {
+  CORES_PERSONAGEM,
+  COR_PADRAO_CLASSE,
   ATTRIBUTES,
   ATTRIBUTE_LABELS,
   POINT_BUY,

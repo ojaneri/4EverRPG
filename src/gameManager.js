@@ -35,6 +35,8 @@ const {
   aplicarPassivo,
   CLASSES,
   HABILIDADES,
+  CORES_PERSONAGEM,
+  COR_PADRAO_CLASSE,
 } = require('./characterSystem');
 const { callMaster, resumirHistorico, criarPersonagemBot, decidirAcaoBot, comentarioBot, TRACOS_BOT } = require('./aiMaster');
 const tts = require('./tts');
@@ -460,6 +462,7 @@ async function criarPersonagensBots(room) {
       personagem = createCharacter({ nome, classeId, atributos: atributosPadrao(classeId), historia }, room.ambiente);
     }
     bot.personagem = personagem;
+    personagem.cor = escolherCor(room, bot, null);
     bot.botPersona = sanitizar(dados && dados.personalidade, 200);
     bot.botGenero = /^f/i.test(String((dados && dados.genero) || '')) ? 'feminino' : /^m/i.test(String((dados && dados.genero) || '')) ? 'masculino' : '';
     const deOutros = new Set(room.personagens.filter((p) => p !== bot).flatMap((p) => p.botTracos || []));
@@ -678,6 +681,48 @@ async function talvezComentarBot(room, bot) {
   tocar(room);
 }
 
+// ---------------------------------------------------------------------------
+// Cores dos personagens: cada personagem vivo da mesa tem uma cor própria
+// (balões no log, cartão do grupo, nome no bate-papo).
+// ---------------------------------------------------------------------------
+const corValida = (cor) => CORES_PERSONAGEM.find((c) => c.hex === cor || c.id === cor) || null;
+
+function coresEmUso(room, exceto) {
+  return new Set(room.personagens.filter((p) => p !== exceto && p.personagem && !p.personagem.morto && p.personagem.cor).map((p) => p.personagem.cor));
+}
+
+// Primeira cor livre, começando pela pedida (ou pela cor padrão da classe).
+function escolherCor(room, jogador, pedida) {
+  const usadas = coresEmUso(room, jogador);
+  const desejada = corValida(pedida);
+  if (desejada && !usadas.has(desejada.hex)) return desejada.hex;
+  const inicio = Math.max(0, CORES_PERSONAGEM.findIndex((c) => c.id === COR_PADRAO_CLASSE[jogador.personagem?.classeId]));
+  for (let i = 0; i < CORES_PERSONAGEM.length; i++) {
+    const c = CORES_PERSONAGEM[(inicio + i) % CORES_PERSONAGEM.length];
+    if (!usadas.has(c.hex)) return c.hex;
+  }
+  return CORES_PERSONAGEM[inicio].hex; // mais de 10 personagens: repete
+}
+
+// Personagens antigos (antes das cores) ganham uma automaticamente.
+function garantirCores(room) {
+  for (const p of room.personagens) {
+    if (p.personagem && !p.personagem.morto && !p.personagem.cor) p.personagem.cor = escolherCor(room, p, null);
+  }
+}
+
+function mudarCor({ codigo, userId, cor }) {
+  const room = exigirSala(codigo);
+  const jogador = exigirJogador(room, userId);
+  if (!jogador.personagem) throw new Error('Crie seu personagem primeiro.');
+  const c = corValida(cor);
+  if (!c) throw new Error('Cor inválida.');
+  if (coresEmUso(room, jogador).has(c.hex)) throw new Error('Outro personagem já usa essa cor.');
+  jogador.personagem.cor = c.hex;
+  tocar(room);
+  return { cor: c.hex };
+}
+
 function setCharacter({ codigo, userId, dados }) {
   const room = exigirSala(codigo);
   const jogador = exigirJogador(room, userId);
@@ -689,6 +734,7 @@ function setCharacter({ codigo, userId, dados }) {
     throw new Error(`Já existe alguém chamado "${personagem.nome}" nesta mesa. Escolha outro nome.`);
   }
   jogador.personagem = personagem;
+  personagem.cor = escolherCor(room, jogador, dados && dados.cor);
   if (room.status === 'em_jogo') {
     logSistema(room, `${personagem.nome} (${personagem.classeNome}) entrou na aventura!`);
     eventos.emit('aviso', room, { icone: '🆕', texto: `${personagem.nome} entrou na aventura` });
@@ -1233,7 +1279,7 @@ function processarResposta(room, resposta, ator) {
     room.missao = novaMissao(partes[0], partes.slice(1), 'ia');
   }
   if (!tinhaMissao && room.missao) cartaoMissao(room);
-  room.logPublico.push({ autor: 'Mestre', tipo: 'mestre', texto: limparTags(resposta), ts: Date.now() });
+  room.logPublico.push({ autor: 'Mestre', tipo: 'mestre', texto: limparTags(resposta), ts: Date.now(), ...(ator ? { ator } : {}) });
   detectarTeste(room, resposta, ator);
   const climaAntes = room.cena && room.cena.clima;
   detectarCena(room, resposta);
@@ -2096,6 +2142,7 @@ async function encerrarAventura({ codigo, userId }) {
 // Estado público e listagens
 // ---------------------------------------------------------------------------
 function roomPublicState(room, { comLog = false } = {}) {
+  garantirCores(room);
   const host = hostEfetivo(room);
   const estado = {
     codigo: room.codigo,
@@ -2226,6 +2273,7 @@ setInterval(() => {
 carregarDoDisco();
 
 module.exports = {
+  mudarCor,
   _botAgir: (codigo) => botAgir(codigo),
   _limparTema: limparTema,
   desistirTeste,

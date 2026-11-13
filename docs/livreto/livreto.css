@@ -32,24 +32,24 @@ h1, h2, h3 { font-family: 'Cinzel', Georgia, serif; }
 .intro h2 { font-size: 30pt; margin: 4mm 0 3mm; }
 .lead { font-size: 10.5pt; line-height: 1.6; color: #ddd6ff; max-width: 175mm; }
 .lead b { color: #fff; }
-.passos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3.5mm; margin-top: 7mm; }
+.passos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3.5mm; margin-top: 5mm; }
 .passo { background: linear-gradient(160deg, #241f42, #17142a); border: 1px solid #3a3266; border-radius: 4mm; padding: 4mm 3.5mm; }
 .passo span { display: inline-grid; place-items: center; width: 8mm; height: 8mm; border-radius: 50%; background: var(--acento); color: #120e22; font-weight: 800; font-size: 11pt; margin-bottom: 2.5mm; }
 .passo b { display: block; font-size: 10pt; margin-bottom: 1.5mm; }
 .passo small { font-size: 8pt; line-height: 1.45; color: var(--fraco); display: block; }
-.recursos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm 4mm; margin-top: 7mm; }
+.recursos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm 4mm; margin-top: 5mm; }
 .recursos div { display: grid; grid-template-columns: 9mm 1fr; column-gap: 2mm; }
 .recursos i { grid-row: span 2; font-style: normal; font-size: 16pt; }
 .recursos b { font-size: 9pt; }
 .recursos small { font-size: 7.5pt; color: var(--fraco); line-height: 1.4; }
-h3.sec { font-size: 14pt; margin: 8mm 0 3.5mm; color: var(--ouro); letter-spacing: 1px; }
-.sumario { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+h3.sec { font-size: 14pt; margin: 5mm 0 3mm; color: var(--ouro); letter-spacing: 1px; }
+.sumario { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5mm; }
 .mini { background: #17142a; border-radius: 3mm; overflow: hidden; border-bottom: 1mm solid var(--cor); }
-.mini-img { height: 20mm; background-size: cover; background-position: center; background-color: #241f42; }
+.mini-img { height: 14mm; background-size: cover; background-position: center; background-color: #241f42; }
 .mini > div:last-child { padding: 2mm 2.5mm 2.5mm; }
 .mini b { display: block; font-size: 8pt; line-height: 1.3; }
 .mini small { font-size: 6.8pt; color: var(--fraco); }
-.dica { margin-top: 6mm; font-size: 9pt; line-height: 1.5; background: rgba(242,193,78,.08); border-left: 1mm solid var(--ouro); padding: 3mm 4mm; border-radius: 0 3mm 3mm 0; color: #eee6c8; }
+.dica { margin-top: 4mm; font-size: 9pt; line-height: 1.5; background: rgba(242,193,78,.08); border-left: 1mm solid var(--ouro); padding: 3mm 4mm; border-radius: 0 3mm 3mm 0; color: #eee6c8; }
 
 /* ---------- Página de história ---------- */
 .historia .arte { bottom: auto; height: 62%; }

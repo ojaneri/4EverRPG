@@ -71,7 +71,20 @@ async function fase1() {
   ok((await emit(A, 'escolherPersonagem', { codigo, personagem: personagem('Thalrik', 'guerreiro') })).ok, 'A escolhe Thalrik');
   const dupl = await emit(B, 'escolherPersonagem', { codigo, personagem: personagem('thálrik', 'arcanista') });
   ok(!dupl.ok, `nome de personagem duplicado é recusado: ${dupl.erro}`);
-  ok((await emit(B, 'escolherPersonagem', { codigo, personagem: personagem('Miriel', 'guardiao') })).ok, 'B escolhe Miriel');
+  ok((await emit(B, 'escolherPersonagem', { codigo, personagem: personagem('Miriel', 'guardiao', { cor: '#e5534b' }) })).ok, 'B escolhe Miriel');
+  await sleep(150);
+  {
+    const cores = () => Object.fromEntries(B.estado.personagens.filter((p) => p.personagem).map((p) => [p.personagem.nome, p.personagem.cor]));
+    const c1 = cores();
+    ok(c1.Thalrik && c1.Miriel && c1.Thalrik !== c1.Miriel, `cada personagem tem uma cor diferente (Thalrik ${c1.Thalrik}, Miriel ${c1.Miriel} — pediu o vermelho já usado)`);
+    const ocupada = await emit(B, 'mudarCor', { codigo, cor: c1.Thalrik });
+    ok(!ocupada.ok, `não dá para pegar a cor de outro personagem: ${ocupada.erro}`);
+    const troca = await emit(B, 'mudarCor', { codigo, cor: '#c060f0' });
+    await sleep(150);
+    ok(troca.ok && cores().Miriel === '#c060f0', 'trocar para uma cor livre funciona');
+    const invalida = await emit(B, 'mudarCor', { codigo, cor: '#123456' });
+    ok(!invalida.ok, 'cor fora da paleta é recusada');
+  }
   const trapaca = await emit(B, 'escolherPersonagem', { codigo, personagem: { nome: 'X', classeId: 'guerreiro', atributos: { forca: 16, agilidade: 16, mente: 16, espirito: 16 } } });
   ok(!trapaca.ok, 'atributos acima do limite recusados');
 

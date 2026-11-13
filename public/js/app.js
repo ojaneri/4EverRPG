@@ -453,6 +453,8 @@ function renderGradeClasses() {
 
 function selecionarClasse(classeId) {
   estado.classeEscolhida = classeId;
+  estado.corEscolhida = null; // sugere a cor padrão da classe (se estiver livre)
+  renderSeletorCor();
   document.querySelectorAll('.cartao-classe').forEach((el) => el.classList.toggle('selecionado', el.dataset.classeId === classeId));
   estado.atributos = {};
   estado.config.ATTRIBUTES.forEach((a) => (estado.atributos[a] = estado.config.POINT_BUY.base));
@@ -637,6 +639,7 @@ $('btn-confirmar-personagem').addEventListener('click', async () => {
         atributos: estado.atributos,
         historia: $('personagem-historia').value.trim(),
         avatarVariant: 1,
+        cor: estado.corEscolhida || null,
       },
     }, 15000);
     $('ficha-personagem').classList.add('escondido');
@@ -696,6 +699,8 @@ function renderEstado(rs) {
     const ml = $('missao-lobby');
     ml.classList.toggle('escondido', !rs.missao);
     if (rs.missao) ml.innerHTML = `<strong>📜 Missão:</strong> ${esc(rs.missao.objetivo)}`;
+    atualizarCoresCss(rs);
+    if (!$('ficha-personagem').classList.contains('escondido')) renderSeletorCor(); // outro jogador pode ter pego a cor
     renderSalaEspera(rs);
     return;
   }
@@ -715,6 +720,7 @@ function renderEstado(rs) {
   renderPainelMissao(rs);
   renderPainelCena(rs);
   talvezMostrarFim(rs);
+  atualizarCoresCss(rs);
   renderAreaTeste(rs);
   sincronizarModalDadoObservador(rs);
   renderInventario();
@@ -735,7 +741,7 @@ function renderSalaEspera(rs) {
     else status = `<span class="status-pendente">${p.bot ? 'a IA está criando o personagem...' : 'escolhendo...'}</span>`;
     const coroa = p.id === rs.hostId ? ' 👑' : '';
     const tracos = p.bot && p.tracos && p.tracos.length ? `<br><small class="tracos-bot">🎭 ${p.tracos.map((t) => esc(t)).join(' · ')}</small>` : '';
-    div.innerHTML = `<strong>${p.bot ? '🤖 ' : ''}${esc(p.nome)}${coroa}</strong><br>${p.personagem ? `${esc(p.personagem.nome)} — ${esc(p.personagem.classeNome)}` : ''}${tracos}<br>${status}`;
+    div.innerHTML = `<strong>${p.bot ? '🤖 ' : ''}${esc(p.nome)}${coroa}</strong><br>${p.personagem ? `<span class="nome-colorido" data-pers="${slugPers(p.personagem.nome)}">● ${esc(p.personagem.nome)}</span> — ${esc(p.personagem.classeNome)}` : ''}${tracos}<br>${status}`;
     lista.appendChild(div);
   });
 
@@ -756,6 +762,7 @@ function renderSalaEspera(rs) {
   }
 }
 
+let corAberta = false; // o seletor de cor do cartão continua aberto entre atualizações
 function renderPainelGrupo(rs) {
   const painel = $('painel-grupo');
   painel.innerHTML = '';
@@ -777,10 +784,10 @@ function renderPainelGrupo(rs) {
 
     const div = document.createElement('div');
     div.className = `cartao-personagem-mini${vez ? ' na-vez' : ''}${p.afastado || !p.conectado ? ' inativo' : ''}${c.morto ? ' morto' : ''}`;
-    div.style.setProperty('--cor-classe', c.corTema);
+    div.style.setProperty('--cor-classe', c.cor || c.corTema);
     div.innerHTML = `
       <div class="topo">
-        ${avatarHtml(c.avatar, c.corTema)}
+        ${avatarHtml(c.avatar, c.cor || c.corTema)}
         <div>
           <div class="nome">${esc(c.nome)}${p.id === estado.meuId ? ' (você)' : ''}</div>
           <div class="classe">${esc(c.classeNome)} · Nv ${c.nivel} · ${esc(p.nome)}</div>
@@ -795,7 +802,14 @@ function renderPainelGrupo(rs) {
       <div>XP ${c.xp || 0}/${xpProximo}</div>
       ${(() => { const a = c.inventario.find((i) => i.tipo === 'arma' && i.equipado); return a ? `<div class="arma-card">${itemHtml({ ...a, equipado: false })}</div>` : ''; })()}
       <div class="moedas">🪙 ${c.moedas || 0}</div>
-      <details class="inventario"><summary>Inventário (${c.inventario.length})</summary><ul>${c.inventario.map((i) => `<li>${itemHtml(i)}</li>`).join('')}</ul></details>`;
+      <details class="inventario"><summary>Inventário (${c.inventario.length})</summary><ul>${c.inventario.map((i) => `<li>${itemHtml(i)}</li>`).join('')}</ul></details>
+      ${p.id === estado.meuId && !c.morto ? '<details class="trocar-cor"><summary>🎨 Cor</summary><div class="seletor-cor"></div></details>' : ''}`;
+    const trocar = div.querySelector('.trocar-cor');
+    if (trocar) {
+      if (corAberta) trocar.open = true;
+      trocar.addEventListener('toggle', () => (corAberta = trocar.open));
+      bolinhasCor(trocar.querySelector('.seletor-cor'), c.cor, (hex) => emitir('mudarCor', { cor: hex }).catch((e) => alert(e.message)));
+    }
     painel.appendChild(div);
     if (p.id === estado.meuId) {
       // Abas do celular: PV no botão "Grupo" e um aviso em "Mesa" quando é a sua vez.
@@ -1830,6 +1844,9 @@ function renderLogNovo({ tocarNarracao }) {
     }
     const div = document.createElement('div');
     div.className = `msg ${msg.tipo}`;
+    // De quem é a mensagem (cor do personagem): ação do jogador, narração da ação dele, avisos sobre ele.
+    const dono = msg.tipo === 'jogador' ? msg.autor : msg.tipo === 'mestre' ? msg.ator : msg.tipo === 'sistema' ? personagemNoTexto(msg.texto) : null;
+    if (dono) div.dataset.pers = slugPers(dono);
     const avatarChave = msg.tipo === 'mestre' ? 'mestre' : msg.tipo === 'sistema' || msg.tipo === 'missao' ? 'sistema' : personagemAvatarPorAutor(msg.autor);
     const cor = msg.tipo === 'jogador' ? corPorAutor(msg.autor) : null;
     div.innerHTML = `
@@ -1919,13 +1936,84 @@ function ampliarImagem(src, legenda) {
   caixa.classList.remove('escondido');
 }
 
+// ---------------------------------------------------------------------------
+// Cores dos personagens. Uma folha de estilo gerada a cada atualização liga o
+// nome (data-pers) à cor: se alguém troca de cor, até as mensagens antigas mudam.
+// ---------------------------------------------------------------------------
+const slugPers = (nome) => String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+function coresOcupadas(excetoMeu = true) {
+  const meuId = estado.meuId;
+  return new Set((estado.roomState?.personagens || [])
+    .filter((p) => p.personagem && !p.personagem.morto && p.personagem.cor && !(excetoMeu && p.id === meuId))
+    .map((p) => p.personagem.cor));
+}
+function corSugerida() {
+  const lista = estado.config?.CORES_PERSONAGEM || [];
+  const ocupadas = coresOcupadas();
+  const padrao = estado.config?.COR_PADRAO_CLASSE?.[estado.classeEscolhida];
+  const inicio = Math.max(0, lista.findIndex((c) => c.id === padrao));
+  for (let i = 0; i < lista.length; i++) {
+    const c = lista[(inicio + i) % lista.length];
+    if (!ocupadas.has(c.hex)) return c.hex;
+  }
+  return lista[0]?.hex || null;
+}
+// Bolinhas de cor (ficha e "trocar cor" no cartão). `aoEscolher(hex)`.
+function bolinhasCor(container, atual, aoEscolher) {
+  const ocupadas = coresOcupadas();
+  container.innerHTML = '';
+  (estado.config?.CORES_PERSONAGEM || []).forEach((c) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = `bolinha-cor${c.hex === atual ? ' marcada' : ''}`;
+    b.style.setProperty('--c', c.hex);
+    b.title = ocupadas.has(c.hex) ? `${c.nome} (já em uso)` : c.nome;
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', c.hex === atual ? 'true' : 'false');
+    b.setAttribute('aria-label', b.title);
+    b.disabled = ocupadas.has(c.hex);
+    b.addEventListener('click', () => aoEscolher(c.hex));
+    container.appendChild(b);
+  });
+}
+function renderSeletorCor() {
+  const caixa = $('seletor-cor');
+  if (!caixa) return;
+  if (!estado.corEscolhida || coresOcupadas().has(estado.corEscolhida)) estado.corEscolhida = corSugerida();
+  bolinhasCor(caixa, estado.corEscolhida, (hex) => {
+    estado.corEscolhida = hex;
+    renderSeletorCor();
+  });
+}
+let cssCoresAtual = '';
+function atualizarCoresCss(rs) {
+  const regras = (rs.personagens || [])
+    .filter((p) => p.personagem && p.personagem.cor)
+    .map((p) => `[data-pers="${slugPers(p.personagem.nome)}"]{--cor-p:${p.personagem.cor}}`)
+    .join('\n');
+  if (regras === cssCoresAtual) return;
+  cssCoresAtual = regras;
+  let el = document.getElementById('cores-personagens');
+  if (!el) {
+    el = document.createElement('style');
+    el.id = 'cores-personagens';
+    document.head.appendChild(el);
+  }
+  el.textContent = regras;
+}
+// Personagem mencionado numa mensagem do sistema (o nome mais longo primeiro).
+function personagemNoTexto(texto) {
+  const nomes = (estado.roomState?.personagens || []).filter((p) => p.personagem).map((p) => p.personagem.nome).sort((a, b) => b.length - a.length);
+  return nomes.find((n) => String(texto || '').includes(n)) || null;
+}
+
 function personagemAvatarPorAutor(nomeAutor) {
   const p = estado.roomState?.personagens.find((x) => x.personagem && x.personagem.nome === nomeAutor);
   return p ? p.personagem.avatar : 'sistema';
 }
 function corPorAutor(nomeAutor) {
   const p = estado.roomState?.personagens.find((x) => x.personagem && x.personagem.nome === nomeAutor);
-  return p ? p.personagem.corTema : null;
+  return p ? p.personagem.cor || p.personagem.corTema : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -2353,7 +2441,7 @@ function renderChatLateral() {
     const direcao = privado && m.autor === meuNome ? ` → ${m.para}` : '';
     const div = document.createElement('div');
     div.className = `msg-chat ${privado ? 'privado' : ''}`;
-    div.innerHTML = `<div class="autor-chat">${m.bot ? '🤖 ' : ''}${esc(m.autor + direcao)} ${privado ? '<span class="tag-privado">(privado)</span>' : ''}</div>`;
+    div.innerHTML = `<div class="autor-chat" data-pers="${slugPers(m.autor)}">${m.bot ? '🤖 ' : ''}${esc(m.autor + direcao)} ${privado ? '<span class="tag-privado">(privado)</span>' : ''}</div>`;
 
     if (m.tipo === 'audio') {
       const linha = document.createElement('div');
