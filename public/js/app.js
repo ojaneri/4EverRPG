@@ -734,7 +734,8 @@ function renderSalaEspera(rs) {
     else if (p.personagem) status = '<span class="status-ok">pronto ✓</span>';
     else status = `<span class="status-pendente">${p.bot ? 'a IA está criando o personagem...' : 'escolhendo...'}</span>`;
     const coroa = p.id === rs.hostId ? ' 👑' : '';
-    div.innerHTML = `<strong>${p.bot ? '🤖 ' : ''}${esc(p.nome)}${coroa}</strong><br>${p.personagem ? `${esc(p.personagem.nome)} — ${esc(p.personagem.classeNome)}` : ''}<br>${status}`;
+    const tracos = p.bot && p.tracos && p.tracos.length ? `<br><small class="tracos-bot">🎭 ${p.tracos.map((t) => esc(t)).join(' · ')}</small>` : '';
+    div.innerHTML = `<strong>${p.bot ? '🤖 ' : ''}${esc(p.nome)}${coroa}</strong><br>${p.personagem ? `${esc(p.personagem.nome)} — ${esc(p.personagem.classeNome)}` : ''}${tracos}<br>${status}`;
     lista.appendChild(div);
   });
 
@@ -765,6 +766,7 @@ function renderPainelGrupo(rs) {
     const xpProximo = c.nivel * 100;
     const selos = [];
     if (p.bot) selos.push('<span class="selo selo-bot">🤖 IA</span>');
+    if (p.bot && p.tracos && p.tracos.length) selos.push(`<span class="selo selo-tracos" title="Personalidade do bot (fixa)">🎭 ${p.tracos.map((t) => esc(t[0].toUpperCase() + t.slice(1))).join(' · ')}</span>`);
     if (p.afastado) selos.push('<span class="selo selo-afastado">Afastado</span>');
     else if (!p.conectado) selos.push('<span class="selo selo-offline">offline</span>');
     if (c.morto) selos.push('<span class="selo selo-caido">☠️ morto</span>');

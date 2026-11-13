@@ -36,7 +36,7 @@ const {
   CLASSES,
   HABILIDADES,
 } = require('./characterSystem');
-const { callMaster, resumirHistorico, criarPersonagemBot, decidirAcaoBot, comentarioBot } = require('./aiMaster');
+const { callMaster, resumirHistorico, criarPersonagemBot, decidirAcaoBot, comentarioBot, TRACOS_BOT } = require('./aiMaster');
 const tts = require('./tts');
 const storage = require('./storage');
 const { MUSICAS, MUSICA_POR_CLIMA } = require('./musicas');
@@ -442,6 +442,7 @@ async function criarPersonagensBots(room) {
         classes,
         nomesOcupados: room.personagens.flatMap((p) => [p.nome, p.personagem && p.personagem.nome]).filter(Boolean),
         classesOcupadas: classesOcupadas.map((id) => classes.find((c) => c.id === id)?.nome || id),
+        tracosOcupados: room.personagens.flatMap((p) => p.botTracos || []),
       });
     } catch (e) {
       console.warn(`[bot ${room.codigo}] IA não criou o personagem (${e.message}); usando um padrão.`);
@@ -461,6 +462,9 @@ async function criarPersonagensBots(room) {
     bot.personagem = personagem;
     bot.botPersona = sanitizar(dados && dados.personalidade, 200);
     bot.botGenero = /^f/i.test(String((dados && dados.genero) || '')) ? 'feminino' : /^m/i.test(String((dados && dados.genero) || '')) ? 'masculino' : '';
+    const deOutros = new Set(room.personagens.filter((p) => p !== bot).flatMap((p) => p.botTracos || []));
+    bot.botTracos = tracosValidos(dados && dados.tracos).filter((t) => !deOutros.has(t)); // nada repetido entre bots
+    garantirTracos(room, bot); // personalidade fixa: escolhida agora e mantida o jogo todo
     vozDoBot(room, bot); // a voz fica fixa: o mesmo bot sempre fala com a mesma voz
     vozReservaDoBot(room, bot);
     if (room.status === 'em_jogo') {
@@ -524,6 +528,7 @@ async function botAgir(codigo) {
       }
       return;
     }
+    garantirTracos(room, bot);
     const c = bot.personagem;
     const habilidades = (HABILIDADES[c.classeId] || [])
       .map((h) => getHabilidade(c.classeId, h.id, room.ambiente))
@@ -587,6 +592,30 @@ const BOT_FALA_CHANCE = Number(process.env.RPG_BOT_FALA_CHANCE) || 0.25; // depo
 const BOT_FALA_CHANCE_TRAVADO = Number(process.env.RPG_BOT_FALA_CHANCE_TRAVADO) || 0.7; // grupo travado
 const RODADAS_TRAVADO = 3;
 
+// Traços de personalidade: só os da lista (sem acento/maiúscula), no máximo 2, sem repetir.
+function tracosValidos(lista) {
+  const nomes = Object.keys(TRACOS_BOT);
+  const achados = (Array.isArray(lista) ? lista : [])
+    .map((t) => nomes.find((n) => semAcento(n) === semAcento(String(t || ''))))
+    .filter(Boolean);
+  return [...new Set(achados)].slice(0, 2);
+}
+
+// Bot sem traços (IA falhou, ou mesa criada antes desta versão): sorteia 2 que ninguém na mesa usa.
+function garantirTracos(room, bot) {
+  const atuais = (bot.botTracos || []).slice(0, 2);
+  if (atuais.length >= 2) return atuais;
+  const usados = new Set(room.personagens.flatMap((p) => p.botTracos || []));
+  let pool = Object.keys(TRACOS_BOT).filter((t) => !usados.has(t) && !atuais.includes(t));
+  if (!pool.length) pool = Object.keys(TRACOS_BOT).filter((t) => !atuais.includes(t));
+  while (atuais.length < 2 && pool.length) {
+    const t = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+    atuais.push(t);
+  }
+  bot.botTracos = atuais;
+  return atuais;
+}
+
 function vozDoBot(room, bot) {
   if (bot.vozId) return bot.vozId;
   const usadas = new Set(room.personagens.map((p) => p.vozId).filter(Boolean));
@@ -618,6 +647,7 @@ async function talvezComentarBot(room, bot) {
   const agora = Date.now();
   if (agora - (room.botFalaEm || 0) < BOT_FALA_INTERVALO_MESA_MS) return;
   if (agora - (bot.botFalaEm || 0) < BOT_FALA_INTERVALO_BOT_MS) return;
+  garantirTracos(room, bot);
   const travado = grupoTravado(room);
   // Uma dica por "travada": depois de dar a dica, só volta a insistir se continuar parado mais um tempo.
   const marcaTravada = travado ? `${room.missao.etapas.findIndex((e) => !e.concluida)}:${Math.floor(((room.rodada || 1) - (room.missao.ultimoAvancoRodada || 1)) / RODADAS_TRAVADO)}` : '';
@@ -2101,6 +2131,7 @@ function roomPublicState(room, { comLog = false } = {}) {
       afastado: p.afastado,
       pulos: p.pulos,
       bot: !!p.bot,
+      tracos: p.bot ? p.botTracos || [] : undefined,
       personagem: p.personagem,
     })),
     logTamanho: room.logPublico.length,

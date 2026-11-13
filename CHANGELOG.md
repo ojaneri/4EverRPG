@@ -2,6 +2,15 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.10.0 — 2026-11-13
+
+### Personalidade dos bots
+- Ao criar cada bot, a IA escolhe 2 traços de uma lista fixa: brincalhão, malvado, benevolente, misterioso, sincero, covarde, corajoso, ganancioso, impulsivo, cauteloso, sarcástico, leal, orgulhoso, curioso, rabugento, otimista e desconfiado.
+- Os traços não se repetem entre bots da mesma mesa e ficam fixos o jogo todo.
+- Eles guiam as ações e os recados de voz (um covarde hesita, um malvado intimida...). O Mestre também os recebe, para reagir nas cenas.
+- Bots criados antes desta versão ganham 2 traços sorteados na primeira jogada.
+- Os traços aparecem no lobby (🎭) e no cartão do grupo.
+
 ## v0.9.0 — 2026-11-13
 
 ### Voz reserva grátis

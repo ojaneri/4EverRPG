@@ -37,7 +37,7 @@ http.createServer((req, res) => {
       const classes = ['arcanista', 'batedor', 'guardiao'];
       const k = (global.botsCriados = (global.botsCriados || 0) + 1) % 3;
       res.setHeader('content-type', 'application/json');
-      return res.end(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ nome: nomes[k], classeId: classes[k], atributos: { forca: 10, agilidade: 11, mente: 13, espirito: 12 }, historia: 'Viajante em busca de respostas.', personalidade: 'Curioso e leal.' }) }] }));
+      return res.end(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ nome: nomes[k], classeId: classes[k], atributos: { forca: 10, agilidade: 11, mente: 13, espirito: 12 }, historia: 'Viajante em busca de respostas.', personalidade: 'Curioso e leal.', tracos: [['Brincalhao', 'covarde'], ['malvado', 'inventado'], ['misterioso', 'sincero']][k] }) }] }));
     }
     if (/recado de voz/.test(sys)) {
       const quem = (sys.match(/Você é ([^,]+),/) || [])[1] || 'Bot';

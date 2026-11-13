@@ -408,6 +408,9 @@ async function fase1() {
     await sleep(600);
     const bots = () => B.estado.personagens.filter((p) => p.bot);
     ok(bots().every((p) => p.personagem) && new Set(bots().map((p) => p.personagem.nome)).size === 2, `a IA criou os personagens dos bots (${bots().map((p) => `${p.personagem?.nome} — ${p.personagem?.classeNome}`).join('; ')})`);
+    const tr = bots().map((p) => p.tracos);
+    ok(tr.every((t) => Array.isArray(t) && t.length === 2) && new Set(tr.flat()).size === tr.flat().length && tr.flat().every((t) => ['brincalhão', 'covarde', 'malvado', 'misterioso', 'sincero', 'benevolente', 'corajoso', 'ganancioso', 'impulsivo', 'cauteloso', 'sarcástico', 'leal', 'orgulhoso', 'curioso', 'rabugento', 'otimista', 'desconfiado'].includes(t)),
+      `personalidade dos bots escolhida da lista (sem acento/maiúscula errados e sem traço inventado): ${tr.map((t) => t.join(' + ')).join(' | ')}`);
     const naoHostCfg = await emit(B, 'escolherPersonagem', { codigo: cb, personagem: personagem('Beta', 'guerreiro') });
     ok(naoHostCfg.ok, 'humano escolhe personagem na mesa com bots');
     ok((await emit(B, 'iniciarAventura', { codigo: cb })).ok, 'aventura com bots começa');
@@ -449,6 +452,7 @@ async function fase1() {
       if (quem) (porBot2[quem] = porBot2[quem] || new Set()).add(v.voz);
     }
     ok(recados.length >= 4 && Object.values(porBot2).every((c) => c.size === 1), `nos recados seguintes, cada bot manteve a mesma voz (${recados.length} recados)`);
+    ok(JSON.stringify(bots().map((p) => p.tracos)) === JSON.stringify(tr), 'a personalidade dos bots se mantém ao longo do jogo');
     // Sem humanos na mesa, os bots param (sem gastar IA à toa).
     await emit(B, 'sairDaSala', { codigo: cb });
     const B2 = await conectar(r2.json.token);

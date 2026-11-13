@@ -66,6 +66,7 @@ function linhaFicha(p) {
     `\n  Atributos: Força ${c.atributos.forca}, Agilidade ${c.atributos.agilidade}, ` +
     `Mente ${c.atributos.mente}, Espírito ${c.atributos.espirito}\n` +
     `  PV: ${c.hp.atual}/${c.hp.max} | ${c.recurso.nome}: ${c.recurso.atual}/${c.recurso.max}\n` +
+    (p.bot && p.botTracos && p.botTracos.length ? `  Personalidade (jogador bot, controlado pela IA): ${p.botTracos.join(', ')} — reaja a ela nas cenas e nos NPCs.\n` : '') +
     (() => {
       const arma = (c.inventario || []).find((i) => i.tipo === 'arma' && i.equipado);
       return arma ? `  Arma empunhada: ${arma.nome}\n` : '';
@@ -322,6 +323,28 @@ async function resumirHistorico({ resumoAnterior, mensagens, tema }) {
 // Bots: jogadores controlados pela IA (não pelo Mestre). Chamadas curtas, com
 // resposta em JSON, para criar o personagem e decidir a ação na vez do bot.
 // ---------------------------------------------------------------------------
+// Traços de personalidade dos bots: escolhidos na criação e mantidos o jogo todo.
+const TRACOS_BOT = {
+  'brincalhão': 'faz piadas e trocadilhos, provoca os amigos e leva tudo com bom humor, até o perigo',
+  'malvado': 'cruel e interesseiro: ameaça e trapaceia NPCs, gosta de intimidar e tira vantagem (sem trair o grupo a ponto de travar a missão)',
+  'benevolente': 'bondoso: protege os fracos, ajuda NPCs, cura e perdoa, prefere a paz',
+  'misterioso': 'fala pouco e por enigmas, guarda segredos do passado, observa antes de agir',
+  'sincero': 'diz exatamente o que pensa, sem rodeios, mesmo quando é inconveniente',
+  'covarde': 'evita riscos: hesita, prefere fugir, se esconder ou negociar, e reclama do perigo',
+  'corajoso': 'é o primeiro a encarar o perigo e a defender os companheiros',
+  'ganancioso': 'de olho em moedas, tesouros e recompensas; negocia tudo',
+  'impulsivo': 'age antes de pensar, abre portas e mexe no que não devia',
+  'cauteloso': 'analisa, procura armadilhas e planeja antes de agir',
+  'sarcástico': 'responde com ironia e comentários ácidos',
+  'leal': 'nunca abandona um companheiro e cumpre o que promete',
+  'orgulhoso': 'se acha o melhor, não aceita ser contrariado e quer a glória',
+  'curioso': 'quer saber de tudo, faz perguntas, investiga cada detalhe',
+  'rabugento': 'reclama de tudo, desconfia de planos, mas acaba ajudando',
+  'otimista': 'sempre acha que vai dar certo e anima o grupo',
+  'desconfiado': 'suspeita de NPCs e de propostas fáceis, procura a pegadinha',
+};
+const descreverTracos = (tracos) => (tracos || []).map((t) => `${t[0].toUpperCase()}${t.slice(1)} (${TRACOS_BOT[t] || ''})`).join('; ');
+
 function extrairJson(texto) {
   const t = String(texto || '');
   const ini = t.indexOf('{');
@@ -335,7 +358,7 @@ function extrairJson(texto) {
 }
 
 // Cria o personagem de um bot: nome, classe, atributos, história e personalidade.
-async function criarPersonagemBot({ tema, aventuraTitulo, ambiente, classes, nomesOcupados, classesOcupadas }) {
+async function criarPersonagemBot({ tema, aventuraTitulo, ambiente, classes, nomesOcupados, classesOcupadas, tracosOcupados = [] }) {
   const amb = getAmbiente(ambiente);
   const listaClasses = classes.map((c) => `- ${c.id}: ${c.nome} — ${c.descricao}`).join('\n');
   const system =
@@ -349,11 +372,14 @@ async function criarPersonagemBot({ tema, aventuraTitulo, ambiente, classes, nom
     `Nomes já usados (não repita): ${nomesOcupados.join(', ') || 'nenhum'}.\n\n` +
     'Atributos: forca, agilidade, mente, espirito. Todos começam em 10; distribua EXATAMENTE 6 pontos extras ' +
     '(cada atributo entre 8 e 16, e a soma dos quatro deve ser 46), favorecendo o atributo principal da classe.\n\n' +
-    'Crie um personagem interessante e coerente com a aventura e o ambiente. Formato:\n' +
+    `Personalidade: escolha 2 traços DESTA LISTA (use as palavras exatas): ${Object.keys(TRACOS_BOT).join(', ')}. ` +
+    `Evite os traços já usados na mesa (${tracosOcupados.join(', ') || 'nenhum'}) para os bots ficarem diferentes entre si; ` +
+    'combinações com contraste rendem boas cenas (ex.: corajoso + rabugento, covarde + ganancioso).\n\n' +
+    'Crie um personagem interessante e coerente com a aventura, o ambiente e os traços. Formato:\n' +
     '{"nome":"(nome próprio, até 20 letras, combinando com o ambiente)","classeId":"(id)",' +
     '"atributos":{"forca":10,"agilidade":10,"mente":10,"espirito":10},' +
     '"historia":"(1 ou 2 frases: quem é e o que busca)","personalidade":"(1 frase: jeito de agir e falar)",' +
-    '"genero":"(masculino ou feminino)"}';
+    '"genero":"(masculino ou feminino)","tracos":["traço 1","traço 2"]}';
   const texto = await chamarIA({ system, messages: [{ role: 'user', content: conteudo }], maxTokens: 2500 });
   return extrairJson(texto);
 }
@@ -370,12 +396,13 @@ async function decidirAcaoBot({ room, bot, cenaRecente, habilidades, arma }) {
   const system =
     `Você é um JOGADOR (não o Mestre) numa mesa de RPG online, controlando o personagem ${c.nome}. ` +
     'Jogue como um bom jogador humano: coopere com o grupo, avance rumo ao objetivo da missão, ' +
-    'seja criativo e coerente com a personalidade, e reaja ao que o Mestre acabou de narrar. ' +
+    'seja criativo, reaja ao que o Mestre acabou de narrar e INTERPRETE COM FORÇA a personalidade fixa do personagem ' +
+    '(um covarde hesita e foge, um malvado intimida, um brincalhão faz piada...), sem deixar de colaborar para a história andar. ' +
     'Nunca narre resultados nem decida o que acontece — só diga o que o personagem TENTA fazer ou fala. ' +
     'Responda SOMENTE com JSON válido.';
   const conteudo =
     `SEU PERSONAGEM: ${c.nome}, ${c.classeNome} nível ${c.nivel}. ${c.historia || ''}\n` +
-    `Personalidade: ${bot.botPersona || 'corajoso e prestativo'}\n` +
+    `PERSONALIDADE FIXA — mantenha SEMPRE nas ações e falas: ${descreverTracos(bot.botTracos) || 'corajoso e prestativo'}. ${bot.botPersona || ''}\n` +
     `PV ${c.hp.atual}/${c.hp.max} · ${c.recurso.nome} ${c.recurso.atual}/${c.recurso.max} · moedas ${c.moedas || 0}\n` +
     `Inventário: ${c.inventario.map((i) => i.nome + (i.equipado ? ' (equipado)' : '')).join(', ') || 'vazio'}\n` +
     `Arma em mãos: ${arma ? arma.nome : 'nenhuma'}\n` +
@@ -403,7 +430,7 @@ async function comentarioBot({ room, bot, cenaRecente, travado }) {
     'para os amigos de mesa: 1 a 3 frases, no máximo 220 caracteres, sem emojis, sem markdown, sem aspas. ' +
     'Não narre resultados nem invente fatos que o Mestre não contou. Responda só com a fala.';
   const conteudo =
-    `Sua personalidade: ${bot.botPersona || 'animado e prestativo'}\n` +
+    `SUA PERSONALIDADE FIXA (o recado precisa soar assim): ${descreverTracos(bot.botTracos) || 'animado e prestativo'}. ${bot.botPersona || ''}\n` +
     `Companheiros: ${outros.join(', ') || 'ninguém'}\n` +
     `Missão: ${room.missao ? room.missao.objetivo : '(livre)'}\n` +
     `Etapa atual: ${prox ? prox.texto : 'desfecho final'}\n\n` +
@@ -417,4 +444,4 @@ async function comentarioBot({ room, bot, cenaRecente, travado }) {
   return String(texto || '').replace(/^["“']|["”']$/g, '').replace(/[*_#`]/g, '').trim().slice(0, 300);
 }
 
-module.exports = { callMaster, resumirHistorico, buildSystemPrompt, MasterUnavailableError, criarPersonagemBot, decidirAcaoBot, comentarioBot };
+module.exports = { callMaster, resumirHistorico, buildSystemPrompt, MasterUnavailableError, criarPersonagemBot, decidirAcaoBot, comentarioBot, TRACOS_BOT };
