@@ -2351,7 +2351,7 @@ function renderChatLateral() {
     const direcao = privado && m.autor === meuNome ? ` → ${m.para}` : '';
     const div = document.createElement('div');
     div.className = `msg-chat ${privado ? 'privado' : ''}`;
-    div.innerHTML = `<div class="autor-chat">${esc(m.autor + direcao)} ${privado ? '<span class="tag-privado">(privado)</span>' : ''}</div>`;
+    div.innerHTML = `<div class="autor-chat">${m.bot ? '🤖 ' : ''}${esc(m.autor + direcao)} ${privado ? '<span class="tag-privado">(privado)</span>' : ''}</div>`;
 
     if (m.tipo === 'audio') {
       const linha = document.createElement('div');
@@ -2370,6 +2370,12 @@ function renderChatLateral() {
       audioEl.addEventListener('ended', proximoDaFila);
       linha.append('🎙️ ', audioEl);
       div.appendChild(linha);
+      if (m.legenda) {
+        const leg = document.createElement('div');
+        leg.className = 'legenda-audio';
+        leg.textContent = m.legenda; // transcrição (recados dos bots)
+        div.appendChild(leg);
+      }
       if (autoplayAtivo && m.autor !== meuNome) tocarOuEnfileirar(() => audioEl.play().catch(proximoDaFila));
     } else {
       const texto = document.createElement('div');

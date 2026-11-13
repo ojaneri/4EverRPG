@@ -2,6 +2,16 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.8.0 — 2026-11-13
+
+### Bots que conversam
+- De vez em quando, depois de jogar, um bot grava um recado de voz no bate-papo: um comentário curto, criado pela IA, sobre o momento do jogo e o próximo passo, no jeito do personagem. A transcrição aparece como legenda do áudio.
+- Grupo travado: quando a mesa passa 3 rodadas ou mais sem avançar na missão, a chance de recado sobe e a fala vira uma dica concreta para destravar a etapa (pista esquecida, NPC, lugar, outra abordagem). É uma dica por travada.
+- Voz fixa por bot: cada bot recebe uma voz do ElevenLabs ao ser criado, de acordo com o gênero do personagem e diferente dos outros bots da mesa, e fala sempre com ela. As vozes brasileiras têm prioridade. A do narrador e vozes pessoais ficam de fora.
+- Sem exagero: no máximo 1 recado a cada 2 min na mesa e 1 a cada 5 min por bot (configurável no `.env`).
+- Sem créditos de voz, ou com o áudio do chat desligado pelo anfitrião, o recado vai como texto.
+- O TTS aceita voz por fala e `ELEVENLABS_BASE_URL` (para testes). O Mestre simulado imita o ElevenLabs e os testes conferem voz fixa e diferente por bot.
+
 ## v0.7.0 — 2026-11-13
 
 ### Mesa

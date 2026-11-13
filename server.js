@@ -180,6 +180,13 @@ gameManager.eventos.on('dado', (room, rolagem) => io.to(room.codigo).emit('dadoR
 gameManager.eventos.on('saque', (room, saque) => io.to(room.codigo).emit('saqueAberto', saque));
 // Avisos rápidos para toda a mesa (dar/descartar itens).
 gameManager.eventos.on('aviso', (room, aviso) => io.to(room.codigo).emit('avisoMesa', aviso));
+// Recado de um bot no bate-papo: áudio (com a transcrição como legenda) ou texto.
+gameManager.eventos.on('chatBot', (room, { autor, texto, audio }) => {
+  const base = { autor, bot: true, escopo: 'geral', ts: Date.now() };
+  io.to(room.codigo).emit('chatMensagem', audio
+    ? { ...base, tipo: 'audio', mime: 'audio/mpeg', dados: audio, legenda: texto }
+    : { ...base, tipo: 'texto', texto });
+});
 // Etapa da missão concluída: comemoração para a mesa.
 gameManager.eventos.on('etapa', (room, etapa) => io.to(room.codigo).emit('etapaConcluida', etapa));
 

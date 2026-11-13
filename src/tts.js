@@ -39,9 +39,10 @@ function limparParaFala(texto) {
     .slice(0, 2500);
 }
 
-async function gerar(texto) {
-  const { apiKey, voiceId, modelId } = config();
-  const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+async function gerar(texto, voiceId) {
+  const { apiKey, modelId } = config();
+  const base = (process.env.ELEVENLABS_BASE_URL || 'https://api.elevenlabs.io').replace(/\/+$/, '');
+  const res = await fetch(`${base}/v1/text-to-speech/${voiceId}`, {
     method: 'POST',
     headers: {
       'xi-api-key': apiKey,
@@ -61,12 +62,14 @@ async function gerar(texto) {
   return Buffer.from(await res.arrayBuffer());
 }
 
-async function sintetizar(textoBruto) {
+// `voz`: id de voz do ElevenLabs (bots); sem ela, a voz do narrador.
+async function sintetizar(textoBruto, voz) {
   if (!disponivel()) throw new Error('TTS não configurado (ELEVENLABS_API_KEY ausente).');
   const texto = limparParaFala(textoBruto);
   if (!texto) throw new Error('Texto vazio.');
 
-  const { voiceId, modelId } = config();
+  const { modelId } = config();
+  const voiceId = voz || config().voiceId;
   const chave = crypto.createHash('sha1').update(`${voiceId}|${modelId}|${texto}`).digest('hex');
   if (cache.has(chave)) return cache.get(chave);
   const arquivo = path.join(PASTA_CACHE, `${chave}.mp3`);
@@ -78,7 +81,7 @@ async function sintetizar(textoBruto) {
   } catch { /* ainda não existe: gera */ }
 
   // Guarda a Promise para que pedidos simultâneos da mesma fala esperem a mesma geração.
-  const promessa = gerar(texto).then(
+  const promessa = gerar(texto, voiceId).then(
     (buf) => {
       cache.set(chave, buf);
       fs.writeFile(arquivo, buf, (e) => e && console.error('[tts] falha ao salvar cache:', e.message));

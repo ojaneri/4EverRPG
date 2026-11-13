@@ -413,6 +413,8 @@ async function fase1() {
     ok((await emit(B, 'iniciarAventura', { codigo: cb })).ok, 'aventura com bots começa');
     await sleep(300);
     ok(B.estado.turnoAtual === 'Beta', 'o humano joga primeiro');
+    const recados = [];
+    B.on('chatMensagem', (m) => m.bot && recados.push(m));
     ok((await emit(B, 'acaoJogador', { codigo: cb, texto: 'Eu sigo pela estrada' })).ok, 'humano age; a vez vai para os bots');
     // Bots agem sozinhos: um ataca (o Mestre pede teste e o bot rola), o outro examina.
     for (let i = 0; i < 20 && B.estado.turnoAtual === 'Beta'; i++) await sleep(100); // a vez sai do humano...
@@ -423,6 +425,30 @@ async function fase1() {
     ok(acoesBots.length === 2, `os 2 bots agiram na vez deles (${acoesBots.map((m) => `${m.autor}: ${m.texto}`).join(' | ')})`);
     ok(logB.some((m) => m.tipo === 'sistema' && /rolou/.test(m.texto) && nomesBots.some((n) => m.texto.includes(n))), 'bot rolou o dado sozinho quando o Mestre pediu teste');
     ok(B.estado.turnoAtual === 'Beta' && !B.estado.pendingTest, 'depois dos bots, a vez volta para o humano');
+    // Recados de voz dos bots no bate-papo (chance forçada a 100% no teste).
+    for (let i = 0; i < 30 && recados.length < 2; i++) await sleep(100);
+    ok(recados.length >= 2 && recados.every((m) => m.tipo === 'audio' && m.mime === 'audio/mpeg' && m.legenda && m.dados), `bots mandaram recado de voz no chat, com legenda (${recados.map((m) => `${m.autor}: ${m.legenda}`).join(' | ')})`);
+    const vozes = await (await fetch(URL_BASE.replace(':3095', ':3096') + '__vozes')).json();
+    const porBot = {};
+    for (const v of vozes) {
+      const quem = (v.texto.match(/aqui é ([^:]+):/) || [])[1];
+      if (quem) (porBot[quem] = porBot[quem] || new Set()).add(v.voz);
+    }
+    const conjuntos = Object.values(porBot);
+    ok(conjuntos.length === 2 && conjuntos.every((c) => c.size === 1) && new Set(conjuntos.map((c) => [...c][0])).size === 2,
+      `cada bot tem uma voz fixa e diferente (${Object.entries(porBot).map(([n, c]) => `${n}: ${[...c].join('/')}`).join('; ')})`);
+    // Segunda rodada: os mesmos bots falam de novo com a mesma voz.
+    ok((await emit(B, 'acaoJogador', { codigo: cb, texto: 'Eu continuo andando' })).ok, 'humano age de novo');
+    for (let i = 0; i < 20 && B.estado.turnoAtual === 'Beta'; i++) await sleep(100);
+    for (let i = 0; i < 60 && (B.estado.turnoAtual !== 'Beta' || B.estado.pendingTest || B.estado.processando); i++) await sleep(200);
+    for (let i = 0; i < 30 && recados.length < 4; i++) await sleep(100);
+    const vozes2 = await (await fetch(URL_BASE.replace(':3095', ':3096') + '__vozes')).json();
+    const porBot2 = {};
+    for (const v of vozes2) {
+      const quem = (v.texto.match(/aqui é ([^:]+):/) || [])[1];
+      if (quem) (porBot2[quem] = porBot2[quem] || new Set()).add(v.voz);
+    }
+    ok(recados.length >= 4 && Object.values(porBot2).every((c) => c.size === 1), `nos recados seguintes, cada bot manteve a mesma voz (${recados.length} recados)`);
     // Sem humanos na mesa, os bots param (sem gastar IA à toa).
     await emit(B, 'sairDaSala', { codigo: cb });
     const B2 = await conectar(r2.json.token);

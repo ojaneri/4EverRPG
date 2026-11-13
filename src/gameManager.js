@@ -36,7 +36,8 @@ const {
   CLASSES,
   HABILIDADES,
 } = require('./characterSystem');
-const { callMaster, resumirHistorico, criarPersonagemBot, decidirAcaoBot } = require('./aiMaster');
+const { callMaster, resumirHistorico, criarPersonagemBot, decidirAcaoBot, comentarioBot } = require('./aiMaster');
+const tts = require('./tts');
 const storage = require('./storage');
 const { MUSICAS, MUSICA_POR_CLIMA } = require('./musicas');
 const imagens = require('./imagens');
@@ -459,6 +460,8 @@ async function criarPersonagensBots(room) {
     }
     bot.personagem = personagem;
     bot.botPersona = sanitizar(dados && dados.personalidade, 200);
+    bot.botGenero = /^f/i.test(String((dados && dados.genero) || '')) ? 'feminino' : /^m/i.test(String((dados && dados.genero) || '')) ? 'masculino' : '';
+    vozDoBot(room, bot); // a voz fica fixa: o mesmo bot sempre fala com a mesma voz
     if (room.status === 'em_jogo') {
       logSistema(room, `🤖 ${personagem.nome} (${personagem.classeNome}, bot) entrou na aventura!`);
       room.notasPendentes.push(`${personagem.nome}, ${personagem.classeNome}, acabou de se juntar ao grupo — apresente-o na cena.`);
@@ -538,6 +541,7 @@ async function botAgir(codigo) {
     const armaUid = decisao && decisao.atacar === true && arma && !habilidadeId ? arma.uid : undefined;
     try {
       await sendPlayerAction({ codigo, userId: bot.userId, texto, habilidadeId, armaUid });
+      talvezComentarBot(room, bot).catch((e) => console.error(`[bot ${codigo}] recado:`, e.message));
     } catch (e) {
       // Habilidade/arma recusada: tenta só com o texto.
       if ((habilidadeId || armaUid) && atorAtual(room) === bot && !room.processando) {
@@ -555,6 +559,74 @@ async function botAgir(codigo) {
     botOcupado.delete(codigo);
     agendarBot(room);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Recados de voz dos bots no bate-papo: de vez em quando (e com mais vontade
+// quando o grupo está travado numa etapa), o bot grava um comentário curto
+// sobre o jogo com dicas do próximo passo. Cada bot tem uma voz fixa.
+// ---------------------------------------------------------------------------
+// Vozes do ElevenLabs: primeiro as brasileiras, depois as multilíngues padrão.
+// (Fora: a do narrador e vozes pessoais/clonadas.) Dá para trocar no .env.
+const lista = (env, padrao) => (process.env[env] ? process.env[env].split(',').map((x) => x.trim()).filter(Boolean) : padrao);
+const VOZES_BOT = {
+  masculino: lista('RPG_BOT_VOZES_M', ['BjWEjIzWMha6iBp2DkXb', 'ETf5cmpNIbpSiXmBaR2m', 'SOYHLrjzK2X1ezoPC6cr', 'N2lVS1w4EtoT3dr4eOWO', 'IKne3meq5aSn9XLyUdCD']),
+  feminino: lista('RPG_BOT_VOZES_F', ['bMKc4ZGchGYTMCov8eMG', 'cgSgspJ2msm6clMCkdW9', 'FGY2WhTYpPnrIDTdsKH5', 'EXAVITQu4vr4xnSDxMaL', 'pFZP5JQG7iQjIQuC4Bku']),
+};
+const BOT_FALA_INTERVALO_MESA_MS = Number(process.env.RPG_BOT_FALA_MESA_MS) || 2 * 60 * 1000; // entre recados de qualquer bot
+const BOT_FALA_INTERVALO_BOT_MS = Number(process.env.RPG_BOT_FALA_BOT_MS) || 5 * 60 * 1000; // entre recados do mesmo bot
+const BOT_FALA_CHANCE = Number(process.env.RPG_BOT_FALA_CHANCE) || 0.25; // depois de uma jogada normal
+const BOT_FALA_CHANCE_TRAVADO = Number(process.env.RPG_BOT_FALA_CHANCE_TRAVADO) || 0.7; // grupo travado
+const RODADAS_TRAVADO = 3;
+
+function vozDoBot(room, bot) {
+  if (bot.vozId) return bot.vozId;
+  const usadas = new Set(room.personagens.map((p) => p.vozId).filter(Boolean));
+  const idx = room.personagens.filter((p) => p.bot).indexOf(bot);
+  const genero = bot.botGenero || (idx % 2 ? 'feminino' : 'masculino');
+  const pool = [...VOZES_BOT[genero], ...VOZES_BOT[genero === 'feminino' ? 'masculino' : 'feminino']];
+  bot.vozId = pool.find((v) => !usadas.has(v)) || pool[0];
+  return bot.vozId;
+}
+
+function grupoTravado(room) {
+  if (!room.missao || !room.missao.etapas.some((e) => !e.concluida)) return false;
+  return (room.rodada || 1) - (room.missao.ultimoAvancoRodada || 1) >= RODADAS_TRAVADO;
+}
+
+async function talvezComentarBot(room, bot) {
+  if (room.status !== 'em_jogo' || !humanoOnline(room) || !bot.personagem || bot.personagem.morto) return;
+  const agora = Date.now();
+  if (agora - (room.botFalaEm || 0) < BOT_FALA_INTERVALO_MESA_MS) return;
+  if (agora - (bot.botFalaEm || 0) < BOT_FALA_INTERVALO_BOT_MS) return;
+  const travado = grupoTravado(room);
+  // Uma dica por "travada": depois de dar a dica, só volta a insistir se continuar parado mais um tempo.
+  const marcaTravada = travado ? `${room.missao.etapas.findIndex((e) => !e.concluida)}:${Math.floor(((room.rodada || 1) - (room.missao.ultimoAvancoRodada || 1)) / RODADAS_TRAVADO)}` : '';
+  const chance = travado && room.botDicaMarca !== marcaTravada ? BOT_FALA_CHANCE_TRAVADO : BOT_FALA_CHANCE;
+  if (Math.random() >= chance) return;
+  room.botFalaEm = agora; // reserva a vez de falar (evita dois bots ao mesmo tempo)
+  bot.botFalaEm = agora;
+  if (travado) room.botDicaMarca = marcaTravada;
+  let texto;
+  try {
+    texto = await comentarioBot({ room, bot, cenaRecente: cenaRecenteParaBot(room), travado });
+  } catch (e) {
+    console.warn(`[bot ${room.codigo}] recado não gerado: ${e.message}`);
+    return;
+  }
+  if (!texto || !rooms.has(room.codigo)) return;
+  const autor = bot.personagem.nome;
+  let audio = null;
+  if (cfg(room).audioChat !== false && tts.disponivel()) {
+    try {
+      audio = await tts.sintetizar(texto, vozDoBot(room, bot));
+    } catch (e) {
+      console.warn(`[bot ${room.codigo}] TTS falhou (${e.message}); vai como texto.`);
+    }
+  }
+  if (!audio) addChatGeral(room, autor, texto); // sem áudio: recado em texto (fica no histórico do chat)
+  eventos.emit('chatBot', room, { autor, texto, audio });
+  tocar(room);
 }
 
 function setCharacter({ codigo, userId, dados }) {

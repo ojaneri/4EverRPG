@@ -352,7 +352,8 @@ async function criarPersonagemBot({ tema, aventuraTitulo, ambiente, classes, nom
     'Crie um personagem interessante e coerente com a aventura e o ambiente. Formato:\n' +
     '{"nome":"(nome próprio, até 20 letras, combinando com o ambiente)","classeId":"(id)",' +
     '"atributos":{"forca":10,"agilidade":10,"mente":10,"espirito":10},' +
-    '"historia":"(1 ou 2 frases: quem é e o que busca)","personalidade":"(1 frase: jeito de agir e falar)"}';
+    '"historia":"(1 ou 2 frases: quem é e o que busca)","personalidade":"(1 frase: jeito de agir e falar)",' +
+    '"genero":"(masculino ou feminino)"}';
   const texto = await chamarIA({ system, messages: [{ role: 'user', content: conteudo }], maxTokens: 2500 });
   return extrairJson(texto);
 }
@@ -390,4 +391,30 @@ async function decidirAcaoBot({ room, bot, cenaRecente, habilidades, arma }) {
   return extrairJson(texto);
 }
 
-module.exports = { callMaster, resumirHistorico, buildSystemPrompt, MasterUnavailableError, criarPersonagemBot, decidirAcaoBot };
+// Recado de voz do bot no bate-papo: comentário curto sobre o jogo e o próximo passo.
+// `travado`: o grupo está há rodadas sem avançar — a fala sugere como destravar a etapa.
+async function comentarioBot({ room, bot, cenaRecente, travado }) {
+  const c = bot.personagem;
+  const prox = room.missao ? room.missao.etapas.find((e) => !e.concluida) : null;
+  const outros = room.personagens.filter((p) => p !== bot && p.personagem && !p.personagem.morto).map((p) => p.personagem.nome);
+  const system =
+    `Você é ${c.nome}, ${c.classeNome}, um JOGADOR numa mesa de RPG online, mandando um recado de voz rápido ` +
+    'no bate-papo do grupo (fora da narração). Fale em português do Brasil, informal e natural, como quem grava um áudio ' +
+    'para os amigos de mesa: 1 a 3 frases, no máximo 220 caracteres, sem emojis, sem markdown, sem aspas. ' +
+    'Não narre resultados nem invente fatos que o Mestre não contou. Responda só com a fala.';
+  const conteudo =
+    `Sua personalidade: ${bot.botPersona || 'animado e prestativo'}\n` +
+    `Companheiros: ${outros.join(', ') || 'ninguém'}\n` +
+    `Missão: ${room.missao ? room.missao.objetivo : '(livre)'}\n` +
+    `Etapa atual: ${prox ? prox.texto : 'desfecho final'}\n\n` +
+    `O QUE ACONTECEU POR ÚLTIMO:\n${cenaRecente}\n\n` +
+    (travado
+      ? 'O GRUPO ESTÁ TRAVADO há várias rodadas sem avançar nessa etapa. Dê uma recomendação CONCRETA para destravar: ' +
+        'uma pista que ficou para trás, um NPC para procurar, um lugar para explorar ou uma ação diferente para tentar, ' +
+        'pensando no que a etapa pede. Pode chamar um companheiro pelo nome.'
+      : 'Comente o momento do jogo (algo que te marcou, uma dúvida, uma preocupação) e sugira o próximo passo do grupo.');
+  const texto = await chamarIA({ system, messages: [{ role: 'user', content: conteudo }], maxTokens: 1500 });
+  return String(texto || '').replace(/^["“']|["”']$/g, '').replace(/[*_#`]/g, '').trim().slice(0, 300);
+}
+
+module.exports = { callMaster, resumirHistorico, buildSystemPrompt, MasterUnavailableError, criarPersonagemBot, decidirAcaoBot, comentarioBot };

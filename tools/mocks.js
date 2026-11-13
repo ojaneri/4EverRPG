@@ -11,6 +11,17 @@ http.createServer((req, res) => {
   req.on('data', (c) => (corpo += c));
   req.on('end', () => {
     chamadas++;
+    // ElevenLabs simulado: guarda qual voz falou o quê (para conferir a voz fixa de cada bot).
+    if (req.url.startsWith('/__vozes')) {
+      res.setHeader('content-type', 'application/json');
+      return res.end(JSON.stringify(global.vozes || []));
+    }
+    const tts = req.url.match(/\/v1\/text-to-speech\/([^/?]+)/);
+    if (tts) {
+      (global.vozes = global.vozes || []).push({ voz: tts[1], texto: JSON.parse(corpo || '{}').text });
+      res.setHeader('content-type', 'audio/mpeg');
+      return res.end(Buffer.from('ID3fake-mp3-do-mock'));
+    }
     if (req.url.includes('/images/generations')) {
       // Gerador de imagens simulado: devolve um PNG mínimo.
       res.setHeader('content-type', 'application/json');
@@ -27,6 +38,11 @@ http.createServer((req, res) => {
       const k = (global.botsCriados = (global.botsCriados || 0) + 1) % 3;
       res.setHeader('content-type', 'application/json');
       return res.end(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ nome: nomes[k], classeId: classes[k], atributos: { forca: 10, agilidade: 11, mente: 13, espirito: 12 }, historia: 'Viajante em busca de respostas.', personalidade: 'Curioso e leal.' }) }] }));
+    }
+    if (/recado de voz/.test(sys)) {
+      const quem = (sys.match(/Você é ([^,]+),/) || [])[1] || 'Bot';
+      res.setHeader('content-type', 'application/json');
+      return res.end(JSON.stringify({ content: [{ type: 'text', text: `"Pessoal, aqui é ${quem}: acho que a gente devia falar com a Dona Yvete antes de seguir."` }] }));
     }
     if (/Você é um JOGADOR/.test(sys)) {
       const n = (global.botsAcoes = (global.botsAcoes || 0) + 1);

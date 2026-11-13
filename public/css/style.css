@@ -1097,3 +1097,5 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .linha-bots select { max-width: 200px; }
 .linha-bots small { font-size: 0.78rem; }
 .selo-bot { background: #23324a; color: #9cc7ff; border: 1px solid #4f8fd9; }
+
+.legenda-audio { font-size: 0.75rem; color: var(--texto-fraco); font-style: italic; margin-top: 3px; line-height: 1.35; }
