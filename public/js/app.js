@@ -430,6 +430,7 @@ function selecionarAventura(id) {
   estado.aventuraId = id;
   document.querySelectorAll('.cartao-aventura').forEach((el) => el.classList.toggle('selecionado', el.dataset.aventuraId === id));
   $('rotulo-tema-personalizado').classList.toggle('escondido', id !== 'personalizada');
+  $('dica-modelo').classList.toggle('escondido', id !== 'personalizada');
 }
 
 function renderGradeClasses() {

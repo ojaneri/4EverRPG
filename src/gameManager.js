@@ -65,6 +65,16 @@ const resumindo = new Set(); // codigos com resumo em andamento
 const semAcento = (s) =>
   String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
+// Tema da aventura personalizada: linhas que começam com # são dicas do modelo
+// (public/modelo-aventura.txt) e não vão para o Mestre.
+function limparTema(t) {
+  return String(t || '')
+    .split(/\r?\n/)
+    .filter((l) => !/^\s*#/.test(l))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n');
+}
+
 function sanitizar(s, max) {
   return String(s || '').replace(/[\u0000-\u0009\u000b-\u001f<>]/g, '').trim().slice(0, max);
 }
@@ -265,7 +275,7 @@ function createRoom({ usuario, socketId, tema, aventuraTitulo, publica, missao, 
 
   const room = {
     codigo,
-    tema: sanitizar(tema, 2000),
+    tema: sanitizar(limparTema(tema), 4000),
     aventuraTitulo: aventuraTitulo || null,
     ambiente: getAmbiente(ambiente).id, // figurino: fantasia (padrão) ou cyber
     publica: publica === true, // padrão: privado
@@ -1894,6 +1904,7 @@ setInterval(() => {
 carregarDoDisco();
 
 module.exports = {
+  _limparTema: limparTema,
   desistirTeste,
   eventos,
   TEMPO_TURNO_MS,

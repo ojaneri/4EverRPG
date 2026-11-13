@@ -292,6 +292,16 @@ async function fase1() {
   const minhas = await get('api/minhas-partidas', r1.json.token);
   ok(minhas.json.jogos.some((j) => j.codigo === codigo && j.status === 'encerrada'), 'aparece em Minhas Partidas');
 
+  // --- Modelo de aventura (.txt) colado na Personalizada ---
+  {
+    const modelo = fs.readFileSync(require('path').join(__dirname, '..', 'public', 'modelo-aventura.txt'), 'utf8');
+    const m = await emit(B, 'criarJogo', { tema: modelo });
+    ok(m.ok && m.state.tema.startsWith('-- TÍTULO') && !/^\s*#/m.test(m.state.tema) && m.state.tema.includes('-- MISSÃO'), `modelo .txt colado: dicas (#) removidas, seções mantidas (${m.state.tema.length} caracteres)`);
+    const servido = await fetch(URL_BASE + 'modelo-aventura.txt');
+    ok(servido.ok && /text\/plain/.test(servido.headers.get('content-type')) && (await servido.text()).includes('-- MISSÃO'), 'modelo .txt disponível para download');
+    await emit(B, 'sairDaSala', { codigo: m.state.codigo });
+  }
+
   // --- Missão (aventura personalizada: o Mestre define) ---
   const etapasAvisadas = [];
   B.on('etapaConcluida', (e) => etapasAvisadas.push(e.numero));

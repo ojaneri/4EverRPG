@@ -1,0 +1,68 @@
+# =====================================================================
+#  4EVER — MODELO DE AVENTURA PERSONALIZADA
+# =====================================================================
+#  Como usar:
+#  1. Troque o exemplo abaixo pela sua história (ou só ajuste o que quiser).
+#  2. Copie TUDO e cole em "Criar um novo jogo" → "Personalizada".
+#     As linhas que começam com # (como estas) são dicas: o jogo ignora
+#     sozinho, não precisa apagar.
+#  3. Mantenha os títulos que começam com "--". O Mestre usa cada um deles
+#     para montar a aventura, e a seção "-- MISSÃO" vira o painel Objetivos.
+#
+#  O exemplo é uma aventura completa e original ("O Relógio de Kael-Dur"),
+#  no mesmo formato dos roteiros prontos do 4Ever. Use-o de molde.
+#  Limite: cerca de 4.000 caracteres sem contar as linhas de dica (#).
+# =====================================================================
+
+-- TÍTULO
+O Relógio de Kael-Dur
+
+-- CENÁRIO
+# Onde e quando. Descreva lugares, clima, cheiros e como as pessoas vivem.
+Kael-Dur é uma cidade de mineiros anões e humanos encravada numa montanha de gelo, ligada ao vale por um único elevador a vapor. No alto da torre central fica o Grande Relógio, que há trezentos anos marca as horas e, dizem, mantém a avalanche presa no pico. Há três dias o relógio parou à meia-noite. Desde então, a neve cai para cima, as sombras chegam atrasadas e alguns moradores repetem o mesmo minuto sem perceber.
+
+-- TOM
+# O clima da aventura e o que vai predominar: mistério, ação, humor, terror leve, dilemas...
+Mistério com pitadas de fantasia estranha. Mais investigação e conversa do que combate, com perigo real na torre e um dilema no final.
+
+-- COMEÇO
+# Onde os personagens estão quando a história começa e por que se envolvem.
+O grupo chega no último elevador antes da tempestade e fica preso na cidade. A Guilda dos Relojoeiros oferece uma recompensa a quem fizer o relógio voltar a andar antes que a avalanche desperte.
+
+-- PERSONAGENS DO MUNDO
+# 3 a 5 pessoas importantes: nome, jeito e o que querem (pode haver mentirosos).
+- Mestra Ilda Ferrobrasa: chefe da Guilda, anã ríspida e orgulhosa. Esconde que tentou consertar o relógio sozinha e piorou tudo.
+- Pip: aprendiz de relojoeiro, curioso e medroso. Conhece passagens secretas da torre.
+- O Homem do Minuto: um velho que vive repetindo o mesmo minuto. Às vezes, por um instante, lembra de coisas que ninguém mais lembra.
+- Corvina: contrabandista charmosa que quer o relógio parado, porque o tempo congelado deixa as fronteiras sem guarda.
+
+-- CRIATURAS E PERIGOS
+# Inimigos, monstros, armadilhas e ameaças do ambiente.
+- Engrenagens-Sentinela: guardas mecânicos da torre que atacam quem não tem o selo da Guilda.
+- Ecos: cópias translúcidas de pessoas, presas no minuto da meia-noite. Inofensivas, até alguém tocá-las.
+- O frio do pico: quem fica tempo demais lá fora começa a se mover em câmera lenta.
+
+-- SEGREDO
+# Só o Mestre sabe. Ele revela aos poucos, conforme os jogadores investigam.
+O relógio não mede o tempo: ele o empresta. Cada badalada tira um pouco de tempo de alguém da cidade para segurar a avalanche. O Homem do Minuto foi o último "doador" e ficou preso. Religar o relógio exige um novo doador, ou outra forma de conter a montanha.
+
+-- MISSÃO
+# Primeira linha: o objetivo do grupo numa frase. Depois, 3 ou 4 etapas em ordem.
+Fazer o Grande Relógio de Kael-Dur voltar a andar antes que a avalanche desperte.
+1. Descobrir por que o relógio parou, ganhando a confiança da Guilda ou dos moradores
+2. Entrar na torre e passar pelas Engrenagens-Sentinela
+3. Encontrar o mecanismo central e entender o preço de religá-lo
+4. Decidir quem ou o que paga esse preço, e salvar a cidade
+
+-- FINAL
+# Como a história pode terminar. Deixe espaço para as escolhas dos jogadores.
+Um final aberto: alguém se oferece para dar seu tempo, o grupo engana o mecanismo com uma solução criativa, ou a cidade é evacuada e a montanha cai. Cada escolha tem um custo e merece um epílogo marcante.
+
+# ---------------------------------------------------------------------
+# Dicas para escrever a sua:
+# - Dê ao grupo um motivo claro para agir logo na primeira cena.
+# - NPCs com vontades próprias (e alguns segredos) rendem as melhores cenas.
+# - Etapas da missão devem ser verificáveis ("encontrar X", "chegar a Y").
+# - Um segredo bem guardado e um dilema no final deixam a aventura memorável.
+# - Quer outro gênero? Vale tudo: faroeste, espacial, terror, piratas...
+# ---------------------------------------------------------------------

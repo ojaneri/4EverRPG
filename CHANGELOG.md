@@ -2,6 +2,14 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.4.0 — 2026-11-13
+
+### Aventura personalizada
+- O modelo de aventura em .txt (`public/modelo-aventura.txt`) traz uma aventura completa e original, "O Relógio de Kael-Dur", no formato dos roteiros prontos e sem spoiler deles. Tem cenário, tom, começo, personagens, criaturas e perigos, segredo, missão com etapas e final.
+- O link de download fica em "Como Jogar" e ao lado do campo da Personalizada.
+- As linhas que começam com `#` são dicas: o jogo as remove antes de enviar ao Mestre.
+- O limite do texto subiu para 4.000 caracteres, sem contar as dicas.
+
 ## v0.3.1 — 2026-11-13
 
 ### Correções

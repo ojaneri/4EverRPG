@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>4Ever — Aventuras de RPG com Mestre de IA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎲%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/style.css?v=1794578284" />
+<link rel="stylesheet" href="css/style.css?v=1794579043" />
 </head>
 <body>
   <header class="topo-site">
@@ -80,8 +80,9 @@
               <div id="grade-aventuras" class="grade-aventuras"></div>
             </label>
             <label id="rotulo-tema-personalizado" class="escondido">Descreva sua aventura
-              <textarea id="criar-tema" rows="12" maxlength="2000" placeholder="-- DESCREVA O CENÁRIO AQUI&#10;Ex: ruínas élficas perdidas na neblina, no fim de um inverno que não acaba.&#10;&#10;-- DESCREVA AS CRIATURAS&#10;Ex: lobos de gelo, espíritos dos antigos guardiões, um dragão adormecido.&#10;&#10;-- DESCREVA A MISSÃO&#10;Ex: recuperar o cristal que mantém o inverno preso nas ruínas antes da lua cheia."></textarea>
+              <textarea id="criar-tema" rows="12" maxlength="9000" placeholder="-- DESCREVA O CENÁRIO AQUI&#10;Ex: ruínas élficas perdidas na neblina, no fim de um inverno que não acaba.&#10;&#10;-- DESCREVA AS CRIATURAS&#10;Ex: lobos de gelo, espíritos dos antigos guardiões, um dragão adormecido.&#10;&#10;-- DESCREVA A MISSÃO&#10;Ex: recuperar o cristal que mantém o inverno preso nas ruínas antes da lua cheia."></textarea>
             </label>
+            <p id="dica-modelo" class="dica escondido">📄 Quer uma aventura completa? <a href="modelo-aventura.txt" download="4ever-modelo-aventura.txt">Baixe o modelo (.txt)</a>, edite e cole aqui.</p>
             <label class="linha-opcao">
               <input type="checkbox" id="criar-publica" />
               Jogo público (aparece em "Jogos Abertos" para qualquer pessoa do site). Sem marcar, só entra quem tiver o link ou o código.
@@ -138,6 +139,7 @@
           <li><strong>Ficha viva:</strong> dano, cura, itens e XP mudam sua ficha de verdade. Com 0 PV você cai inconsciente até alguém socorrer. A cada nível: +3 PV, +2 de recurso e tudo restaurado.</li>
           <li><strong>Habilidades de classe</strong> gastam Fúria, Foco, Mana ou Fé e dão bônus ou cura imediata.</li>
           <li><strong>Trilha sonora:</strong> o Mestre troca a música conforme a cena (taverna, masmorra, batalha...). Ajuste o volume ou silencie no 🔊 do topo da tela.</li>
+          <li><strong>Crie sua própria aventura:</strong> baixe o <a href="modelo-aventura.txt" download="4ever-modelo-aventura.txt">📄 modelo de aventura (.txt)</a>, uma aventura completa e original no mesmo formato dos roteiros prontos, sem spoiler de nenhum deles. Ele tem cenário, tom, começo, personagens, criaturas, segredo, missão com etapas e final. Troque pelo que quiser e cole tudo em <em>Criar um novo jogo → Personalizada</em>. As linhas com <code>#</code> são dicas e o jogo as ignora.</li>
           <li>O anfitrião pode <strong>encerrar a aventura</strong> a qualquer momento para o Mestre narrar o epílogo. O diário da partida pode ser exportado.</li>
         </ol>
         <div id="creditos-audio" class="creditos-audio"></div>
@@ -437,7 +439,7 @@
   </div>
 
   <script src="socket.io/socket.io.js"></script>
-  <script src="js/musica.js?v=1794578284"></script>
-  <script src="js/app.js?v=1794578284"></script>
+  <script src="js/musica.js?v=1794579043"></script>
+  <script src="js/app.js?v=1794579043"></script>
 </body>
 </html>
