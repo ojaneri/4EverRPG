@@ -6,19 +6,22 @@ compartilhar com os amigos, que entram na mesma sala e jogam juntos em tempo rea
 
 ## Como funciona
 
-1. Um jogador clica em **Criar jogo** (dá um nome e, opcionalmente, um tema de aventura)
-   → recebe um código da sala (ex: `AB12C`).
-2. Compartilha o código com os amigos, que clicam em **Entrar em um jogo** e digitam o
-   código + o nome deles.
-3. Cada jogador escolhe uma **classe** e distribui pontos de atributo na ficha do
-   personagem.
-4. Quando todos estiverem prontos, o anfitrião clica em **Iniciar aventura**.
-5. A partir daí, a IA assume o papel de Mestre: narra a cena, reage às ações de cada
-   jogador (digitadas em texto livre) e pede rolagens de dado (d20) quando uma ação tem
-   chance real de falhar.
+1. O jogador **cria uma conta** com nome + email (entra na hora; a sessão fica salva no
+   navegador por 30 dias). Para entrar de novo em outro aparelho, recebe um **magic
+   link** por email (válido por 15 min, uso único) — enviado pelo SMTP local
+   (`localhost:2525`).
+2. Cria uma mesa (roteiro pronto ou personalizado, pública ou privada) e compartilha o
+   **link de convite** ou o **código de 5 letras**. Mesas públicas aparecem em
+   **Jogos Abertos**; as suas ficam em **Minhas Partidas**.
+3. Cada jogador escolhe uma **classe** e distribui pontos de atributo.
+4. O anfitrião clica em **Iniciar aventura**. Se a IA estiver fora do ar, aparece um erro
+   claro com "Tentar novamente" (tempo máximo de espera: 60s).
+5. A IA narra, reage às ações e pede testes de d20. Cada jogador tem **1 minuto por vez**
+   (quem está digitando ganha fôlego); quem não age é pulado, e após **3 pulos** fica
+   **Afastado** até confirmar na tela que voltou.
 
-Tudo roda em tempo real via WebSocket (Socket.IO) — todos na sala veem a narração e as
-ações uns dos outros ao vivo.
+A conta é a identidade do jogador: recarregar a página, perder a conexão ou trocar de
+aparelho leva de volta ao mesmo personagem.
 
 ## Sistema de RPG (próprio, leve)
 
@@ -90,10 +93,8 @@ Além da narrativa com a IA, os jogadores têm um canal próprio de comunicaçã
 - **Dado visual**: ao rolar, o dado gira com números aleatórios e sons sintetizados
   (Web Audio API, sem arquivo de áudio externo) até travar no resultado real, com cor
   diferente em crítico (verde) e crítico falho (vermelho).
-- **Faixas de resultado narrativas**: antes de pedir uma rolagem, o Mestre descreve o
-  que cada faixa de resultado significa para aquela cena específica (ex: "15+ você
-  mata; 10-14 ela se defende e reduz o dano; 5-9 ela se defende totalmente; abaixo de
-  5 ela contra-ataca"), e depois narra o desfecho de acordo com o total obtido.
+- **Suspense na rolagem**: o Mestre pede o teste sem antecipar o que acontece em cada resultado;
+  depois da rolagem, narra só o desfecho (proporcional à margem de sucesso ou falha).
 - **Narração por voz (TTS)**: marque "🔊 Narração por voz" no topo da tela de jogo para
   a fala do Mestre ser lida em voz alta em português, usando a Web Speech API do
   próprio navegador (sem custo, sem API externa — qualidade da voz depende do
@@ -114,23 +115,46 @@ Avatares de classe e do Mestre são ícones SVG próprios por enquanto (sem cust
 downloads externos). Veja `public/assets/README.md` para as opções de evolução
 (sprites prontos gratuitos ou geração de imagem por IA).
 
-## Próximos passos / roadmap
+## Mecânicas da mesa
 
-- [ ] Persistência em banco de dados (hoje as salas vivem só em memória — reiniciar o
-      servidor apaga as partidas em andamento).
-- [ ] Deploy no VPS `janeri2.janeri.com.br` (Node + processo gerenciado com PM2 +
-      proxy reverso Nginx + HTTPS).
-- [ ] Reconexão mais robusta (hoje um jogador que atualiza a página perde o personagem
-      já escolhido se o nome não bater exatamente).
-- [ ] Combate com mais profundidade (iniciativa, turnos, dano por arma).
-- [ ] Trocar os avatares SVG por sprites reais ou arte gerada por IA.
+- **Ficha viva**: o Mestre usa a tag `[ESTADO: Nome | pv -3 | recurso -2 | +item: X | -item: Y | xp +20]`
+  e o servidor aplica de verdade (PV, recurso, inventário, XP). Com 0 PV o personagem cai
+  inconsciente. A cada nível (nível × 100 XP): +3 PV, +2 recurso, tudo restaurado.
+- **Testes**: o servidor rola d20 + modificador + bônus contra a dificuldade (fácil 10, médio 13,
+  difícil 16, muito difícil 19) e informa SUCESSO/FALHA. Só quem foi chamado pode rolar, e
+  sempre o atributo pedido.
+- **Habilidades de classe** (2 por classe) gastam Fúria/Foco/Mana/Fé e dão bônus ou cura.
+- **Sugestões de ação** clicáveis (tag `[SUGESTOES: a | b | c]`), **passar a vez**,
+  **encerrar aventura** (epílogo, tag `[FIM]`) e **exportar o diário** em .txt.
+- **Diário**: acima de 30 mensagens, as antigas são resumidas pela IA, para o custo e a
+  demora não crescerem sem limite.
+
+## Persistência
+
+Contas, sessões e mesas ficam em `data/` (JSON, escrita atômica). Reiniciar o servidor não
+apaga partidas; mesas sem ninguém online por 24h são removidas.
+
+## Testes
+
+```bash
+bash tools/rodar_testes.sh
+```
+
+Sobe um Mestre (IA) e um SMTP simulados — não gasta créditos nem envia emails — e testa
+cadastro, magic link, validações, ficha viva, habilidades, tempo de vez/Afastado,
+reconexão, encerramento, resumo do histórico e persistência após reiniciar.
 
 ## Estrutura
 
 ```
-server.js              servidor HTTP + Socket.IO
-src/characterSystem.js  classes, atributos, dados
-src/aiMaster.js          chamada à IA (Mestre de Jogo)
-src/gameManager.js       salas, estado, fluxo de turnos
+server.js                servidor HTTP + Socket.IO, rotas de conta e magic link
+src/auth.js              contas, sessões de 30 dias, magic link
+src/mailer.js            cliente SMTP mínimo (localhost:2525)
+src/storage.js           persistência em data/
+src/characterSystem.js   classes, atributos, habilidades, XP, dados
+src/aiMaster.js          chamada à IA (Mestre) e resumo do histórico
+src/gameManager.js       salas, turnos, tempo de vez, tags do Mestre
+src/socksFetch.js        chamada à IA via proxy SOCKS5 (Tailscale)
 public/                  front-end (HTML/CSS/JS puro, sem build)
+tools/                   testes com IA e SMTP simulados
 ```

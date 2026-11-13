@@ -2,3 +2,7 @@ node_modules/
 .env
 *.log
 .DS_Store
+data/
+
+# Fontes das ilustrações do livreto (os JPGs leves é que vão no repositório)
+docs/livreto/img/*.png

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>4Ever · Diagnóstico de tela</title>
+<style>
+  html, body { margin: 0; background: #11101a; color: #ece8ff; font: 15px/1.45 system-ui, sans-serif; }
+  .moldura { position: fixed; left: 0; top: 0; pointer-events: none; box-sizing: border-box; }
+  .m1 { height: 100vh; width: 100%; border: 6px solid #ff4d4d; }
+  .m2 { height: 100dvh; width: 92%; left: 4%; border: 6px solid #ffd23f; }
+  .m3 { height: 100svh; width: 84%; left: 8%; border: 6px solid #3ddc84; }
+  .m4 { width: 76%; left: 12%; border: 6px solid #4da3ff; }
+  .rotulo { position: absolute; bottom: 4px; right: 6px; font-size: 12px; font-weight: 700; background: #000a; padding: 1px 5px; border-radius: 4px; }
+  main { padding: 70px 20% 0 20%; }
+  h1 { font-size: 18px; margin: 0 0 8px; }
+  pre { white-space: pre-wrap; font-size: 13px; background: #1b1930; padding: 10px; border-radius: 8px; }
+</style>
+</head>
+<body>
+  <div class="moldura m1"><span class="rotulo" style="color:#ff4d4d">VERMELHO 100vh</span></div>
+  <div class="moldura m2"><span class="rotulo" style="color:#ffd23f">AMARELO 100dvh</span></div>
+  <div class="moldura m3"><span class="rotulo" style="color:#3ddc84">VERDE 100svh</span></div>
+  <div class="moldura m4" id="m4"><span class="rotulo" style="color:#4da3ff">AZUL visualViewport</span></div>
+  <main>
+    <h1>Diagnóstico de tela do 4Ever</h1>
+    <p>Tire um print desta tela inteira e mande. Ele mostra quais molduras coloridas têm a <b>borda de baixo visível</b>.</p>
+    <pre id="dados">medindo…</pre>
+  </main>
+<script>
+  function medir() {
+    const vv = window.visualViewport;
+    const sonda = (u) => { const d = document.createElement('div'); d.style.cssText = `position:fixed;top:0;height:${u};width:1px`; document.body.appendChild(d); const h = d.getBoundingClientRect().height; d.remove(); return Math.round(h); };
+    const sa = (lado) => { const d = document.createElement('div'); d.style.cssText = `position:fixed;top:0;height:env(safe-area-inset-${lado}, 0px)`; document.body.appendChild(d); const h = d.getBoundingClientRect().height; d.remove(); return Math.round(h); };
+    const altVV = vv ? Math.round(vv.height) : null;
+    document.getElementById('m4').style.height = (altVV || innerHeight) + 'px';
+    document.getElementById('dados').textContent = [
+      `innerHeight: ${innerHeight}`,
+      `clientHeight: ${document.documentElement.clientHeight}`,
+      `visualViewport: ${altVV} (offsetTop ${vv ? Math.round(vv.offsetTop) : '-'})`,
+      `100vh: ${sonda('100vh')} · 100dvh: ${sonda('100dvh')} · 100svh: ${sonda('100svh')} · 100lvh: ${sonda('100lvh')}`,
+      `safe-area: topo ${sa('top')} · baixo ${sa('bottom')}`,
+      `screen: ${screen.width}×${screen.height} · dpr ${devicePixelRatio}`,
+      `navegador: ${navigator.userAgent}`,
+    ].join('\n');
+  }
+  medir();
+  (window.visualViewport || window).addEventListener('resize', medir);
+</script>
+</body>
+</html>

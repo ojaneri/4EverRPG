@@ -2,32 +2,89 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>4EverRPG — Aventuras com Mestre de IA</title>
-<link rel="stylesheet" href="css/style.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>4Ever — Aventuras de RPG com Mestre de IA</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎲%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="css/style.css?v=1794576472" />
 </head>
 <body>
+  <header class="topo-site">
+    <a href="#/" class="logo">4<span>Ever</span></a>
+    <nav class="nav-site" id="nav-site">
+      <a href="#/" data-rota="home">Home</a>
+      <a href="#/jogos" data-rota="jogos">Jogos Abertos</a>
+      <a href="#/minhas" data-rota="minhas">Minhas Partidas</a>
+      <a href="#/como-jogar" data-rota="como-jogar">Como Jogar</a>
+    </nav>
+    <div id="controle-musica" class="controle-musica escondido" title="Música de fundo (volume só para você)">
+      <span id="musica-nome"></span>
+      <button type="button" id="btn-musica-mudo" class="botao-mini" aria-label="Ligar/desligar música">🔊</button>
+      <input type="range" id="musica-volume" min="0" max="100" step="5" aria-label="Volume da música" />
+    </div>
+    <div class="conta-topo">
+      <a href="#/conta" id="link-conta" class="escondido" data-rota="conta"></a>
+      <a href="#/entrar" id="link-entrar" class="botao-link" data-rota="entrar">Entrar</a>
+    </div>
+  </header>
+  <div id="faixa-conexao" class="faixa-conexao escondido">Conexão perdida — reconectando...</div>
+
   <div id="app">
 
-    <!-- TELA: INÍCIO -->
-    <section id="tela-inicio" class="tela tela-ativa">
+    <!-- TELA: BOAS-VINDAS / CADASTRO / LOGIN -->
+    <section id="tela-entrar" class="tela">
       <div class="hero">
-        <h1>4Ever<span>RPG</span></h1>
+        <h1>4<span>Ever</span></h1>
         <p class="subtitulo">Aventuras de RPG multiplayer narradas por uma IA Mestre</p>
+      </div>
+      <div class="cartoes-inicio">
+        <div class="cartao-acao">
+          <h2>Criar conta</h2>
+          <form id="form-registrar">
+            <label>Seu nome (como os outros jogadores vão te ver)
+              <input type="text" id="reg-nome" maxlength="20" required placeholder="Ex: Osvaldo" autocomplete="nickname" />
+            </label>
+            <label>Email
+              <input type="email" id="reg-email" maxlength="120" required placeholder="voce@exemplo.com" autocomplete="email" />
+            </label>
+            <button type="submit">Criar conta e jogar</button>
+          </form>
+        </div>
+        <div class="divisor">ou</div>
+        <div class="cartao-acao">
+          <h2>Já tenho conta</h2>
+          <form id="form-login">
+            <label>Email
+              <input type="email" id="login-email" maxlength="120" required placeholder="voce@exemplo.com" autocomplete="email" />
+            </label>
+            <button type="submit">Receber link de acesso</button>
+            <p class="dica">Enviamos um link mágico para o seu email. Ao abrir, você fica conectado por 30 dias neste aparelho.</p>
+          </form>
+        </div>
+      </div>
+      <p class="aviso-ok" id="ok-entrar"></p>
+      <p class="erro" id="erro-entrar"></p>
+    </section>
+
+    <!-- TELA: HOME (logado) -->
+    <section id="tela-inicio" class="tela">
+      <div class="hero hero-compacto">
+        <h1>Olá, <span id="ola-nome"></span>!</h1>
+        <p class="subtitulo">Crie uma mesa nova, entre com um código ou escolha um dos jogos abertos.</p>
       </div>
 
       <div class="cartoes-inicio">
         <div class="cartao-acao">
           <h2>Criar um novo jogo</h2>
           <form id="form-criar">
-            <label>Seu nome
-              <input type="text" id="criar-nome" maxlength="20" required placeholder="Ex: Osvaldo" />
-            </label>
             <label>Escolha um roteiro de aventura
               <div id="grade-aventuras" class="grade-aventuras"></div>
             </label>
             <label id="rotulo-tema-personalizado" class="escondido">Descreva sua aventura
-              <input type="text" id="criar-tema" maxlength="300" placeholder="Ex: ruínas élficas perdidas na neblina" />
+              <textarea id="criar-tema" rows="12" maxlength="2000" placeholder="-- DESCREVA O CENÁRIO AQUI&#10;Ex: ruínas élficas perdidas na neblina, no fim de um inverno que não acaba.&#10;&#10;-- DESCREVA AS CRIATURAS&#10;Ex: lobos de gelo, espíritos dos antigos guardiões, um dragão adormecido.&#10;&#10;-- DESCREVA A MISSÃO&#10;Ex: recuperar o cristal que mantém o inverno preso nas ruínas antes da lua cheia."></textarea>
+            </label>
+            <label class="linha-opcao">
+              <input type="checkbox" id="criar-publica" />
+              Jogo público (aparece em "Jogos Abertos" para qualquer pessoa do site). Sem marcar, só entra quem tiver o link ou o código.
             </label>
             <button type="submit">Criar jogo</button>
           </form>
@@ -39,43 +96,105 @@
           <h2>Entrar em um jogo</h2>
           <form id="form-entrar">
             <label>Código do jogo
-              <input type="text" id="entrar-codigo" maxlength="5" required placeholder="Ex: AB12C" style="text-transform:uppercase" />
-            </label>
-            <label>Seu nome
-              <input type="text" id="entrar-nome" maxlength="20" required placeholder="Ex: Maria" />
+              <input type="text" id="entrar-codigo" maxlength="5" required placeholder="Ex: AB12C" style="text-transform:uppercase" autocomplete="off" />
             </label>
             <button type="submit">Entrar</button>
           </form>
+          <p class="dica">Ou veja as mesas esperando jogadores em <a href="#/jogos">Jogos Abertos</a>.</p>
         </div>
       </div>
       <p class="erro" id="erro-inicio"></p>
     </section>
 
-    <!-- TELA: CRIAÇÃO DE PERSONAGEM -->
+    <!-- TELA: JOGOS ABERTOS -->
+    <section id="tela-jogos" class="tela">
+      <div class="pagina">
+        <h2>Jogos Abertos</h2>
+        <p class="subtitulo">Mesas públicas com gente online agora. Clique para entrar.</p>
+        <div id="lista-jogos" class="lista-jogos"></div>
+      </div>
+    </section>
+
+    <!-- TELA: MINHAS PARTIDAS -->
+    <section id="tela-minhas" class="tela">
+      <div class="pagina">
+        <h2>Minhas Partidas</h2>
+        <p class="subtitulo">Mesas de que você participa (ficam guardadas por 24h sem atividade).</p>
+        <div id="lista-minhas" class="lista-jogos"></div>
+      </div>
+    </section>
+
+    <!-- TELA: COMO JOGAR -->
+    <section id="tela-como-jogar" class="tela">
+      <div class="pagina texto-longo">
+        <h2>Como Jogar</h2>
+        <ol>
+          <li><strong>Crie uma mesa</strong> escolhendo um roteiro pronto ou escrevendo o seu, e compartilhe o link ou o código com os amigos (ou deixe a mesa em <em>Jogos Abertos</em>).</li>
+          <li><strong>Monte seu personagem:</strong> escolha a classe e distribua 6 pontos entre Força, Agilidade, Mente e Espírito.</li>
+          <li><strong>O anfitrião inicia a aventura</strong> e a IA Mestre narra a cena de abertura.</li>
+          <li><strong>Jogue na sua vez:</strong> descreva o que seu personagem faz, use uma das sugestões ou uma habilidade de classe. Você tem <strong>1 minuto</strong> por vez; se não agir, é pulado. Depois de <strong>3 pulos</strong> você fica como <em>Afastado</em> até confirmar que voltou.</li>
+          <li><strong>Testes de dado:</strong> quando algo pode dar errado, o Mestre pede um d20 + modificador do atributo. O sistema compara com a dificuldade (fácil 10, médio 13, difícil 16, muito difícil 19). 20 natural é sempre sucesso; 1 natural, sempre falha.</li>
+          <li><strong>Ficha viva:</strong> dano, cura, itens e XP mudam sua ficha de verdade. Com 0 PV você cai inconsciente até alguém socorrer. A cada nível: +3 PV, +2 de recurso e tudo restaurado.</li>
+          <li><strong>Habilidades de classe</strong> gastam Fúria, Foco, Mana ou Fé e dão bônus ou cura imediata.</li>
+          <li><strong>Trilha sonora:</strong> o Mestre troca a música conforme a cena (taverna, masmorra, batalha...). Ajuste o volume ou silencie no 🔊 do topo da tela.</li>
+          <li>O anfitrião pode <strong>encerrar a aventura</strong> a qualquer momento para o Mestre narrar o epílogo. O diário da partida pode ser exportado.</li>
+        </ol>
+        <div id="creditos-audio" class="creditos-audio"></div>
+      </div>
+    </section>
+
+    <!-- TELA: CONTA -->
+    <section id="tela-conta" class="tela">
+      <div class="pagina">
+        <h2>Minha Conta</h2>
+        <form id="form-conta" class="cartao-acao">
+          <label>Nome
+            <input type="text" id="conta-nome" maxlength="20" required />
+          </label>
+          <label>Email
+            <input type="email" id="conta-email" disabled />
+          </label>
+          <button type="submit">Salvar nome</button>
+          <p class="aviso-ok" id="ok-conta"></p>
+          <p class="erro" id="erro-conta"></p>
+        </form>
+        <button type="button" id="btn-sair" class="botao-secundario">Sair desta conta</button>
+      </div>
+    </section>
+
+    <!-- TELA: CRIAÇÃO DE PERSONAGEM / SALA DE ESPERA -->
     <section id="tela-personagem" class="tela">
       <div class="cabecalho-sala">
         <span>Código do jogo:</span>
         <strong id="codigo-exibido">------</strong>
-        <button type="button" id="btn-copiar-codigo" title="Copiar código">Copiar</button>
+        <button type="button" id="btn-copiar-codigo" title="Copiar código">Copiar código</button>
+        <button type="button" id="btn-copiar-link" title="Copiar link de convite">Copiar link de convite</button>
+        <button type="button" id="btn-config-lobby" class="escondido">⚙️ Configurações</button>
       </div>
 
-      <h2 style="text-align:center">Escolha sua classe</h2>
-      <div id="grade-classes" class="grade-classes"></div>
+      <div id="missao-lobby" class="missao-lobby escondido"></div>
 
-      <div id="ficha-personagem" class="ficha-personagem escondido">
-        <h3>Ficha de personagem</h3>
-        <label>Nome do personagem
-          <input type="text" id="personagem-nome" maxlength="30" placeholder="Ex: Thalrik" />
-        </label>
+      <div id="bloco-criar-personagem">
+        <h2 style="text-align:center">Escolha sua classe</h2>
+        <div id="grade-classes" class="grade-classes"></div>
 
-        <div class="atributos-editor" id="atributos-editor"></div>
-        <p class="pontos-restantes">Pontos restantes: <span id="pontos-restantes">0</span></p>
+        <div id="ficha-personagem" class="ficha-personagem escondido">
+          <h3>Ficha de personagem</h3>
+          <label>Nome do personagem
+            <input type="text" id="personagem-nome" maxlength="30" placeholder="Ex: Thalrik" />
+          </label>
 
-        <label>História / motivação (opcional)
-          <textarea id="personagem-historia" maxlength="500" rows="3" placeholder="Quem é esse aventureiro? O que busca?"></textarea>
-        </label>
+          <div class="atributos-editor" id="atributos-editor"></div>
+          <p class="pontos-restantes">Pontos restantes: <span id="pontos-restantes">0</span></p>
 
-        <button type="button" id="btn-confirmar-personagem">Confirmar personagem</button>
+          <div id="habilidades-classe" class="habilidades-classe"></div>
+
+          <label>História / motivação (opcional)
+            <textarea id="personagem-historia" maxlength="500" rows="3" placeholder="Quem é esse aventureiro? O que busca?"></textarea>
+          </label>
+
+          <button type="button" id="btn-confirmar-personagem">Confirmar personagem</button>
+        </div>
       </div>
 
       <div class="sala-espera">
@@ -87,18 +206,74 @@
       <p class="erro" id="erro-personagem"></p>
     </section>
 
+    <!-- Modal: configurações da mesa (anfitrião) — fica fora das telas para abrir no lobby e no jogo -->
+    <div id="modal-config" class="sobreposicao escondido" role="dialog" aria-modal="true" aria-labelledby="titulo-config">
+      <div class="cartao-acao modal-config">
+        <h2 id="titulo-config">⚙️ Configurações da mesa</h2>
+        <section>
+          <h3>⏱️ Tempos</h3>
+          <div class="grade-config">
+            <label>Tempo de cada vez <select id="cfg-tempo-turno"></select></label>
+            <label>Tempo para rolar o dado <select id="cfg-tempo-dado"></select></label>
+          </div>
+        </section>
+        <section>
+          <h3>🖼️ Imagens de cenário</h3>
+          <label class="linha-opcao"><input type="checkbox" id="cfg-imagens" /> Usar imagens de cenário (o Mestre ilustra as cenas; ficam no fundo da mesa)</label>
+          <p class="dica">Desligado, o Mestre não gera ilustrações nesta mesa (economiza o custo da IA de imagens).</p>
+        </section>
+        <section>
+          <h3>💬 Bate-papo</h3>
+          <label class="linha-opcao"><input type="checkbox" id="cfg-audio-chat" /> Permitir mensagens de voz (áudio)</label>
+        </section>
+        <section>
+          <h3>🎭 Humor do Mestre</h3>
+          <div id="cfg-humor" class="cfg-humor"></div>
+          <p id="cfg-humor-aviso" class="dica"></p>
+        </section>
+        <section>
+          <h3>✉️ Convite</h3>
+          <div class="linha-convite">
+            <input type="text" id="cfg-link" readonly aria-label="Link de convite" />
+            <button type="button" id="cfg-copiar" class="botao-secundario">Copiar</button>
+          </div>
+          <form id="form-convite" class="linha-convite">
+            <input type="email" id="cfg-email-convite" placeholder="email@amigo.com" maxlength="120" aria-label="Email do convidado" />
+            <button type="submit">Enviar convite</button>
+          </form>
+          <p id="cfg-convite-status" class="dica"></p>
+        </section>
+        <p class="erro" id="cfg-erro"></p>
+        <div class="botoes-fim">
+          <button type="button" id="cfg-salvar">Salvar</button>
+          <button type="button" id="cfg-fechar" class="botao-secundario">Fechar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- TELA: JOGO -->
     <section id="tela-jogo" class="tela">
       <aside id="painel-grupo" class="painel-grupo"></aside>
 
       <main class="area-jogo">
         <header class="jogo-cabecalho">
-          <strong>4EverRPG</strong> — Sala <span id="codigo-jogo-ativo"></span>
+          <strong>Sala <span id="codigo-jogo-ativo"></span></strong>
+          <button type="button" id="btn-exportar" class="botao-mini" title="Baixar o diário da aventura">📜 <span class="rotulo-longo">Exportar diário</span><span class="rotulo-curto">Diário</span></button>
+          <button type="button" id="btn-objetivos" class="botao-mini escondido" title="Ver a missão e as etapas">📜 Objetivos</button>
+          <button type="button" id="btn-encerrar" class="botao-mini botao-perigo escondido" title="O Mestre narra o epílogo">🏁 <span class="rotulo-longo">Encerrar aventura</span><span class="rotulo-curto">Encerrar</span></button>
+          <button type="button" id="btn-config" class="botao-mini escondido">⚙️ <span class="rotulo-longo">Configurações</span><span class="rotulo-curto">Ajustes</span></button>
           <label class="chk-narracao">
             <input type="checkbox" id="chk-narracao-voz" checked />
-            🔊 Tocar narração automaticamente
+            🔊 <span class="rotulo-longo">Tocar narração automaticamente</span><span class="rotulo-curto">Narração</span>
+          </label>
+          <label class="chk-narracao chk-som">
+            <input type="checkbox" id="chk-som" checked />
+            🎵 <span class="rotulo-longo">Música e efeitos sonoros</span><span class="rotulo-curto">Música</span>
           </label>
         </header>
+
+        <div id="faixa-morto" class="faixa-encerrada faixa-morto escondido">☠️ Seu personagem morreu. <button type="button" id="btn-novo-personagem">Criar novo personagem</button></div>
+        <div id="faixa-encerrada" class="faixa-encerrada escondido">🏁 Esta aventura foi encerrada. Exporte o diário para guardar a história.</div>
 
         <div id="painel-cena" class="painel-cena escondido">
           <div class="cena-icone" id="cena-icone">🌄</div>
@@ -114,15 +289,26 @@
 
         <div id="area-teste" class="area-teste escondido">
           <p id="texto-teste"></p>
+          <p id="relogio-dado" class="relogio-dado"></p>
           <div class="dado-visual" id="dado-visual">?</div>
           <button type="button" id="btn-rolar-dado"></button>
         </div>
 
         <div id="aviso-turno" class="aviso-turno escondido"></div>
+        <div id="buscaveis" class="buscaveis escondido"></div>
+        <div id="sugestoes" class="sugestoes escondido"></div>
         <form id="form-acao" class="form-acao">
           <input type="text" id="input-acao" placeholder="O que você faz?" maxlength="500" autocomplete="off" />
           <button type="submit">Enviar</button>
+          <button type="button" id="btn-passar-vez" class="botao-secundario" title="Passar a vez para o próximo jogador">Passar</button>
         </form>
+        <div class="linha-ferramentas">
+          <div id="barra-habilidades" class="barra-habilidades"></div>
+          <div class="barra-extra">
+            <button type="button" id="btn-inventario" class="botao-mini" aria-label="Inventário">🎒<span class="rotulo-longo"> Inventário</span></button>
+            <button type="button" id="btn-descansar" class="botao-mini" title="Uma vez por cena: o grupo recupera metade de PV e recurso (gasta a vez)" aria-label="Descansar">🏕️<span class="rotulo-longo"> Descansar</span></button>
+          </div>
+        </div>
       </main>
 
       <aside class="painel-bate-papo">
@@ -139,17 +325,112 @@
             </select>
             <div class="linha-envio">
               <input type="text" id="chat-lateral-texto" placeholder="Mensagem..." maxlength="500" autocomplete="off" />
-              <button type="button" id="btn-gravar-audio" class="btn-gravar" title="Segure para gravar um áudio">🎤</button>
+              <button type="button" id="btn-gravar-audio" class="btn-gravar" title="Clique para gravar um áudio">🎤</button>
               <button type="submit">➤</button>
             </div>
           </form>
         </div>
       </aside>
+
+      <!-- Celular: a mesa vira três abas (Mesa / Grupo / Chat) -->
+      <nav id="abas-mesa" class="abas-mesa" aria-label="Seções da mesa">
+        <button type="button" data-aba="mesa" class="ativa">🎲<span>Mesa</span><i id="aba-mesa-vez" class="bolinha escondido"></i></button>
+        <button type="button" data-aba="grupo">🛡️<span>Grupo <b id="aba-grupo-pv"></b></span></button>
+        <button type="button" data-aba="chat">💬<span>Chat</span><i id="aba-chat-novas" class="bolinha escondido"></i></button>
+      </nav>
+
+
+      <!-- Modal: rolagem de dado -->
+      <div id="modal-dado" class="sobreposicao escondido" role="dialog" aria-modal="true" aria-labelledby="modal-dado-titulo">
+        <div class="cartao-acao modal-dado">
+          <h2 id="modal-dado-titulo">Teste</h2>
+          <p id="modal-dado-sub" class="modal-dado-sub"></p>
+          <div id="d20" class="d20">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <polygon class="d20-face" points="50,4 91,27 91,73 50,96 9,73 9,27" />
+              <polygon class="d20-linha" points="50,22 76,66 24,66" />
+              <path class="d20-linha" d="M50 4 L50 22 M91 27 L76 66 M9 27 L24 66 M50 96 L76 66 M50 96 L24 66 M91 73 L76 66 M9 73 L24 66 M9 27 L50 22 L91 27" />
+            </svg>
+            <span id="d20-numero" class="d20-numero">?</span>
+          </div>
+          <div id="modal-dado-veredito" class="modal-dado-veredito"></div>
+          <div id="modal-dado-conta" class="modal-dado-conta"></div>
+          <div id="modal-dado-dano" class="modal-dado-dano escondido"></div>
+          <div id="modal-dado-mestre" class="modal-dado-mestre escondido"></div>
+          <p id="modal-dado-pausa" class="dica escondido">⏸ O relógio da mesa fica pausado até você clicar em Continuar.</p>
+          <button type="button" id="btn-fechar-dado" disabled>Rolando...</button>
+        </div>
+      </div>
+      <!-- Modal: inventário -->
+      <div id="modal-inventario" class="sobreposicao escondido" role="dialog" aria-modal="true" aria-labelledby="titulo-inventario">
+        <div class="cartao-acao modal-inventario">
+          <div class="topo-modal">
+            <h2 id="titulo-inventario">🎒 Inventário</h2>
+            <span id="inventario-moedas" class="moedas"></span>
+          </div>
+          <p class="dica">Usar um item gasta a sua vez. Dar, equipar e descartar podem ser feitos a qualquer momento (fora da narração). Até 2 artefatos equipados.</p>
+          <div id="lista-inventario" class="lista-inventario"></div>
+          <button type="button" id="btn-fechar-inventario" class="botao-secundario">Fechar</button>
+        </div>
+      </div>
+
+      <!-- Modal: baú/gaveta aberto -->
+      <div id="modal-saque" class="sobreposicao escondido" role="dialog" aria-modal="true" aria-labelledby="titulo-saque">
+        <div class="cartao-acao modal-saque">
+          <h2 id="titulo-saque"></h2>
+          <div id="saque-icone" class="saque-icone">🧰</div>
+          <div id="saque-itens" class="saque-itens"></div>
+          <button type="button" id="btn-fechar-saque" disabled>Abrindo...</button>
+        </div>
+      </div>
+
+      <!-- Modal: objetivos da missão (todos os jogadores) -->
+      <div id="modal-objetivos" class="sobreposicao escondido" role="dialog" aria-modal="true" aria-labelledby="titulo-objetivos">
+        <div class="cartao-acao modal-objetivos">
+          <h2 id="titulo-objetivos">📜 Objetivos da missão</h2>
+          <p id="obj-objetivo" class="objetivo-fim"></p>
+          <ol id="lista-etapas" class="lista-etapas"></ol>
+          <p id="obj-progresso" class="dica"></p>
+          <div class="botoes-fim">
+            <button type="button" id="btn-concluir-etapa" class="botao-secundario escondido" title="Use se o Mestre esquecer de marcar">✔ Marcar etapa atual como concluída</button>
+            <button type="button" id="btn-fechar-objetivos">Fechar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal: fim da aventura -->
+      <div id="modal-fim" class="sobreposicao escondido" role="dialog" aria-modal="true" aria-labelledby="titulo-fim">
+        <div class="cartao-acao modal-fim">
+          <div id="icone-fim" class="icone-fim">🏆</div>
+          <h2 id="titulo-fim"></h2>
+          <p id="objetivo-fim" class="objetivo-fim"></p>
+          <ol id="etapas-fim" class="lista-etapas"></ol>
+          <div id="epilogo-fim" class="epilogo-fim"></div>
+          <div id="stats-fim" class="stats-fim"></div>
+          <div id="xp-fim" class="xp-fim"></div>
+          <div class="botoes-fim">
+            <button type="button" id="btn-exportar-fim">📜 Exportar diário</button>
+            <button type="button" id="btn-fechar-fim" class="botao-secundario">Ver a mesa</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="aviso-etapa" class="aviso-etapa escondido" role="status"></div>
+
+      <!-- Sobreposição: jogador Afastado -->
+      <div id="sobreposicao-afastado" class="sobreposicao escondido">
+        <div class="cartao-acao cartao-afastado">
+          <h2>Você está como Afastado</h2>
+          <p>Você ficou 3 vezes sem agir na sua vez, então a mesa seguiu sem você.</p>
+          <button type="button" id="btn-voltei">Voltei! Quero continuar jogando</button>
+        </div>
+      </div>
     </section>
 
   </div>
 
   <script src="socket.io/socket.io.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/musica.js?v=1794576472"></script>
+  <script src="js/app.js?v=1794576472"></script>
 </body>
 </html>

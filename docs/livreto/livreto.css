@@ -1,0 +1,92 @@
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg: #0d0b16; --texto: #efeaff; --fraco: #b3abd9; --acento: #b08cff; --ouro: #f2c14e; }
+html, body { background: var(--bg); color: var(--texto); font-family: 'Inter', 'Segoe UI', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pagina { width: 210mm; height: 297mm; position: relative; overflow: hidden; page-break-after: always; break-after: page; background: var(--bg); }
+.pagina:last-child { page-break-after: auto; }
+.arte { position: absolute; inset: 0; background-size: cover; background-position: center; background-color: #1b1930; }
+h1, h2, h3 { font-family: 'Cinzel', Georgia, serif; }
+.rodape { position: absolute; bottom: 8mm; left: 14mm; right: 14mm; display: flex; justify-content: space-between; font-size: 7.5pt; letter-spacing: 2.5px; color: rgba(255,255,255,.45); text-transform: uppercase; }
+.rodape span:first-child { font-family: 'Cinzel Decorative', serif; font-weight: 900; }
+
+/* ---------- Capa ---------- */
+.capa-sombra { position: absolute; inset: 0; background:
+  linear-gradient(180deg, rgba(13,11,22,.75) 0%, rgba(13,11,22,0) 22%, rgba(13,11,22,0) 48%, rgba(13,11,22,.85) 78%, #0d0b16 100%); }
+.capa-topo { position: absolute; top: 14mm; left: 0; right: 0; text-align: center; font-size: 9pt; letter-spacing: 4px; text-transform: uppercase; color: #fff; opacity: .9; }
+.capa-centro { position: absolute; left: 0; right: 0; bottom: 52mm; text-align: center; }
+.capa h1 { font-family: 'Cinzel Decorative', serif; font-weight: 900; font-size: 92pt; line-height: 1; letter-spacing: 6px;
+  background: linear-gradient(180deg, #fff6d8 0%, #f2c14e 45%, #b0742a 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 4px 18px rgba(0,0,0,.85)); }
+.capa-sub { margin-top: 6mm; font-size: 14pt; line-height: 1.5; color: #fff; text-shadow: 0 2px 10px #000; }
+.capa-base { position: absolute; bottom: 14mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; align-items: flex-end; }
+.capa-base small { display: block; font-size: 8pt; letter-spacing: 3px; text-transform: uppercase; color: var(--ouro); margin-bottom: 1.5mm; }
+.capa-base b { font-size: 15pt; letter-spacing: .5px; }
+.qr { width: 24mm; height: 24mm; background: #fff; padding: 1.5mm; border-radius: 3mm; }
+.qr svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- Introdução ---------- */
+.intro { padding: 16mm 14mm 0; background:
+  radial-gradient(120mm 90mm at 100% 0%, rgba(176,140,255,.22), transparent 70%),
+  radial-gradient(110mm 90mm at 0% 100%, rgba(242,193,78,.12), transparent 70%), var(--bg); }
+.tag { display: inline-block; font-size: 8pt; letter-spacing: 3px; text-transform: uppercase; color: var(--ouro); border: 1px solid rgba(242,193,78,.5); padding: 1.2mm 3mm; border-radius: 10mm; }
+.intro h2 { font-size: 30pt; margin: 4mm 0 3mm; }
+.lead { font-size: 10.5pt; line-height: 1.6; color: #ddd6ff; max-width: 175mm; }
+.lead b { color: #fff; }
+.passos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3.5mm; margin-top: 7mm; }
+.passo { background: linear-gradient(160deg, #241f42, #17142a); border: 1px solid #3a3266; border-radius: 4mm; padding: 4mm 3.5mm; }
+.passo span { display: inline-grid; place-items: center; width: 8mm; height: 8mm; border-radius: 50%; background: var(--acento); color: #120e22; font-weight: 800; font-size: 11pt; margin-bottom: 2.5mm; }
+.passo b { display: block; font-size: 10pt; margin-bottom: 1.5mm; }
+.passo small { font-size: 8pt; line-height: 1.45; color: var(--fraco); display: block; }
+.recursos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm 4mm; margin-top: 7mm; }
+.recursos div { display: grid; grid-template-columns: 9mm 1fr; column-gap: 2mm; }
+.recursos i { grid-row: span 2; font-style: normal; font-size: 16pt; }
+.recursos b { font-size: 9pt; }
+.recursos small { font-size: 7.5pt; color: var(--fraco); line-height: 1.4; }
+h3.sec { font-size: 14pt; margin: 8mm 0 3.5mm; color: var(--ouro); letter-spacing: 1px; }
+.sumario { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+.mini { background: #17142a; border-radius: 3mm; overflow: hidden; border-bottom: 1mm solid var(--cor); }
+.mini-img { height: 20mm; background-size: cover; background-position: center; background-color: #241f42; }
+.mini > div:last-child { padding: 2mm 2.5mm 2.5mm; }
+.mini b { display: block; font-size: 8pt; line-height: 1.3; }
+.mini small { font-size: 6.8pt; color: var(--fraco); }
+.dica { margin-top: 6mm; font-size: 9pt; line-height: 1.5; background: rgba(242,193,78,.08); border-left: 1mm solid var(--ouro); padding: 3mm 4mm; border-radius: 0 3mm 3mm 0; color: #eee6c8; }
+
+/* ---------- Página de história ---------- */
+.historia .arte { bottom: auto; height: 62%; }
+.arte-sombra { position: absolute; inset: 0; background:
+  linear-gradient(180deg, rgba(13,11,22,.55) 0%, rgba(13,11,22,0) 14%, rgba(13,11,22,0) 34%, var(--cor2) 58%, #0d0b16 82%); }
+.historia::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2.2mm; background: var(--cor); }
+.num { position: absolute; top: 11mm; right: 13mm; font-family: 'Cinzel', serif; font-weight: 800; font-size: 26pt; color: #fff; text-shadow: 0 2px 10px #000; }
+.num small { font-size: 11pt; opacity: .6; }
+.conteudo { position: absolute; left: 14mm; right: 14mm; bottom: 16mm; }
+.genero { display: inline-block; font-size: 8pt; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #120e22; background: var(--cor); padding: 1.3mm 3mm; border-radius: 10mm; }
+.historia h2 { font-size: 30pt; line-height: 1.08; margin: 3.5mm 0 3mm; text-shadow: 0 3px 16px rgba(0,0,0,.9); }
+.gancho { font-family: 'Cinzel', serif; font-size: 12.5pt; font-weight: 600; line-height: 1.45; color: var(--cor); text-shadow: 0 2px 10px rgba(0,0,0,.8); }
+.clima { display: flex; gap: 2mm; margin: 3.5mm 0 4.5mm; }
+.clima span { font-size: 7.5pt; border: 1px solid rgba(255,255,255,.3); color: #e8e4ff; padding: 1mm 2.6mm; border-radius: 10mm; background: rgba(0,0,0,.25); }
+.cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 7mm; }
+.texto { font-size: 9.3pt; line-height: 1.6; color: #e2ddf7; }
+.historia h4 { font-size: 8pt; letter-spacing: 2.5px; text-transform: uppercase; color: var(--cor); margin: 4mm 0 2mm; }
+.npcs { list-style: none; }
+.npcs li { font-size: 8.5pt; line-height: 1.45; color: var(--fraco); padding-left: 3.5mm; position: relative; margin-bottom: 1.2mm; }
+.npcs li::before { content: '◆'; position: absolute; left: 0; color: var(--cor); font-size: 6pt; top: .6mm; }
+.npcs b { color: #fff; }
+.missao { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); border-left: 1mm solid var(--cor); border-radius: 3mm; padding: 3mm 4mm; }
+.missao h4 { margin-top: 0 !important; }
+.missao p { font-size: 9.3pt; line-height: 1.5; font-weight: 500; }
+.classes { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm; }
+.classe { background: rgba(255,255,255,.05); border-radius: 2.5mm; padding: 2mm 2.5mm; display: grid; grid-template-columns: 7mm 1fr; column-gap: 1.5mm; }
+.classe .ci { grid-row: span 2; font-size: 13pt; }
+.classe b { font-size: 8.3pt; }
+.classe small { font-size: 6.8pt; color: var(--fraco); line-height: 1.35; }
+
+/* ---------- Contracapa ---------- */
+.final .arte { filter: blur(2px) brightness(.55); transform: scale(1.05); }
+.final-sombra { position: absolute; inset: 0; background: radial-gradient(closest-side, rgba(13,11,22,.5), rgba(13,11,22,.92)); }
+.final-centro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 20mm; }
+.d20 { font-size: 40pt; color: var(--ouro); line-height: 1; margin-bottom: 4mm; }
+.final h2 { font-size: 30pt; margin-bottom: 4mm; }
+.final p { font-size: 13pt; color: #ddd6ff; margin-bottom: 10mm; }
+.qr.grande { width: 50mm; height: 50mm; padding: 3mm; border-radius: 5mm; box-shadow: 0 0 30mm rgba(176,140,255,.45); }
+.final .url { margin-top: 6mm; font-size: 18pt; color: var(--ouro); letter-spacing: .5px; }
+.final small { margin-top: 3mm; font-size: 9pt; color: var(--fraco); letter-spacing: 2px; text-transform: uppercase; }

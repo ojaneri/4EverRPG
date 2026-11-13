@@ -7,6 +7,12 @@
 // ---------------------------------------------------------------------------
 
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+
+// Cache em disco: cada fala é gerada (e paga) uma única vez, mesmo após reiniciar.
+const PASTA_CACHE = path.join(process.env.RPG_DATA_DIR || path.join(__dirname, '..', 'data'), 'tts');
+fs.mkdirSync(PASTA_CACHE, { recursive: true });
 
 const CACHE_MAX = 200; // nº máximo de falas em cache (MP3 de ~100-400 KB cada)
 const cache = new Map(); // hash(texto) -> Buffer | Promise<Buffer>
@@ -60,13 +66,22 @@ async function sintetizar(textoBruto) {
   const texto = limparParaFala(textoBruto);
   if (!texto) throw new Error('Texto vazio.');
 
-  const chave = crypto.createHash('sha1').update(texto).digest('hex');
+  const { voiceId, modelId } = config();
+  const chave = crypto.createHash('sha1').update(`${voiceId}|${modelId}|${texto}`).digest('hex');
   if (cache.has(chave)) return cache.get(chave);
+  const arquivo = path.join(PASTA_CACHE, `${chave}.mp3`);
+  try {
+    const buf = fs.readFileSync(arquivo); // já gerada antes
+    cache.set(chave, buf);
+    if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
+    return buf;
+  } catch { /* ainda não existe: gera */ }
 
   // Guarda a Promise para que pedidos simultâneos da mesma fala esperem a mesma geração.
   const promessa = gerar(texto).then(
     (buf) => {
       cache.set(chave, buf);
+      fs.writeFile(arquivo, buf, (e) => e && console.error('[tts] falha ao salvar cache:', e.message));
       return buf;
     },
     (err) => {
