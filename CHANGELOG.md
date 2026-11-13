@@ -2,6 +2,16 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.9.0 — 2026-11-13
+
+### Voz reserva grátis
+- Quando o ElevenLabs falha (sem crédito, sem chave ou fora do ar), a narração do Mestre e os recados dos bots passam a usar o edge-tts. Ele é grátis e usa as vozes neurais do "ler em voz alta" do Edge: Antonio, Francisca e Thalita (pt-BR) e Duarte e Raquel (pt-PT).
+- Sem crédito, o ElevenLabs fica pausado por 30 min; em outras falhas, por 2 min. Falas já geradas pelo ElevenLabs continuam saindo do cache.
+- Vozes reserva fixas:
+  - o narrador usa o Antonio;
+  - cada bot ganha uma voz reserva do mesmo gênero, sem repetir na mesa, usando tom e velocidade para diferenciar quem compartilha a mesma voz.
+- Testes: `tools/teste_tts.js`, com ElevenLabs "sem crédito" e edge-tts falsos, roda junto da bateria.
+
 ## v0.8.0 — 2026-11-13
 
 ### Bots que conversam

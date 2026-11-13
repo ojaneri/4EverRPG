@@ -462,6 +462,7 @@ async function criarPersonagensBots(room) {
     bot.botPersona = sanitizar(dados && dados.personalidade, 200);
     bot.botGenero = /^f/i.test(String((dados && dados.genero) || '')) ? 'feminino' : /^m/i.test(String((dados && dados.genero) || '')) ? 'masculino' : '';
     vozDoBot(room, bot); // a voz fica fixa: o mesmo bot sempre fala com a mesma voz
+    vozReservaDoBot(room, bot);
     if (room.status === 'em_jogo') {
       logSistema(room, `🤖 ${personagem.nome} (${personagem.classeNome}, bot) entrou na aventura!`);
       room.notasPendentes.push(`${personagem.nome}, ${personagem.classeNome}, acabou de se juntar ao grupo — apresente-o na cena.`);
@@ -573,6 +574,13 @@ const VOZES_BOT = {
   masculino: lista('RPG_BOT_VOZES_M', ['BjWEjIzWMha6iBp2DkXb', 'ETf5cmpNIbpSiXmBaR2m', 'SOYHLrjzK2X1ezoPC6cr', 'N2lVS1w4EtoT3dr4eOWO', 'IKne3meq5aSn9XLyUdCD']),
   feminino: lista('RPG_BOT_VOZES_F', ['bMKc4ZGchGYTMCov8eMG', 'cgSgspJ2msm6clMCkdW9', 'FGY2WhTYpPnrIDTdsKH5', 'EXAVITQu4vr4xnSDxMaL', 'pFZP5JQG7iQjIQuC4Bku']),
 };
+// Vozes reserva (edge-tts, grátis) quando o ElevenLabs falha: "voz|tom|velocidade".
+// Poucas vozes pt-BR existem, então o tom/velocidade diferencia bots da mesma voz
+// (e do narrador, que usa o Antonio no tom normal).
+const VOZES_BOT_RESERVA = {
+  masculino: lista('RPG_BOT_VOZES_RESERVA_M', ['pt-BR-AntonioNeural|-12Hz|+4%', 'pt-PT-DuarteNeural|+0Hz|+0%', 'pt-BR-AntonioNeural|+14Hz|+8%']),
+  feminino: lista('RPG_BOT_VOZES_RESERVA_F', ['pt-BR-FranciscaNeural|+0Hz|+0%', 'pt-BR-ThalitaMultilingualNeural|+0Hz|+0%', 'pt-BR-FranciscaNeural|-12Hz|+6%']),
+};
 const BOT_FALA_INTERVALO_MESA_MS = Number(process.env.RPG_BOT_FALA_MESA_MS) || 2 * 60 * 1000; // entre recados de qualquer bot
 const BOT_FALA_INTERVALO_BOT_MS = Number(process.env.RPG_BOT_FALA_BOT_MS) || 5 * 60 * 1000; // entre recados do mesmo bot
 const BOT_FALA_CHANCE = Number(process.env.RPG_BOT_FALA_CHANCE) || 0.25; // depois de uma jogada normal
@@ -587,6 +595,17 @@ function vozDoBot(room, bot) {
   const pool = [...VOZES_BOT[genero], ...VOZES_BOT[genero === 'feminino' ? 'masculino' : 'feminino']];
   bot.vozId = pool.find((v) => !usadas.has(v)) || pool[0];
   return bot.vozId;
+}
+
+// Voz reserva fixa do bot (mesmo gênero da voz principal, sem repetir na mesa).
+function vozReservaDoBot(room, bot) {
+  if (bot.vozReserva) return bot.vozReserva;
+  vozDoBot(room, bot);
+  const genero = VOZES_BOT.feminino.includes(bot.vozId) ? 'feminino' : 'masculino';
+  const usadas = new Set(room.personagens.map((p) => p.vozReserva).filter(Boolean));
+  const pool = [...VOZES_BOT_RESERVA[genero], ...VOZES_BOT_RESERVA[genero === 'feminino' ? 'masculino' : 'feminino']];
+  bot.vozReserva = pool.find((v) => !usadas.has(v)) || pool[0];
+  return bot.vozReserva;
 }
 
 function grupoTravado(room) {
@@ -619,7 +638,7 @@ async function talvezComentarBot(room, bot) {
   let audio = null;
   if (cfg(room).audioChat !== false && tts.disponivel()) {
     try {
-      audio = await tts.sintetizar(texto, vozDoBot(room, bot));
+      audio = await tts.sintetizar(texto, vozDoBot(room, bot), vozReservaDoBot(room, bot));
     } catch (e) {
       console.warn(`[bot ${room.codigo}] TTS falhou (${e.message}); vai como texto.`);
     }
