@@ -673,7 +673,7 @@ async function talvezComentarBot(room, bot) {
       console.warn(`[bot ${room.codigo}] TTS falhou (${e.message}); vai como texto.`);
     }
   }
-  if (!audio) addChatGeral(room, autor, texto); // sem áudio: recado em texto (fica no histórico do chat)
+  addChatGeral(room, autor, texto); // o recado sempre vai também em texto (fica no histórico do chat)
   eventos.emit('chatBot', room, { autor, texto, audio });
   tocar(room);
 }

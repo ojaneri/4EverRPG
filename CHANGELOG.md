@@ -2,6 +2,11 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.10.2 — 2026-11-13
+
+### Bate-papo
+- O recado de voz de um bot agora chega também como mensagem de texto logo em seguida, no lugar da legenda. O texto fica salvo no histórico do bate-papo, então continua lá depois de recarregar a página.
+
 ## v0.10.1 — 2026-11-13
 
 ### Correção
