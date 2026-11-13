@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Navegador, 2 jogadores: o som de "sua vez" toca só no aparelho de quem recebe a vez.
+"""Navegador, 2 jogadores: o som de "sua vez" toca só no aparelho de quem recebe a vez, e dá para
+escrever a ação antes da vez (o Enviar só libera na vez).
 Uso: python3 tools/teste_som_vez.py"""
 import json, os, subprocess, tempfile, time, urllib.request
 from playwright.sync_api import sync_playwright
@@ -49,11 +50,23 @@ try:
         print("efeitos Ana:", e_ana, "| efeitos Beto:", e_beto)
         if e_beto.count("sua-vez") != 1: falhas += 1; print("FALHA: Beto deveria ouvir 'sua-vez' uma vez")
         if e_ana.count("sua-vez") != 1: falhas += 1; print("FALHA: Ana ouve só no começo da vez dela (1x), não na vez do Beto")
+        # Fora da vez: Ana pode ir escrevendo, mas não consegue enviar.
+        estado_ana = ana.evaluate("[document.getElementById('input-acao').disabled, document.querySelector('#form-acao button[type=submit]').disabled, document.getElementById('input-acao').placeholder]")
+        print("Ana fora da vez → campo desabilitado?", estado_ana[0], "| Enviar desabilitado?", estado_ana[1], "|", estado_ana[2])
+        if estado_ana[0] or not estado_ana[1]: falhas += 1; print("FALHA: campo deveria estar liberado e o Enviar travado")
+        ana.fill("#input-acao", "Vou abrir o baú"); ana.press("#input-acao", "Enter"); ana.wait_for_timeout(1200)
+        enviou = ana.evaluate("[...document.querySelectorAll('#chat-log .msg.jogador .texto')].some(e => e.textContent.includes('Vou abrir o baú'))")
+        if enviou or ana.input_value("#input-acao") != "Vou abrir o baú": falhas += 1; print("FALHA: enviou fora da vez ou perdeu o texto")
+        else: print("Ana escreveu adiantado: nada enviado, texto guardado no campo")
         beto.fill("#input-acao", "Eu sigo a Ana"); beto.press("#input-acao", "Enter")
         ana.wait_for_function("!document.getElementById('input-acao').disabled", timeout=20000); ana.wait_for_timeout(800)
         e_ana, e_beto = ana.evaluate("window.__efeitos"), beto.evaluate("window.__efeitos")
         print("depois da vez do Beto → Ana:", e_ana.count("sua-vez"), "x | Beto:", e_beto.count("sua-vez"), "x")
         if e_ana.count("sua-vez") != 2 or e_beto.count("sua-vez") != 1: falhas += 1; print("FALHA: contagem errada")
+        if ana.input_value("#input-acao") != "Vou abrir o baú": falhas += 1; print("FALHA: o texto adiantado sumiu quando a vez chegou")
+        ana.press("#input-acao", "Enter"); ana.wait_for_timeout(1500)
+        if not ana.evaluate("[...document.querySelectorAll('#chat-log .msg.jogador .texto')].some(e => e.textContent.includes('Vou abrir o baú'))"): falhas += 1; print("FALHA: na vez dela, o texto adiantado não foi enviado")
+        else: print("na vez da Ana, o texto adiantado foi enviado com Enter")
         b.close()
 finally:
     for pr in procs: pr.kill()

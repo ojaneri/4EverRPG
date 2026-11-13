@@ -2,6 +2,15 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.7.0 — 2026-11-13
+
+### Mesa
+- Escrever antes da vez: o campo da ação fica liberado mesmo fora da sua vez, para você ir escrevendo enquanto os outros jogam. O Enviar (e o Enter) só libera na sua vez, e o texto fica guardado até lá.
+- A dica no campo avisa: "Vez de X · você já pode ir escrevendo".
+- O campo só trava quando não dá para jogar: aventura encerrada, personagem morto ou jogador Afastado.
+- Digitar fora da vez não estende o relógio de ninguém.
+- `tools/teste_som_vez.py` passou a testar também a escrita adiantada.
+
 ## v0.6.1 — 2026-11-13
 
 ### Correção

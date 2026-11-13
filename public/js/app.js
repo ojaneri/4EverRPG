@@ -977,10 +977,17 @@ function atualizarControleTurno() {
   // Som de "sua vez": toca só aqui, no aparelho de quem recebeu a vez.
   if (eraMinhaVez === false && vez) Musica.efeito('sua-vez', 0.9);
   eraMinhaVez = vez;
-  input.disabled = !vez;
+  // O campo fica liberado para ir escrevendo antes da vez; só o Enviar espera a vez.
+  const eu = meuJogador();
+  const podeEscrever = rs.status === 'em_jogo' && !!eu && !!eu.personagem && !eu.personagem.morto && !eu.afastado;
+  input.disabled = !podeEscrever;
   document.querySelector('#form-acao button[type=submit]').disabled = !vez;
   $('btn-passar-vez').disabled = !vez;
-  input.placeholder = vez ? (cel ? 'O que você faz?' : 'Sua vez! O que você faz?') : bloqueio || '';
+  input.placeholder = vez
+    ? (cel ? 'O que você faz?' : 'Sua vez! O que você faz?')
+    : podeEscrever && bloqueio
+      ? `${bloqueio}${cel ? ' · já pode escrever' : ' · você já pode ir escrevendo'}`
+      : bloqueio || '';
   aviso.classList.remove('escondido');
   aviso.classList.toggle('aviso-minha-vez', vez || destaque);
   const restanteDado = rs.pendingTest && estado.dadoPrazo ? estado.dadoPrazo - Date.now() : null;
@@ -1257,6 +1264,7 @@ async function enviarAcao(texto, extras = {}) {
 
 $('form-acao').addEventListener('submit', async (ev) => {
   ev.preventDefault();
+  if (!minhaVez()) return; // dá para escrever antes, mas só envia na sua vez
   const texto = $('input-acao').value.trim();
   const extras = habilidadePendente ? { habilidadeId: habilidadePendente } : armaPendente ? { armaUid: armaPendente } : {};
   const ok = await enviarAcao(texto, extras);
@@ -1272,7 +1280,7 @@ $('btn-passar-vez').addEventListener('click', () => emitir('passarVez').catch((e
 // Digitando na sua vez = está jogando: o servidor dá um fôlego antes de pular.
 let ultimaAtividade = 0;
 $('input-acao').addEventListener('input', () => {
-  if (Date.now() - ultimaAtividade < 4000 || !socket) return;
+  if (Date.now() - ultimaAtividade < 4000 || !socket || !minhaVez()) return;
   ultimaAtividade = Date.now();
   socket.emit('atividade', { codigo: estado.codigo });
 });
