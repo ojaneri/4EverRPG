@@ -2,6 +2,12 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.3.1 — 2026-11-13
+
+### Correções
+- Moedas narradas pelo Mestre agora contam na ficha. O [ESTADO] aceita `moedas +N` / `moedas -N` (e `+item: 3 moedas`). O prompt manda o Mestre registrar todo ganho, pagamento ou roubo de dinheiro, e ninguém paga mais do que tem: o saldo nunca fica negativo. Antes, só baús e gavetas mexiam nas moedas.
+- Som desligado não toca mais nada. Desligar agora pausa e silencia a música em vez de só zerar o volume, que o iPhone ignora. A troca de trilha pelo Mestre (por exemplo, ao subir de nível) e os efeitos ficam mudos até religar.
+
 ## v0.3.0 — 2026-11-13
 
 ### Jogo

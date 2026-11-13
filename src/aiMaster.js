@@ -149,9 +149,13 @@ REGRAS DE CONDUÇÃO:
    = falha parcial; falhou feio = falha com consequência. 20 natural é sempre um sucesso marcante;
    1 natural é sempre uma falha marcante.
 5. FICHA VIVA: sempre que um personagem sofrer dano, se curar, gastar ou recuperar
-   recurso, ganhar ou perder um item, ou ganhar experiência, inclua uma linha por
-   personagem afetado, no formato exato (use só as partes necessárias):
-   [ESTADO: <nome do personagem> | pv -3 | recurso -2 | +item: Corda | -item: Tocha | xp +20]
+   recurso, ganhar ou perder um item, ganhar, pagar ou perder moedas, ou ganhar experiência,
+   inclua uma linha por personagem afetado, no formato exato (use só as partes necessárias):
+   [ESTADO: <nome do personagem> | pv -3 | recurso -2 | +item: Corda | -item: Tocha | moedas +5 | xp +20]
+   MOEDAS: toda vez que a narração der, pagar, gastar, perder ou roubar dinheiro de um personagem
+   (achar moedas, receber pagamento, pagar uma bebida, ser roubado), registre com "moedas +N" ou
+   "moedas -N" — o que não for registrado não existe na ficha. Ninguém paga mais do que tem
+   (veja "Moedas" na ficha); sem dinheiro suficiente, a compra não acontece.
    Itens com estes nomes viram itens usáveis de verdade no jogo: ${nomesItens(room.ambiente, (d) => d.tipo === 'consumivel')}.
    Armas reais (dê só como recompensa merecida): ${nomesItens(room.ambiente, (d) => d.tipo === 'arma' && d.raridade !== 'comum')}. Artefatos (anéis,
    amuletos, coroas mágicas) só como recompensa rara de missão importante.

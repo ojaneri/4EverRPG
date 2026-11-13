@@ -761,6 +761,16 @@ function aplicarEstados(room, texto) {
         const d = clamp(numero(r[1]), -50, 50);
         c.recurso.atual = clamp(c.recurso.atual + d, 0, c.recurso.max);
         if (d) mudancas.push(`${d > 0 ? '+' : '−'}${Math.abs(d)} ${c.recurso.nome} (${c.recurso.atual}/${c.recurso.max})`);
+      } else if ((r = parte.match(/^(?:moedas?|dinheiro|ouro|r[eé]is|cr[eé]ditos?|tost[oõ]es)\s*([+-]\s*\d+)$/i)) ||
+                 (r = parte.match(/^([+-])\s*item\s*:\s*(\d+)\s*(?:moedas?|r[eé]is|tost[oõ]es|cr[eé]ditos?)\s*$/i))) {
+        // Moedas: "moedas +3" / "moedas -1" (e "+item: 3 moedas", que a IA às vezes usa).
+        const d = clamp(r.length > 2 && r[2] ? Number(r[1] + r[2]) : numero(r[1]), -9999, 9999);
+        const antes = c.moedas || 0;
+        c.moedas = Math.max(0, antes + d);
+        const real = c.moedas - antes;
+        if (real > 0) stats(room).moedas += real;
+        if (real) mudancas.push(`🪙 ${real > 0 ? '+' : '−'}${Math.abs(real)} moeda${Math.abs(real) === 1 ? '' : 's'} (${c.moedas})`);
+        if (d < 0 && -d > antes) mudancas.push(`(só tinha ${antes})`);
       } else if ((r = parte.match(/^\+\s*item\s*:\s*(.+)$/i))) {
         const nomeItem = sanitizar(r[1], 60);
         if (nomeItem && c.inventario.length < 30) {

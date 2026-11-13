@@ -28,6 +28,12 @@ http.createServer((req, res) => {
     else if (/Resultado do teste/.test(ultima)) {
       const nome = (ultima.match(/teste de ([^—]+?) —/) || [])[1] || 'Thalrik';
       t = `O golpe acerta, mas a criatura revida! <script>alert(1)</script>\n[ESTADO: ${nome} | pv -4 | +item: Chave de ferro | +item: Poção de vida | xp +120]\n[SUGESTOES: Avançar | Recuar | Gritar]`;
+    } else if (/acho moedas|pago a conta/i.test(ultima)) {
+      const linhaJ = ultima.split('\n').reverse().find((l) => /^[^[\s][^:[]*:/.test(l)) || '';
+      const quem = (linhaJ.match(/^([^:]+):/) || [])[1] || 'Thalrik';
+      t = /acho moedas/i.test(ultima)
+        ? `${quem} acha um punhado de moedas.\n[ESTADO: ${quem} | +item: 3 moedas | moedas +2]`
+        : `${quem} paga a conta e fica sem nada.\n[ESTADO: ${quem} | moedas -9999]`;
     } else if (/golpe forte|abismo/i.test(ultima)) {
       const linhaJ = ultima.split('\n').reverse().find((l) => /^[^[\s][^:[]*:/.test(l)) || '';
       const quem = (linhaJ.match(/^([^:]+):/) || [])[1] || 'Thalrik';

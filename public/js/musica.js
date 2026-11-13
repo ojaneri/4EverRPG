@@ -31,12 +31,16 @@ const Musica = (() => {
   let volume = ler('4ever.musica.volume', 0.5);
   let mudo = ler('4ever.musica.mudo', false);
   const volumeMusica = () => (mudo ? 0 : volume * 0.55); // música fica abaixo da narração
+  // Desligado = sem som nenhum. No iPhone o volume do <audio> é ignorado (toca sempre no
+  // máximo), então desligar precisa PAUSAR e silenciar (muted), não só zerar o volume.
+  const silencioso = () => mudo || volume === 0;
 
   // Rampa de volume (fade) num elemento <audio>.
   function rampa(audio, alvo, ms, aoTerminar) {
     const inicio = audio.volume;
     const t0 = performance.now();
     const passo = () => {
+      if (alvo > 0 && silencioso()) { audio.volume = 0; return; } // desligaram no meio do fade
       const k = Math.min(1, (performance.now() - t0) / ms);
       audio.volume = Math.max(0, Math.min(1, inicio + (alvo - inicio) * k));
       if (k < 1) requestAnimationFrame(passo);
@@ -60,30 +64,43 @@ const Musica = (() => {
     audio.loop = true;
     audio.preload = 'auto';
     audio.volume = 0;
+    audio.muted = silencioso();
     atual = { id: info.id, audio };
-    if (liberado) iniciar(audio);
+    if (liberado && !silencioso()) iniciar(audio);
   }
 
   function iniciar(audio) {
+    if (silencioso()) return;
+    audio.muted = false;
     audio.play().then(() => rampa(audio, volumeMusica(), 2000)).catch(() => {});
   }
 
   function aplicarVolume() {
-    if (atual) atual.audio.volume = volumeMusica();
+    if (!atual) return;
+    const a = atual.audio;
+    if (silencioso()) {
+      a.volume = 0;
+      a.muted = true;
+      a.pause();
+    } else {
+      a.muted = false;
+      if (a.paused && liberado) iniciar(a);
+      else a.volume = volumeMusica();
+    }
   }
 
   // Libera o áudio no primeiro clique/tecla (política de autoplay dos navegadores).
   function liberar() {
     if (liberado) return;
     liberado = true;
-    if (atual && atual.audio.paused) iniciar(atual.audio);
+    if (atual && atual.audio.paused && !silencioso()) iniciar(atual.audio);
   }
   ['pointerdown', 'keydown'].forEach((ev) => document.addEventListener(ev, liberar, { passive: true }));
 
   // --- Efeitos ---
   const cacheSfx = new Map();
   function efeito(nome, vol = 1) {
-    if (mudo || !liberado) return;
+    if (silencioso() || !liberado) return;
     let base = cacheSfx.get(nome);
     if (!base) {
       base = new Audio(`${BASE}sfx/${nome}.mp3`);

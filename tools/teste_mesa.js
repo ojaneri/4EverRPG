@@ -267,6 +267,22 @@ async function fase1() {
     ok(daVez.estado.personagens.find((p) => p.personagem?.nome === nomeVez).pulos === 0, 'desistir não conta como pulo por inatividade');
   }
 
+  // --- Moedas narradas pelo Mestre ([ESTADO: ... | moedas +N]) ---
+  {
+    const quemJoga = () => (A2.estado.turnoAtual === 'Thalrik' ? A2 : B);
+    const nomeM = A2.estado.turnoAtual;
+    const moedasDe = () => A2.estado.personagens.find((p) => p.personagem?.nome === nomeM).personagem.moedas || 0;
+    const antesM = moedasDe();
+    ok((await emit(quemJoga(), 'acaoJogador', { codigo, texto: 'Eu acho moedas no chão' })).ok, `${nomeM} procura moedas`);
+    await sleep(250);
+    ok(moedasDe() === antesM + 5, `Mestre deu moedas: "+item: 3 moedas" e "moedas +2" somam 5 (${antesM} → ${moedasDe()})`);
+    if (A2.estado.turnoAtual === nomeM) {
+      ok((await emit(quemJoga(), 'acaoJogador', { codigo, texto: 'Eu pago a conta da taverna' })).ok, `${nomeM} paga a conta`);
+      await sleep(250);
+      ok(moedasDe() === 0, 'gastar mais do que tem zera as moedas (nunca fica negativo)');
+    }
+  }
+
   // --- Encerrar ---
   const encB = await emit(B, 'encerrarAventura', { codigo });
   ok(!encB.ok, 'só o anfitrião encerra');
