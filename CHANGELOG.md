@@ -2,6 +2,12 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.10.1 — 2026-11-13
+
+### Correção
+- A narração do Mestre agora sai sempre em terceira pessoa, começando pelo nome de quem agiu ("Samira passa o scanner..."), e não "Você passa o scanner...". Antes, na ação de outro jogador ou de um bot, parecia que tinha sido você.
+- Há uma regra nova no prompt do Mestre e um lembrete a cada rodada com o nome do personagem. A única exceção é a pergunta final ao próximo jogador ("Rex, o que você faz?").
+
 ## v0.10.0 — 2026-11-13
 
 ### Personalidade dos bots

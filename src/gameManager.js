@@ -1307,7 +1307,11 @@ async function rodadaDoMestre(room, { conteudo, sistemaAdicional, aoFalhar, ator
   tocar(room);
 
   try {
-    const resposta = await callMaster({ room, history: room.historico, sistemaAdicional });
+    // Lembrete a cada rodada: a mesa é coletiva, então a ação é narrada em 3ª pessoa com o nome.
+    const lembretePessoa = ator
+      ? `Narre o que ${ator} fez em TERCEIRA PESSOA, começando pelo nome ("${ator} ..."), nunca com "você".`
+      : '';
+    const resposta = await callMaster({ room, history: room.historico, sistemaAdicional: [sistemaAdicional, lembretePessoa].filter(Boolean).join('\n') });
     processarResposta(room, resposta, ator);
     return resposta;
   } catch (e) {
