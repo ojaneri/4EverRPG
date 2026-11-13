@@ -160,6 +160,9 @@ try:
             pg.evaluate("document.activeElement.blur()"); pg.wait_for_timeout(600)
             checar("mesa após fechar teclado", alvos_mesa)
             foto("18-mesa-final", inteira=False)
+            pg.evaluate("document.getElementById('abas-mesa').scrollLeft = 9999"); pg.wait_for_timeout(200)
+            foto("18b-barra-rolada", inteira=False)
+            pg.evaluate("document.getElementById('abas-mesa').scrollLeft = 0")
 
             # Barra do navegador simulada: no celular a área visível é menor que 100vh.
             # Com a área útil em 80% da janela, tudo precisa caber acima dessa linha.

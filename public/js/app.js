@@ -824,6 +824,37 @@ $('abas-mesa').addEventListener('click', (ev) => {
 });
 trocarAbaMesa('mesa');
 
+// Celular: os controles da sala (código, diário, objetivos, encerrar, ajustes, som) e o
+// volume da música saem do cabeçalho e entram na linha das abas, rolando para o lado.
+// No desktop eles voltam aos lugares originais. Os elementos são movidos (não copiados),
+// então os eventos continuam valendo.
+const mqCelular = window.matchMedia('(max-width: 1000px)');
+const ehCelular = () => mqCelular.matches;
+const itensCabecalhoMesa = [...document.querySelector('.jogo-cabecalho').children];
+function arrumarBarraMesa() {
+  const extras = $('abas-extras');
+  const cab = document.querySelector('.jogo-cabecalho');
+  const musica = $('controle-musica');
+  if (ehCelular()) {
+    itensCabecalhoMesa.forEach((el) => extras.appendChild(el));
+    extras.appendChild(musica);
+  } else {
+    itensCabecalhoMesa.forEach((el) => cab.appendChild(el));
+    document.querySelector('.topo-site').insertBefore(musica, document.querySelector('.conta-topo'));
+  }
+}
+mqCelular.addEventListener('change', () => {
+  arrumarBarraMesa();
+  sugestoesDesenhadas = null; // redesenha os textos na versão certa
+  buscaveisDesenhados = null;
+});
+arrumarBarraMesa();
+$('rotulo-sala').addEventListener('click', () => {
+  if (!estado.codigo) return;
+  navigator.clipboard?.writeText(linkConvite(estado.codigo)).catch(() => {});
+  mostrarAvisoMesa({ icone: '🔗', texto: `Link de convite da sala ${estado.codigo} copiado` });
+});
+
 // Altura útil da tela no celular: a barra do navegador e o teclado virtual mudam
 // o espaço visível; a mesa acompanha para o campo de envio nunca ficar escondido.
 (() => {
@@ -898,33 +929,34 @@ function atualizarControleTurno() {
   const aviso = $('aviso-turno');
   const meuNome = meuNomeExibicao();
   const restante = estado.turnoPrazo ? estado.turnoPrazo - Date.now() : null;
-  const relogio = rs.pausadoPorDado ? ' ⏸ tempo pausado (rolagem de dado)' : restante != null ? ` ⏱ ${formatarSegundos(restante)}` : '';
+  const cel = ehCelular();
+  const relogio = rs.pausadoPorDado ? (cel ? ' ⏸' : ' ⏸ tempo pausado (rolagem de dado)') : restante != null ? ` ⏱ ${formatarSegundos(restante)}` : '';
 
   let bloqueio = null;
   let destaque = false;
   if (rs.status === 'encerrada') bloqueio = 'Aventura encerrada.';
-  else if (mestreNarrando) bloqueio = 'O Mestre está narrando — aguarde...';
+  else if (mestreNarrando) bloqueio = cel ? '✍️ Mestre narrando…' : 'O Mestre está narrando — aguarde...';
   else if (rs.pendingTest) {
     const meu = rs.pendingTest.nomePersonagem.toLowerCase() === meuNome.toLowerCase();
     const restDado = estado.dadoPrazo ? estado.dadoPrazo - Date.now() : null;
     const relDado = restDado != null ? ` 🎲 ${formatarSegundos(restDado)}` : '';
     bloqueio = meu
-      ? `Role o dado acima para continuar.${relDado} · relógio da vez pausado`
-      : `Teste de ${rs.pendingTest.nomePersonagem} — aguardando${relDado}`;
+      ? (cel ? `🎲 Role o dado${relDado}` : `Role o dado acima para continuar.${relDado} · relógio da vez pausado`)
+      : (cel ? `🎲 ${rs.pendingTest.nomePersonagem} rolando${relDado}` : `Teste de ${rs.pendingTest.nomePersonagem} — aguardando${relDado}`);
     destaque = meu;
     const el = $('relogio-dado');
     el.textContent = restDado != null
-      ? `🎲 ${formatarSegundos(restDado)} para rolar — se não rolar a tempo, conta como falha.`
+      ? (cel ? `⏳ ${formatarSegundos(restDado)} · sem rolar = falha` : `🎲 ${formatarSegundos(restDado)} para rolar — se não rolar a tempo, conta como falha.`)
       : '';
     el.classList.toggle('urgente', restDado != null && restDado < 15000);
-  } else if (!rs.turnoAtual) bloqueio = 'Mesa pausada: ninguém ativo no momento.';
+  } else if (!rs.turnoAtual) bloqueio = cel ? 'Mesa pausada' : 'Mesa pausada: ninguém ativo no momento.';
   else if (rs.turnoAtual !== meuNome) bloqueio = `Vez de ${rs.turnoAtual}${relogio}`;
 
   const vez = minhaVez();
   input.disabled = !vez;
   document.querySelector('#form-acao button[type=submit]').disabled = !vez;
   $('btn-passar-vez').disabled = !vez;
-  input.placeholder = vez ? 'Sua vez! O que você faz?' : bloqueio || '';
+  input.placeholder = vez ? (cel ? 'O que você faz?' : 'Sua vez! O que você faz?') : bloqueio || '';
   aviso.classList.remove('escondido');
   aviso.classList.toggle('aviso-minha-vez', vez || destaque);
   const restanteDado = rs.pendingTest && estado.dadoPrazo ? estado.dadoPrazo - Date.now() : null;
@@ -1287,8 +1319,8 @@ function renderBuscaveis(vez) {
       btn.innerHTML = `✓ ${esc(b.icone)} ${esc(b.nome)} <span class="estado-busca">revistado por ${esc(b.abertoPor)}</span>`;
     } else {
       btn.disabled = !vez;
-      const estadoTxt = b.estado === 'trancado' ? '🔒 trancado' : b.estado === 'armadilha' ? '❓ algo estranho' : '';
-      btn.innerHTML = `🔍 Procurar: ${esc(b.icone)} ${esc(b.nome)}${estadoTxt ? ` <span class="estado-busca">${estadoTxt}</span>` : ''}`;
+      const estadoTxt = b.estado === 'trancado' ? '🔒<span class="rotulo-longo"> trancado</span>' : b.estado === 'armadilha' ? '❓<span class="rotulo-longo"> algo estranho</span>' : '';
+      btn.innerHTML = `🔍 <span class="rotulo-longo">Procurar: </span>${esc(b.icone)} ${esc(b.nome)}${estadoTxt ? ` <span class="estado-busca">${estadoTxt}</span>` : ''}`;
       btn.title = b.estado === 'livre' ? 'Revistar (gasta a vez)' : `Precisa de um teste de ${estado.config.ATTRIBUTE_LABELS[b.atributo] || b.atributo} para abrir (gasta a vez)`;
       btn.addEventListener('click', () => emitir('procurar', { buscavelId: b.id }).catch((e) => alert(e.message)));
     }
@@ -1813,7 +1845,7 @@ function linhaImagem(msg) {
   const div = document.createElement('button');
   div.type = 'button';
   div.className = 'msg-imagem-linha';
-  div.textContent = `🖼️ O Mestre ilustrou a cena${msg.texto ? `: ${msg.texto}` : ''} (ver)`;
+  div.textContent = ehCelular() ? '🖼️ Cena ilustrada (ver)' : `🖼️ O Mestre ilustrou a cena${msg.texto ? `: ${msg.texto}` : ''} (ver)`;
   div.addEventListener('click', () => ampliarImagem(BASE + msg.imagem, msg.texto));
   return div;
 }
@@ -1886,12 +1918,15 @@ function renderAreaTeste(rs) {
   const bonus = eu?.personagem?.bonusProximoTeste;
 
   area.classList.remove('escondido');
-  $('texto-teste').textContent =
-    `Teste: ${teste.nomePersonagem} rola ${label} — dificuldade ${nomeDif} (precisa ${dc}+)` +
-    (souEu && bonus ? ` · você tem +${bonus} de bônus` : '');
+  $('texto-teste').textContent = ehCelular()
+    ? `🎲 ${teste.nomePersonagem} · ${label} · ${nomeDif} (${dc}+)${souEu && bonus ? ` · +${bonus}` : ''}`
+    : `Teste: ${teste.nomePersonagem} rola ${label} — dificuldade ${nomeDif} (precisa ${dc}+)` +
+      (souEu && bonus ? ` · você tem +${bonus} de bônus` : '');
 
   const btn = $('btn-rolar-dado');
-  btn.textContent = souEu ? (teste.jaRolado ? 'Reenviar resultado ao Mestre' : `Rolar d20 de ${label}`) : `Aguardando ${teste.nomePersonagem} rolar...`;
+  btn.textContent = souEu
+    ? (teste.jaRolado ? (ehCelular() ? 'Reenviar' : 'Reenviar resultado ao Mestre') : (ehCelular() ? 'Rolar d20' : `Rolar d20 de ${label}`))
+    : (ehCelular() ? 'Aguardando…' : `Aguardando ${teste.nomePersonagem} rolar...`);
   btn.disabled = !souEu || mestreNarrando || rolando;
   btn.onclick = souEu ? rolarDado : null;
 }

@@ -2,6 +2,19 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.2.1 — 2026-11-13
+
+### Celular
+- Uma linha única no topo da mesa reúne as abas Mesa / Grupo / Chat e, rolando para o lado: código da sala (toque para copiar o convite), Diário, Objetivos, Encerrar, Ajustes, narração, música, volume e 🏠 início. O cabeçalho do site some na mesa.
+- Textos mais curtos no celular:
+  - avisos de vez e de dado;
+  - caixa do teste numa faixa só;
+  - "Procurar" e "trancado" viram ícones;
+  - "Cena ilustrada";
+  - mensagens do sistema sem rótulo;
+  - chat sem título, com destino e mensagem na mesma linha.
+- O desktop continua igual.
+
 ## v0.2.0 — 2026-11-13
 
 ### Contas e mesas

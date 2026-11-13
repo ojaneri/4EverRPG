@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>4Ever — Aventuras de RPG com Mestre de IA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎲%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/style.css?v=1794576472" />
+<link rel="stylesheet" href="css/style.css?v=1794576942" />
 </head>
 <body>
   <header class="topo-site">
@@ -257,7 +257,7 @@
 
       <main class="area-jogo">
         <header class="jogo-cabecalho">
-          <strong>Sala <span id="codigo-jogo-ativo"></span></strong>
+          <strong id="rotulo-sala" title="Código da sala (toque para copiar o convite)"><span class="rotulo-longo">Sala </span><span class="rotulo-curto">🔑 </span><span id="codigo-jogo-ativo"></span></strong>
           <button type="button" id="btn-exportar" class="botao-mini" title="Baixar o diário da aventura">📜 <span class="rotulo-longo">Exportar diário</span><span class="rotulo-curto">Diário</span></button>
           <button type="button" id="btn-objetivos" class="botao-mini escondido" title="Ver a missão e as etapas">📜 Objetivos</button>
           <button type="button" id="btn-encerrar" class="botao-mini botao-perigo escondido" title="O Mestre narra o epílogo">🏁 <span class="rotulo-longo">Encerrar aventura</span><span class="rotulo-curto">Encerrar</span></button>
@@ -316,7 +316,7 @@
           <h4>Bate-papo</h4>
           <label class="linha-opcao linha-autoplay">
             <input type="checkbox" id="chk-autoplay-voz" checked />
-            Tocar áudios recebidos automaticamente
+            <span class="rotulo-longo">Tocar áudios recebidos automaticamente</span><span class="rotulo-curto">Tocar áudios ao chegar</span>
           </label>
           <div id="chat-lateral-lista" class="chat-lateral-lista"></div>
           <form id="form-chat-lateral" class="form-chat-lateral">
@@ -337,6 +337,9 @@
         <button type="button" data-aba="mesa" class="ativa">🎲<span>Mesa</span><i id="aba-mesa-vez" class="bolinha escondido"></i></button>
         <button type="button" data-aba="grupo">🛡️<span>Grupo <b id="aba-grupo-pv"></b></span></button>
         <button type="button" data-aba="chat">💬<span>Chat</span><i id="aba-chat-novas" class="bolinha escondido"></i></button>
+        <!-- No celular, os controles da sala e o volume entram aqui (app.js), rolando para o lado. -->
+        <div id="abas-extras" class="abas-extras"></div>
+        <a href="#/" class="aba-inicio" title="Voltar ao início">🏠</a>
       </nav>
 
 
@@ -430,7 +433,7 @@
   </div>
 
   <script src="socket.io/socket.io.js"></script>
-  <script src="js/musica.js?v=1794576472"></script>
-  <script src="js/app.js?v=1794576472"></script>
+  <script src="js/musica.js?v=1794576942"></script>
+  <script src="js/app.js?v=1794576942"></script>
 </body>
 </html>

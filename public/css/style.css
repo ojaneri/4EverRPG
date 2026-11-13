@@ -1038,3 +1038,51 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   /* Degradê na ponta: avisa que a linha de botões da sala continua para o lado. */
   .jogo-cabecalho { -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); padding-right: 28px; }
 }
+
+/* --- Celular: uma única linha no topo da mesa (abas + controles da sala + volume) --- */
+.abas-extras, .aba-inicio { display: none; }
+@media (max-width: 1000px) {
+  body.em-mesa .topo-site { display: none; }
+  .jogo-cabecalho { display: none; }
+  .abas-mesa {
+    overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; align-items: center;
+    -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent);
+    padding-right: 24px;
+  }
+  .abas-mesa::-webkit-scrollbar { display: none; }
+  .abas-mesa > button { flex: none; padding: 7px 12px; }
+  .abas-extras { display: flex; flex: none; align-items: center; gap: 6px; margin-left: 4px; padding-left: 8px; border-left: 1px solid var(--borda); }
+  .abas-extras > * { flex-shrink: 0; white-space: nowrap; margin: 0; }
+  .abas-extras .botao-mini { padding: 6px 10px; font-size: 0.82rem; }
+  .abas-extras .chk-narracao { font-size: 0.8rem; gap: 4px; }
+  .abas-extras .controle-musica { display: flex; align-items: center; gap: 4px; }
+  .abas-extras .controle-musica.escondido { display: none; }
+  .abas-extras .controle-musica input[type=range] { width: 70px; }
+  #rotulo-sala { font-size: 0.85rem; padding: 6px 9px; background: var(--bg-elev); border: 1px solid var(--borda); border-radius: 8px; cursor: pointer; letter-spacing: 0.5px; }
+  .aba-inicio { display: block; flex: none; padding: 6px 10px; margin-left: 4px; text-decoration: none; font-size: 1.05rem; }
+  .rotulo-sugestoes { display: none; }
+  .area-teste p { margin: 0; font-size: 0.9rem; }
+  .relogio-dado { font-size: 0.8rem; }
+}
+@media (max-width: 1000px) {
+  /* Mensagens do sistema e da missão mais enxutas. */
+  .msg.sistema .avatar, .msg.sistema .autor { display: none; }
+  .msg.sistema { max-width: 100%; }
+  .msg.sistema .conteudo { padding: 5px 10px; font-size: 0.8rem; }
+  .msg.missao .conteudo { padding: 6px 10px; font-size: 0.85rem; }
+  .msg .autor { font-size: 0.7rem; }
+  /* Caixa de teste numa faixa só: texto + relógio à esquerda, botão à direita. */
+  .area-teste { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; }
+  .area-teste .dado-visual { display: none; }
+  .area-teste #btn-rolar-dado { grid-row: 1 / span 2; grid-column: 2; padding: 10px 14px; }
+  .aviso-turno { padding: 4px 10px; font-size: 0.82rem; }
+  /* Chat: sem título (a aba já diz "Chat"); destino e mensagem na mesma linha. */
+  .caixa-chat h4 { display: none; }
+  .form-chat-lateral { flex-direction: row; align-items: center; }
+  .form-chat-lateral select { width: auto; max-width: 92px; flex: none; padding: 9px 4px; }
+  .form-chat-lateral .linha-envio { flex: 1; min-width: 0; }
+}
+@media (max-width: 1000px) {
+  /* Com a caixa do teste na tela, a faixa de aviso repetiria o mesmo relógio. */
+  .area-teste:not(.escondido) ~ .aviso-turno { display: none; }
+}
