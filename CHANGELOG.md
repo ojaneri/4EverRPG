@@ -2,6 +2,13 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.5.1 — 2026-11-13
+
+### Dado
+- Quem assiste à rolagem de outro jogador (ou de um bot) não precisa mais clicar em Continuar: o modal fecha sozinho quando o dono do dado continua, ou quando a pausa do dado expira.
+- O espectador vê "Fecha sozinho quando X continuar." e um botão discreto "Fechar", para fechar antes se quiser.
+- Teste no navegador: `tools/teste_dado_espectador.py`.
+
 ## v0.5.0 — 2026-11-13
 
 ### Bots controlados pela IA

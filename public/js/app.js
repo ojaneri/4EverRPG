@@ -715,6 +715,7 @@ function renderEstado(rs) {
   renderPainelCena(rs);
   talvezMostrarFim(rs);
   renderAreaTeste(rs);
+  sincronizarModalDadoObservador(rs);
   renderInventario();
   atualizarSeletoresDestino();
   atualizarControleTurno();
@@ -1958,12 +1959,12 @@ $('btn-desistir-teste').addEventListener('click', async () => {
 // Modal do dado: abre no meio da tela, rola até parar, mostra o veredito e só
 // então deixa fechar. Enquanto quem rolou não fecha, o tempo da vez fica pausado.
 // ---------------------------------------------------------------------------
-const modalDado = { aberto: false, souEu: false, rolagem: null, revelado: false, inicio: 0, giro: null, mestre: null };
+const modalDado = { aberto: false, souEu: false, rolagem: null, revelado: false, inicio: 0, giro: null, mestre: null, viuPausa: false, fecharAoRevelar: false, dono: '' };
 const GIRO_MINIMO_MS = 1600;
 
 function abrirModalDado({ titulo, sub, souEu }) {
   clearTimeout(modalDado.giro);
-  Object.assign(modalDado, { aberto: true, souEu, rolagem: null, revelado: false, inicio: Date.now(), mestre: null });
+  Object.assign(modalDado, { aberto: true, souEu, rolagem: null, revelado: false, inicio: Date.now(), mestre: null, viuPausa: false, fecharAoRevelar: false });
   $('modal-dado-titulo').textContent = titulo;
   $('modal-dado-sub').textContent = sub;
   $('modal-dado-veredito').textContent = '';
@@ -1975,6 +1976,7 @@ function abrirModalDado({ titulo, sub, souEu }) {
   $('modal-dado-pausa').classList.add('escondido');
   const btn = $('btn-fechar-dado');
   btn.disabled = true;
+  btn.classList.remove('botao-secundario');
   btn.textContent = 'Rolando...';
   $('d20').className = 'd20 rolando';
   $('modal-dado').classList.remove('escondido');
@@ -2039,11 +2041,31 @@ function mostrarVeredito(r) {
   mini.classList.toggle('critico-falha', r.resultado === 'critico_falha');
 
   // O texto do Mestre fica na tela principal (o modal mostra só o resultado).
-  $('modal-dado-pausa').classList.toggle('escondido', !modalDado.souEu);
+  const pausa = $('modal-dado-pausa');
+  pausa.classList.remove('escondido');
+  pausa.textContent = modalDado.souEu
+    ? '⏸ O relógio da mesa fica pausado até você clicar em Continuar.'
+    : `Fecha sozinho quando ${r.personagem} continuar.`;
   const btn = $('btn-fechar-dado');
   btn.disabled = false;
-  btn.textContent = 'Continuar';
-  btn.focus();
+  btn.textContent = modalDado.souEu ? 'Continuar' : 'Fechar';
+  btn.classList.toggle('botao-secundario', !modalDado.souEu); // espectador não precisa clicar
+  if (modalDado.souEu) btn.focus();
+  // Quem rolou já fechou enquanto o dado ainda girava aqui: fecha logo após mostrar.
+  if (!modalDado.souEu && modalDado.fecharAoRevelar) setTimeout(fecharModalDado, 1500);
+}
+
+// Quem só assiste à rolagem de outro jogador não precisa clicar: o modal fecha
+// quando o dono do dado clica em Continuar (o servidor tira a pausa da mesa).
+function sincronizarModalDadoObservador(rs) {
+  if (!modalDado.aberto || modalDado.souEu) return;
+  if (rs.pausadoPorDado) {
+    modalDado.viuPausa = true;
+    return;
+  }
+  if (!modalDado.viuPausa) return; // o estado com a pausa ainda não chegou
+  if (modalDado.revelado) fecharModalDado();
+  else modalDado.fecharAoRevelar = true;
 }
 
 function erroNoModalDado(msg) {
