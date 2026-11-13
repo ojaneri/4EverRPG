@@ -2,6 +2,17 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.5.0 — 2026-11-13
+
+### Bots controlados pela IA
+- Ao criar a mesa, o anfitrião escolhe de 0 a 3 bots. Cada bot é um jogador a mais: você + 2 bots = 3 personagens.
+- A IA cria o personagem de cada bot: nome, classe (de preferência diferente das já escolhidas), atributos, história e personalidade, de acordo com a aventura e o ambiente. Se a IA falhar, entra um personagem padrão válido.
+- Na vez do bot, a IA decide a ação a partir da cena recente, da missão, da ficha, das habilidades disponíveis e das sugestões. Ela pode usar uma habilidade ou atacar com a arma em mãos.
+- Quando o Mestre pede um teste, o bot rola o dado sozinho; o resultado fica alguns segundos na tela de todos.
+- Os bots só jogam enquanto houver um humano conectado, para não gastar IA à toa. Não ficam "Afastados", nunca viram anfitrião e não aparecem como destino do bate-papo.
+- Na interface: seletor "🤖 Bots" ao criar o jogo, 🤖 no lobby com "a IA está criando o personagem...", selo "🤖 IA" no cartão do grupo e explicação em "Como Jogar".
+- Testes com o Mestre simulado: criação, limite de 3, ação, rolagem, retorno da vez ao humano e pausa sem humanos.
+
 ## v0.4.0 — 2026-11-13
 
 ### Aventura personalizada

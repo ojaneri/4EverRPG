@@ -20,6 +20,20 @@ http.createServer((req, res) => {
     const ultima = (b.messages || []).slice(-1)[0]?.content || '';
     const sys = b.system || '';
     let t;
+    // Bots: criação de personagem e decisão da ação (respostas em JSON).
+    if (/Você cria personagens/.test(sys)) {
+      const nomes = ['Brisa', 'Tormenta', 'Lume'];
+      const classes = ['arcanista', 'batedor', 'guardiao'];
+      const k = (global.botsCriados = (global.botsCriados || 0) + 1) % 3;
+      res.setHeader('content-type', 'application/json');
+      return res.end(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ nome: nomes[k], classeId: classes[k], atributos: { forca: 10, agilidade: 11, mente: 13, espirito: 12 }, historia: 'Viajante em busca de respostas.', personalidade: 'Curioso e leal.' }) }] }));
+    }
+    if (/Você é um JOGADOR/.test(sys)) {
+      const n = (global.botsAcoes = (global.botsAcoes || 0) + 1);
+      const acao = n === 1 ? 'Eu ataco a criatura com coragem!' : 'Examino o chão em busca de pistas.';
+      res.setHeader('content-type', 'application/json');
+      return res.end(JSON.stringify({ content: [{ type: 'text', text: `Claro! ${JSON.stringify({ acao, habilidade: null, atacar: false })}` }] }));
+    }
     if (/cronista/.test(sys)) t = '- O grupo explorou a vila.\n- Thalrik achou uma chave.';
     else if (/Inicie a aventura/.test(ultima) && /defina a missão/.test(ultima)) t = '[MISSAO: Salvar o vilarejo da névoa | Achar a pista do culpado | Vencer o vilão]\nUma névoa estranha cobre tudo.\n[CENA: Vila | névoa densa | noite]';
     else if (/vitoria/i.test(ultima.split('\n').pop())) t = 'O vilão cai e a névoa se dissipa. Fim glorioso!\n[MISSAO_CUMPRIDA]';

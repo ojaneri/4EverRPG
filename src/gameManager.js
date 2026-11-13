@@ -33,8 +33,10 @@ const {
   rolarDano,
   regenPorArtefatos,
   aplicarPassivo,
+  CLASSES,
+  HABILIDADES,
 } = require('./characterSystem');
-const { callMaster, resumirHistorico } = require('./aiMaster');
+const { callMaster, resumirHistorico, criarPersonagemBot, decidirAcaoBot } = require('./aiMaster');
 const storage = require('./storage');
 const { MUSICAS, MUSICA_POR_CLIMA } = require('./musicas');
 const imagens = require('./imagens');
@@ -84,6 +86,7 @@ function tocar(room) {
   if (room.logPublico.length > MAX_LOG) room.logPublico.splice(0, room.logPublico.length - MAX_LOG);
   storage.salvarSala(room);
   eventos.emit('mudou', room);
+  agendarBot(room);
 }
 
 // efemero: aviso passageiro (conexão etc.) — some da tela em 3s e fica fora do diário.
@@ -136,7 +139,7 @@ function nomeEmUso(room, nome, exceto) {
 function hostEfetivo(room) {
   const dono = room.personagens.find((p) => p.userId === room.hostUserId);
   if (dono && dono.conectado && !dono.afastado) return dono;
-  return room.personagens.find((p) => p.conectado && !p.afastado) || dono || null;
+  return room.personagens.find((p) => !p.bot && p.conectado && !p.afastado) || dono || null;
 }
 
 function exigirHost(room, userId) {
@@ -268,7 +271,7 @@ function configurarSala({ codigo, userId, ajustes }) {
 // ---------------------------------------------------------------------------
 // Salas
 // ---------------------------------------------------------------------------
-function createRoom({ usuario, socketId, tema, aventuraTitulo, publica, missao, ambiente }) {
+function createRoom({ usuario, socketId, tema, aventuraTitulo, publica, missao, ambiente, bots }) {
   let codigo;
   do codigo = nanoid();
   while (rooms.has(codigo));
@@ -302,8 +305,11 @@ function createRoom({ usuario, socketId, tema, aventuraTitulo, publica, missao, 
     atualizadoEm: Date.now(),
   };
   room.personagens.push(novoJogador(usuario, socketId));
+  const nBots = Math.max(0, Math.min(3, Math.floor(Number(bots) || 0)));
+  for (let i = 1; i <= nBots; i++) room.personagens.push(novoBot(room, i));
   rooms.set(codigo, room);
   tocar(room);
+  if (nBots) criarPersonagensBots(room); // em segundo plano: a IA escolhe os personagens
   return room;
 }
 
@@ -330,6 +336,7 @@ function joinRoom({ codigo, usuario, socketId }) {
     existente.socketId = socketId;
     const voltou = !existente.conectado;
     existente.conectado = true;
+    sincronizarBots(room);
     if (voltou && room.status === 'em_jogo' && existente.personagem) {
       logSistema(room, `${nomeExibicao(existente)} se reconectou.`, { efemero: true });
       garantirTurno(room);
@@ -345,6 +352,7 @@ function joinRoom({ codigo, usuario, socketId }) {
   }
   const jogador = novoJogador(usuario, socketId);
   room.personagens.push(jogador);
+  sincronizarBots(room);
   tocar(room);
   return { room, jogador };
 }
@@ -357,12 +365,188 @@ function disconnectSocket(socketId, codigo) {
     if (!p) continue;
     p.conectado = false;
     p.socketId = null;
+    sincronizarBots(room);
     // Se era a vez dele, passa adiante (sem contar como pulo).
     const ator = atorAtual(room);
     if (room.status === 'em_jogo' && ator === p && !room.processando) {
       pularAtor(room, 'desconectou', false);
     }
     tocar(room);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bots: jogadores controlados pela IA. O anfitrião escolhe 0 a 3 ao criar a
+// mesa; a IA cria o personagem de cada um e decide as ações na vez deles.
+// Só jogam enquanto houver pelo menos um humano conectado (sem gasto à toa).
+// ---------------------------------------------------------------------------
+const BOT_ESPERA_ACAO_MS = Number(process.env.RPG_BOT_ESPERA_MS) || 4000; // pausa para os humanos lerem
+const BOT_ESPERA_DADO_MS = Number(process.env.RPG_BOT_ESPERA_DADO_MS) || 2500;
+const BOT_FECHA_DADO_MS = Number(process.env.RPG_BOT_FECHA_DADO_MS) || 3500;
+const botTimers = new Map(); // codigo -> { chave, t }
+const botOcupado = new Set(); // codigos em que um bot está decidindo/agindo
+
+function novoBot(room, n) {
+  return {
+    id: novoIdJogador(),
+    userId: `bot:${room.codigo}:${n}`,
+    socketId: null,
+    nome: `Bot ${n}`,
+    bot: true,
+    botPersona: '',
+    personagem: null,
+    conectado: true,
+    afastado: false,
+    pulos: 0,
+  };
+}
+
+const humanoOnline = (room) => room.personagens.some((p) => !p.bot && p.conectado);
+
+// Bots ficam "conectados" só enquanto algum humano estiver na mesa.
+function sincronizarBots(room) {
+  const online = humanoOnline(room);
+  for (const p of room.personagens) if (p.bot) p.conectado = online;
+}
+
+// Distribuição válida de atributos (6 pontos) favorecendo o atributo principal.
+function atributosPadrao(classeId) {
+  const principal = (CLASSES[classeId] || {}).atributoPrincipal || 'forca';
+  const a = { forca: 10, agilidade: 10, mente: 10, espirito: 10 };
+  a[principal] += 4;
+  const segundo = ATTRIBUTES.find((x) => x !== principal && x !== 'forca') || 'espirito';
+  a[segundo] += 2;
+  return a;
+}
+
+const NOMES_RESERVA = ['Aurora', 'Bento', 'Cora', 'Davi', 'Elis', 'Faísca', 'Gaia', 'Heitor', 'Iara', 'Joca'];
+
+async function criarPersonagensBots(room) {
+  for (const bot of room.personagens.filter((p) => p.bot && !p.personagem)) {
+    const amb = getAmbiente(room.ambiente);
+    const classes = Object.keys(CLASSES).map((id) => ({
+      id,
+      nome: ((amb.classes || {})[id] || {}).nome || CLASSES[id].nome,
+      descricao: ((amb.classes || {})[id] || {}).descricao || CLASSES[id].descricao,
+    }));
+    const usados = room.personagens.filter((p) => p.personagem);
+    const classesOcupadas = usados.map((p) => p.personagem.classeId);
+    let dados = null;
+    try {
+      dados = await criarPersonagemBot({
+        tema: room.tema,
+        aventuraTitulo: room.aventuraTitulo,
+        ambiente: room.ambiente,
+        classes,
+        nomesOcupados: room.personagens.flatMap((p) => [p.nome, p.personagem && p.personagem.nome]).filter(Boolean),
+        classesOcupadas: classesOcupadas.map((id) => classes.find((c) => c.id === id)?.nome || id),
+      });
+    } catch (e) {
+      console.warn(`[bot ${room.codigo}] IA não criou o personagem (${e.message}); usando um padrão.`);
+    }
+    if (!rooms.has(room.codigo) || bot.personagem) continue;
+    const livre = Object.keys(CLASSES).find((id) => !classesOcupadas.includes(id)) || 'guerreiro';
+    const classeId = dados && CLASSES[dados.classeId] ? dados.classeId : livre;
+    let nome = sanitizar(dados && dados.nome, 20) || NOMES_RESERVA.find((n) => !nomeEmUso(room, n, bot)) || bot.nome;
+    for (let k = 2; nomeEmUso(room, nome, bot); k++) nome = `${nome.replace(/ \d+$/, '')} ${k}`;
+    const historia = sanitizar(dados && dados.historia, 300);
+    let personagem;
+    try {
+      personagem = createCharacter({ nome, classeId, atributos: dados && dados.atributos, historia }, room.ambiente);
+    } catch {
+      personagem = createCharacter({ nome, classeId, atributos: atributosPadrao(classeId), historia }, room.ambiente);
+    }
+    bot.personagem = personagem;
+    bot.botPersona = sanitizar(dados && dados.personalidade, 200);
+    if (room.status === 'em_jogo') {
+      logSistema(room, `🤖 ${personagem.nome} (${personagem.classeNome}, bot) entrou na aventura!`);
+      room.notasPendentes.push(`${personagem.nome}, ${personagem.classeNome}, acabou de se juntar ao grupo — apresente-o na cena.`);
+      garantirTurno(room);
+    }
+    tocar(room);
+  }
+}
+
+// Agenda a jogada do bot quando é a vez dele (chamada a cada mudança da mesa).
+function agendarBot(room) {
+  if (!room || botOcupado.has(room.codigo)) return;
+  const ator = room.status === 'em_jogo' && !room.processando && !room.pausaDado ? atorAtual(room) : null;
+  const precisa = ator && ator.bot && ativo(ator) && humanoOnline(room) && !(room.pendingTest && room.pendingTest.rolagem);
+  const atual = botTimers.get(room.codigo);
+  if (!precisa) {
+    if (atual) {
+      clearTimeout(atual.t);
+      botTimers.delete(room.codigo);
+    }
+    return;
+  }
+  const chave = `${ator.id}|${room.pendingTest ? 'teste' : 'vez'}|${room.turnoAtual}`;
+  if (atual && atual.chave === chave) return;
+  if (atual) clearTimeout(atual.t);
+  const t = setTimeout(() => {
+    botTimers.delete(room.codigo);
+    botAgir(room.codigo).catch((e) => console.error(`[bot ${room.codigo}]`, e.message));
+  }, room.pendingTest ? BOT_ESPERA_DADO_MS : BOT_ESPERA_ACAO_MS);
+  botTimers.set(room.codigo, { chave, t });
+}
+
+// Últimas falas da mesa, para o bot saber o que está acontecendo.
+function cenaRecenteParaBot(room) {
+  return room.logPublico
+    .filter((m) => !m.efemero && ['mestre', 'jogador', 'sistema', 'missao'].includes(m.tipo))
+    .slice(-8)
+    .map((m) => `${m.tipo === 'mestre' ? 'MESTRE' : m.autor}: ${String(m.texto || '').replace(/\[[A-Z_]+[^\]]*\]/g, '').slice(0, 700)}`)
+    .join('\n');
+}
+
+async function botAgir(codigo) {
+  const room = getRoom(codigo);
+  if (!room || botOcupado.has(codigo)) return;
+  const bot = room.status === 'em_jogo' && !room.processando && !room.pausaDado ? atorAtual(room) : null;
+  if (!bot || !bot.bot || !ativo(bot) || !humanoOnline(room)) return;
+  botOcupado.add(codigo);
+  try {
+    if (room.pendingTest) {
+      if (room.pendingTest.rolagem) return;
+      await sendRollResult({ codigo, userId: bot.userId });
+      // Deixa o dado na tela de todos por alguns segundos e libera o relógio.
+      setTimeout(() => fecharDado({ codigo, userId: bot.userId }), BOT_FECHA_DADO_MS);
+      return;
+    }
+    const c = bot.personagem;
+    const habilidades = (HABILIDADES[c.classeId] || [])
+      .map((h) => getHabilidade(c.classeId, h.id, room.ambiente))
+      .filter((h) => h && c.recurso.atual >= h.custo);
+    const arma = armaEmpunhada(c);
+    let decisao = null;
+    try {
+      decisao = await decidirAcaoBot({ room, bot, cenaRecente: cenaRecenteParaBot(room), habilidades, arma });
+    } catch (e) {
+      console.warn(`[bot ${codigo}] IA não decidiu a ação (${e.message}).`);
+    }
+    // A vez ainda é do bot? (alguém pode ter mexido na mesa enquanto ele pensava)
+    if (atorAtual(room) !== bot || room.processando || room.pendingTest || room.status !== 'em_jogo') return;
+    const texto = sanitizar(decisao && decisao.acao, 300) || (room.sugestoes && room.sugestoes[0]) || 'Observo com atenção e sigo o grupo.';
+    const habilidadeId = decisao && habilidades.some((h) => h.id === decisao.habilidade) ? decisao.habilidade : undefined;
+    const armaUid = decisao && decisao.atacar === true && arma && !habilidadeId ? arma.uid : undefined;
+    try {
+      await sendPlayerAction({ codigo, userId: bot.userId, texto, habilidadeId, armaUid });
+    } catch (e) {
+      // Habilidade/arma recusada: tenta só com o texto.
+      if ((habilidadeId || armaUid) && atorAtual(room) === bot && !room.processando) {
+        await sendPlayerAction({ codigo, userId: bot.userId, texto });
+      } else throw e;
+    }
+  } catch (e) {
+    console.error(`[bot ${codigo}] não conseguiu jogar: ${e.message}`);
+    if (atorAtual(room) === bot && !room.processando && !room.pendingTest) {
+      try {
+        passarVez({ codigo, userId: bot.userId });
+      } catch { /* a vez já mudou */ }
+    }
+  } finally {
+    botOcupado.delete(codigo);
+    agendarBot(room);
   }
 }
 
@@ -572,6 +756,7 @@ async function expirarDado(codigo) {
 
 // Conta um pulo por inatividade; no terceiro, o jogador fica Afastado.
 function contarPulo(room, ator, mensagem) {
+  if (ator.bot) return logSistema(room, `${mensagem}.`); // bots não ficam Afastados
   ator.pulos = (ator.pulos || 0) + 1;
   if (ator.pulos >= MAX_PULOS) {
     ator.afastado = true;
@@ -1163,6 +1348,9 @@ async function startAdventure({ codigo, userId }) {
   if (room.status !== 'lobby') throw new Error('A aventura já começou.');
   if (room.processando) throw new Error('O Mestre já está preparando a aventura. Aguarde.');
   if (!room.personagens.some((p) => p.personagem)) throw new Error('Ninguém escolheu personagem ainda.');
+  if (room.personagens.some((p) => p.bot && !p.personagem)) {
+    throw new Error('Os bots ainda estão criando os personagens deles. Aguarde alguns segundos.');
+  }
   if (room.personagens.some((p) => p.conectado && !p.personagem)) {
     throw new Error('Nem todos os jogadores escolheram um personagem ainda.');
   }
@@ -1814,6 +2002,7 @@ function roomPublicState(room, { comLog = false } = {}) {
       conectado: p.conectado,
       afastado: p.afastado,
       pulos: p.pulos,
+      bot: !!p.bot,
       personagem: p.personagem,
     })),
     logTamanho: room.logPublico.length,
@@ -1904,6 +2093,7 @@ setInterval(() => {
 carregarDoDisco();
 
 module.exports = {
+  _botAgir: (codigo) => botAgir(codigo),
   _limparTema: limparTema,
   desistirTeste,
   eventos,

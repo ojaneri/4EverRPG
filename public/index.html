@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>4Ever — Aventuras de RPG com Mestre de IA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎲%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/style.css?v=1794579043" />
+<link rel="stylesheet" href="css/style.css?v=1794579822" />
 </head>
 <body>
   <header class="topo-site">
@@ -83,6 +83,15 @@
               <textarea id="criar-tema" rows="12" maxlength="9000" placeholder="-- DESCREVA O CENÁRIO AQUI&#10;Ex: ruínas élficas perdidas na neblina, no fim de um inverno que não acaba.&#10;&#10;-- DESCREVA AS CRIATURAS&#10;Ex: lobos de gelo, espíritos dos antigos guardiões, um dragão adormecido.&#10;&#10;-- DESCREVA A MISSÃO&#10;Ex: recuperar o cristal que mantém o inverno preso nas ruínas antes da lua cheia."></textarea>
             </label>
             <p id="dica-modelo" class="dica escondido">📄 Quer uma aventura completa? <a href="modelo-aventura.txt" download="4ever-modelo-aventura.txt">Baixe o modelo (.txt)</a>, edite e cole aqui.</p>
+            <label class="linha-bots">🤖 Bots controlados pela IA
+              <select id="criar-bots">
+                <option value="0">Nenhum</option>
+                <option value="1">1 bot</option>
+                <option value="2">2 bots</option>
+                <option value="3">3 bots</option>
+              </select>
+              <small class="dica">Cada bot é um jogador a mais na mesa: a IA cria o personagem dele e decide as ações e rolagens na vez dele. Ex.: você + 2 bots = 3 personagens.</small>
+            </label>
             <label class="linha-opcao">
               <input type="checkbox" id="criar-publica" />
               Jogo público (aparece em "Jogos Abertos" para qualquer pessoa do site). Sem marcar, só entra quem tiver o link ou o código.
@@ -131,6 +140,7 @@
         <h2>Como Jogar</h2>
         <ol>
           <li><strong>Crie uma mesa</strong> escolhendo um roteiro pronto ou escrevendo o seu, e compartilhe o link ou o código com os amigos (ou deixe a mesa em <em>Jogos Abertos</em>).</li>
+          <li><strong>Bots:</strong> ao criar a mesa, você pode adicionar até <strong>3 bots</strong> controlados pela IA. Cada um é um jogador a mais: a IA cria o personagem dele (nome, classe, história e personalidade) e decide as ações e rolagens na vez dele. Os bots só jogam enquanto houver alguém na mesa.</li>
           <li><strong>Monte seu personagem:</strong> escolha a classe e distribua 6 pontos entre Força, Agilidade, Mente e Espírito.</li>
           <li><strong>O anfitrião inicia a aventura</strong> e a IA Mestre narra a cena de abertura.</li>
           <li><strong>Jogue na sua vez:</strong> descreva o que seu personagem faz, use uma das sugestões ou uma habilidade de classe. Você tem <strong>1 minuto</strong> por vez; se não agir, é pulado. Depois de <strong>3 pulos</strong> você fica como <em>Afastado</em> até confirmar que voltou.</li>
@@ -439,7 +449,7 @@
   </div>
 
   <script src="socket.io/socket.io.js"></script>
-  <script src="js/musica.js?v=1794579043"></script>
-  <script src="js/app.js?v=1794579043"></script>
+  <script src="js/musica.js?v=1794579822"></script>
+  <script src="js/app.js?v=1794579822"></script>
 </body>
 </html>

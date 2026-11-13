@@ -257,7 +257,7 @@ io.on('connection', (socket) => {
     return { state: gameManager.roomPublicState(room, { comLog: true }), meuId: jogador.id };
   }
 
-  socket.on('criarJogo', handler(({ aventuraId, tema, publica }) => {
+  socket.on('criarJogo', handler(({ aventuraId, tema, publica, bots }) => {
     let temaFinal = tema || '';
     let aventuraTitulo = null;
     if (aventuraId) {
@@ -268,7 +268,7 @@ io.on('connection', (socket) => {
     }
     const aventura = aventuraId ? getAdventureById(aventuraId) : null;
     const room = gameManager.createRoom({
-      usuario: eu(), socketId: socket.id, tema: temaFinal, aventuraTitulo, publica,
+      usuario: eu(), socketId: socket.id, tema: temaFinal, aventuraTitulo, publica, bots,
       missao: aventura ? aventura.missao : null,
       ambiente: aventura ? aventura.ambiente : null,
     });

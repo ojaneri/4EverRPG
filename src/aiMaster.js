@@ -318,4 +318,76 @@ async function resumirHistorico({ resumoAnterior, mensagens, tema }) {
   return chamarIA({ system, messages: [{ role: 'user', content: conteudo }], maxTokens: 700 });
 }
 
-module.exports = { callMaster, resumirHistorico, buildSystemPrompt, MasterUnavailableError };
+// ---------------------------------------------------------------------------
+// Bots: jogadores controlados pela IA (não pelo Mestre). Chamadas curtas, com
+// resposta em JSON, para criar o personagem e decidir a ação na vez do bot.
+// ---------------------------------------------------------------------------
+function extrairJson(texto) {
+  const t = String(texto || '');
+  const ini = t.indexOf('{');
+  const fim = t.lastIndexOf('}');
+  if (ini < 0 || fim <= ini) return null;
+  try {
+    return JSON.parse(t.slice(ini, fim + 1));
+  } catch {
+    return null;
+  }
+}
+
+// Cria o personagem de um bot: nome, classe, atributos, história e personalidade.
+async function criarPersonagemBot({ tema, aventuraTitulo, ambiente, classes, nomesOcupados, classesOcupadas }) {
+  const amb = getAmbiente(ambiente);
+  const listaClasses = classes.map((c) => `- ${c.id}: ${c.nome} — ${c.descricao}`).join('\n');
+  const system =
+    'Você cria personagens para uma mesa de RPG online em português do Brasil. ' +
+    'Responda SOMENTE com um objeto JSON válido, sem texto antes ou depois.';
+  const conteudo =
+    `Aventura: ${aventuraTitulo || 'personalizada'} (ambiente: ${amb.nome || amb.id}).\n` +
+    `Tema (resumo): ${String(tema || '').slice(0, 1200)}\n\n` +
+    `Classes disponíveis (use o id):\n${listaClasses}\n\n` +
+    `Classes já escolhidas na mesa: ${classesOcupadas.join(', ') || 'nenhuma'} — prefira uma diferente, para o grupo ficar equilibrado.\n` +
+    `Nomes já usados (não repita): ${nomesOcupados.join(', ') || 'nenhum'}.\n\n` +
+    'Atributos: forca, agilidade, mente, espirito. Todos começam em 10; distribua EXATAMENTE 6 pontos extras ' +
+    '(cada atributo entre 8 e 16, e a soma dos quatro deve ser 46), favorecendo o atributo principal da classe.\n\n' +
+    'Crie um personagem interessante e coerente com a aventura e o ambiente. Formato:\n' +
+    '{"nome":"(nome próprio, até 20 letras, combinando com o ambiente)","classeId":"(id)",' +
+    '"atributos":{"forca":10,"agilidade":10,"mente":10,"espirito":10},' +
+    '"historia":"(1 ou 2 frases: quem é e o que busca)","personalidade":"(1 frase: jeito de agir e falar)"}';
+  const texto = await chamarIA({ system, messages: [{ role: 'user', content: conteudo }], maxTokens: 2500 });
+  return extrairJson(texto);
+}
+
+// Decide a ação do bot na vez dele.
+async function decidirAcaoBot({ room, bot, cenaRecente, habilidades, arma }) {
+  const c = bot.personagem;
+  const missao = room.missao
+    ? `${room.missao.objetivo}${room.missao.etapas && room.missao.etapas.length ? ` (etapa atual: ${(room.missao.etapas.find((e) => !e.concluida) || {}).texto || 'final'})` : ''}`
+    : '(ainda não definida)';
+  const habs = habilidades.length
+    ? habilidades.map((h) => `- ${h.id}: ${h.nome} (custa ${h.custo} ${c.recurso.nome}) — ${h.descricao}`).join('\n')
+    : '(nenhuma com recurso suficiente agora)';
+  const system =
+    `Você é um JOGADOR (não o Mestre) numa mesa de RPG online, controlando o personagem ${c.nome}. ` +
+    'Jogue como um bom jogador humano: coopere com o grupo, avance rumo ao objetivo da missão, ' +
+    'seja criativo e coerente com a personalidade, e reaja ao que o Mestre acabou de narrar. ' +
+    'Nunca narre resultados nem decida o que acontece — só diga o que o personagem TENTA fazer ou fala. ' +
+    'Responda SOMENTE com JSON válido.';
+  const conteudo =
+    `SEU PERSONAGEM: ${c.nome}, ${c.classeNome} nível ${c.nivel}. ${c.historia || ''}\n` +
+    `Personalidade: ${bot.botPersona || 'corajoso e prestativo'}\n` +
+    `PV ${c.hp.atual}/${c.hp.max} · ${c.recurso.nome} ${c.recurso.atual}/${c.recurso.max} · moedas ${c.moedas || 0}\n` +
+    `Inventário: ${c.inventario.map((i) => i.nome + (i.equipado ? ' (equipado)' : '')).join(', ') || 'vazio'}\n` +
+    `Arma em mãos: ${arma ? arma.nome : 'nenhuma'}\n` +
+    `Habilidades que pode usar agora:\n${habs}\n\n` +
+    `MISSÃO DO GRUPO: ${missao}\n` +
+    `Sugestões do Mestre para esta vez: ${(room.sugestoes || []).join(' | ') || '(nenhuma)'}\n\n` +
+    `O QUE ACONTECEU POR ÚLTIMO NA MESA:\n${cenaRecente}\n\n` +
+    'É a sua vez. Formato:\n' +
+    '{"acao":"(1 ou 2 frases em primeira pessoa, até 220 caracteres: o que você faz ou diz)",' +
+    '"habilidade":"(id de uma habilidade da lista, só se fizer sentido usar agora; senão null)",' +
+    '"atacar":(true só se a ação for um ataque com a arma em mãos; senão false)}';
+  const texto = await chamarIA({ system, messages: [{ role: 'user', content: conteudo }], maxTokens: 2500 });
+  return extrairJson(texto);
+}
+
+module.exports = { callMaster, resumirHistorico, buildSystemPrompt, MasterUnavailableError, criarPersonagemBot, decidirAcaoBot };

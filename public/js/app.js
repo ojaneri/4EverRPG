@@ -543,6 +543,7 @@ $('form-criar').addEventListener('submit', async (ev) => {
       aventuraId: personalizada ? null : estado.aventuraId,
       tema: personalizada ? tema : '',
       publica: $('criar-publica').checked,
+      bots: Number($('criar-bots').value) || 0,
     }, 15000);
     $('erro-inicio').textContent = '';
     abrirMesa(r);
@@ -728,9 +729,9 @@ function renderSalaEspera(rs) {
     let status;
     if (!p.conectado) status = '<span class="status-offline">offline</span>';
     else if (p.personagem) status = '<span class="status-ok">pronto ✓</span>';
-    else status = '<span class="status-pendente">escolhendo...</span>';
+    else status = `<span class="status-pendente">${p.bot ? 'a IA está criando o personagem...' : 'escolhendo...'}</span>`;
     const coroa = p.id === rs.hostId ? ' 👑' : '';
-    div.innerHTML = `<strong>${esc(p.nome)}${coroa}</strong><br>${p.personagem ? `${esc(p.personagem.nome)} — ${esc(p.personagem.classeNome)}` : ''}<br>${status}`;
+    div.innerHTML = `<strong>${p.bot ? '🤖 ' : ''}${esc(p.nome)}${coroa}</strong><br>${p.personagem ? `${esc(p.personagem.nome)} — ${esc(p.personagem.classeNome)}` : ''}<br>${status}`;
     lista.appendChild(div);
   });
 
@@ -760,6 +761,7 @@ function renderPainelGrupo(rs) {
     const pct = (a, b) => Math.max(0, Math.min(100, Math.round((a / b) * 100)));
     const xpProximo = c.nivel * 100;
     const selos = [];
+    if (p.bot) selos.push('<span class="selo selo-bot">🤖 IA</span>');
     if (p.afastado) selos.push('<span class="selo selo-afastado">Afastado</span>');
     else if (!p.conectado) selos.push('<span class="selo selo-offline">offline</span>');
     if (c.morto) selos.push('<span class="selo selo-caido">☠️ morto</span>');
@@ -2280,7 +2282,8 @@ function outrosJogadoresConectados() {
 function atualizarSeletoresDestino() {
   const select = $('chat-destino');
   const atual = select.value;
-  const nomes = outrosJogadoresConectados();
+  const bots = new Set((estado.roomState?.personagens || []).filter((p) => p.bot && p.personagem).map((p) => p.personagem.nome));
+  const nomes = outrosJogadoresConectados().filter((n) => !bots.has(n)); // bots não leem o bate-papo
   select.innerHTML = `<option value="">Geral</option>${nomes.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}`;
   if (nomes.includes(atual)) select.value = atual;
 }

@@ -396,6 +396,42 @@ async function fase1() {
   ok(fichaDe(A2, 'Thalrik').morto === true, 'Mestre matou pela narrativa com [MORTE: nome | motivo]');
   ok(B.estado.status === 'em_jogo', 'com alguém vivo, a aventura continua');
 
+  // --- Bots controlados pela IA ---
+  {
+    const mb = await emit(B, 'criarJogo', { aventuraId: 'sombras-de-corvile', bots: 2 });
+    const cb = mb.state.codigo;
+    ok(mb.ok && mb.state.personagens.length === 3 && mb.state.personagens.filter((p) => p.bot).length === 2, 'mesa criada com 2 bots (3 lugares)');
+    const muitos = await emit(B, 'criarJogo', { aventuraId: 'sombras-de-corvile', bots: 9 });
+    ok(muitos.ok && muitos.state.personagens.filter((p) => p.bot).length === 3, 'no máximo 3 bots por mesa');
+    await emit(B, 'sairDaSala', { codigo: muitos.state.codigo });
+    await emit(B, 'entrarJogo', { codigo: cb });
+    await sleep(600);
+    const bots = () => B.estado.personagens.filter((p) => p.bot);
+    ok(bots().every((p) => p.personagem) && new Set(bots().map((p) => p.personagem.nome)).size === 2, `a IA criou os personagens dos bots (${bots().map((p) => `${p.personagem?.nome} — ${p.personagem?.classeNome}`).join('; ')})`);
+    const naoHostCfg = await emit(B, 'escolherPersonagem', { codigo: cb, personagem: personagem('Beta', 'guerreiro') });
+    ok(naoHostCfg.ok, 'humano escolhe personagem na mesa com bots');
+    ok((await emit(B, 'iniciarAventura', { codigo: cb })).ok, 'aventura com bots começa');
+    await sleep(300);
+    ok(B.estado.turnoAtual === 'Beta', 'o humano joga primeiro');
+    ok((await emit(B, 'acaoJogador', { codigo: cb, texto: 'Eu sigo pela estrada' })).ok, 'humano age; a vez vai para os bots');
+    // Bots agem sozinhos: um ataca (o Mestre pede teste e o bot rola), o outro examina.
+    for (let i = 0; i < 20 && B.estado.turnoAtual === 'Beta'; i++) await sleep(100); // a vez sai do humano...
+    for (let i = 0; i < 60 && (B.estado.turnoAtual !== 'Beta' || B.estado.pendingTest || B.estado.processando); i++) await sleep(200); // ...e volta depois dos bots
+    const logB = (await emit(B, 'pedirLog', { codigo: cb })).state.log;
+    const nomesBots = bots().map((p) => p.personagem.nome);
+    const acoesBots = logB.filter((m) => m.tipo === 'jogador' && nomesBots.includes(m.autor));
+    ok(acoesBots.length === 2, `os 2 bots agiram na vez deles (${acoesBots.map((m) => `${m.autor}: ${m.texto}`).join(' | ')})`);
+    ok(logB.some((m) => m.tipo === 'sistema' && /rolou/.test(m.texto) && nomesBots.some((n) => m.texto.includes(n))), 'bot rolou o dado sozinho quando o Mestre pediu teste');
+    ok(B.estado.turnoAtual === 'Beta' && !B.estado.pendingTest, 'depois dos bots, a vez volta para o humano');
+    // Sem humanos na mesa, os bots param (sem gastar IA à toa).
+    await emit(B, 'sairDaSala', { codigo: cb });
+    const B2 = await conectar(r2.json.token);
+    const visto = await emit(B2, 'entrarJogo', { codigo: cb });
+    ok(visto.ok && visto.state.personagens.filter((p) => p.bot).every((p) => p.conectado), 'bots voltam a ficar ativos quando um humano retorna');
+    await emit(B2, 'sairDaSala', { codigo: cb });
+    B2.disconnect();
+  }
+
   // --- Resumo do histórico (mesa solo, muitas ações) ---
   const solo = await emit(B, 'criarJogo', { aventuraId: 'sombras-de-corvile', publica: false });
   await emit(B, 'escolherPersonagem', { codigo: solo.state.codigo, personagem: personagem('Miriel', 'guardiao') });

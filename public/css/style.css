@@ -1091,3 +1091,9 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
 .botoes-teste { display: flex; gap: 8px; align-items: center; }
 .botoes-teste button { margin: 0; }
+
+/* --- Bots --- */
+.linha-bots { display: flex; flex-direction: column; gap: 4px; }
+.linha-bots select { max-width: 200px; }
+.linha-bots small { font-size: 0.78rem; }
+.selo-bot { background: #23324a; color: #9cc7ff; border: 1px solid #4f8fd9; }
