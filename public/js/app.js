@@ -2140,7 +2140,7 @@ function renderLogNovo({ tocarNarracao }) {
       ${avatarHtml(avatarChave, cor)}
       <div class="conteudo">
         <div class="autor">${esc(msg.autor)}</div>
-        <div class="texto">${msg.tipo === 'jogador' ? marcarFalas(formatarTexto(msg.texto)) : formatarTexto(msg.texto)}</div>
+        <div class="texto">${textoDaMensagem(msg, i)}</div>
       </div>`;
     if (msg.tipo === 'mestre') {
       const btn = document.createElement('button');
@@ -2760,12 +2760,56 @@ function escapeHtml(s) {
 // *itálico* e `código` em tags — nunca interpreta HTML vindo do texto original.
 // Falas entre aspas ("...", “...”, «...», '...') nas ações dos jogadores viram destaque
 // na cor do personagem (as aspas curvas vêm do CSS). Recebe HTML já escapado.
-function marcarFalas(html) {
+// `filtro(fala)`: decide quais falas destacar (na narração do Mestre, só as que
+// repetem o que o jogador disse); sem filtro, destaca todas.
+function marcarFalas(html, filtro = null) {
+  const marcar = (m, fala, antes = '') => (!filtro || filtro(fala) ? `${antes}<span class="fala">${fala}</span>` : m);
   return html
-    .replace(/(["“«])([^"“”«»\n<>]{1,300}?)(["”»])/g, (_m, _a, fala) => `<span class="fala">${fala}</span>`)
+    // Itálico/negrito dentro das aspas ("*fala*") também vale.
+    .replace(/(["“«])((?:[^"“”«»\n<>]|<\/?(?:em|strong)>){1,300}?)(["”»])/g, (m, _a, fala) => marcar(m, fala))
     // Aspas simples: só quando abrem depois de espaço/pontuação e fecham antes de espaço/pontuação
     // (assim "d'água" e "pingo d'olho" continuam apóstrofos).
-    .replace(/(^|[\s(:—–-])['‘]((?:[^'‘’\n<>]|['’](?=[\p{L}\p{N}])){2,300}?)['’](?=$|[\s.,;:!?)…—–-])/gu, (_m, antes, fala) => `${antes}<span class="fala">${fala}</span>`);
+    .replace(/(^|[\s(:—–-])['‘]((?:[^'‘’\n<>]|<\/?(?:em|strong)>|['’](?=[\p{L}\p{N}])){2,300}?)['’](?=$|[\s.,;:!?)…—–-])/gu, (m, antes, fala) => marcar(m, fala, antes));
+}
+
+// Texto de uma entrada do log: falas em destaque nas ações dos jogadores e, na narração
+// do Mestre, só as que repetem a fala da ação de quem agiu (as dos personagens do Mestre ficam normais).
+function textoDaMensagem(msg, i) {
+  const html = formatarTexto(msg.texto);
+  if (msg.tipo === 'jogador') return marcarFalas(html);
+  if (msg.tipo === 'mestre' && msg.ator) {
+    const doJogador = falasDaAcao(msg.ator, i);
+    if (doJogador.length) return marcarFalas(html, (f) => doJogador.some((d) => falaParecida(d, f)));
+  }
+  return html;
+}
+
+// Compara falas sem ligar para acentos, pontuação, maiúsculas e letras esticadas
+// ("frenteeeee" = "frente"): a narração costuma repetir a fala com outra pontuação.
+const normalizarFala = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  .replace(/<[^>]+>/g, ' ').replace(/[^a-z0-9\s]/g, ' ').replace(/([a-z])\1+/g, '$1').replace(/\s+/g, ' ').trim();
+function falaParecida(a, b) {
+  const x = normalizarFala(a);
+  const y = normalizarFala(b);
+  if (!x || !y) return false;
+  if (x === y || (x.length >= 8 && y.includes(x)) || (y.length >= 8 && x.includes(y))) return true;
+  const px = new Set(x.split(' '));
+  const py = new Set(y.split(' '));
+  let comum = 0;
+  for (const p of px) if (py.has(p)) comum++;
+  return comum / Math.max(px.size, py.size) >= 0.6;
+}
+// Falas (entre aspas) da ação mais recente do jogador `ator`, antes do índice `ate` do log.
+function falasDaAcao(ator, ate) {
+  for (let k = ate - 1; k >= 0 && k >= ate - 40; k--) {
+    const m = estado.log[k];
+    if (m && m.tipo === 'jogador' && m.autor === ator) {
+      const falas = [];
+      marcarFalas(formatarTexto(m.texto), (f) => { falas.push(f); return false; });
+      return falas;
+    }
+  }
+  return [];
 }
 
 function formatarTexto(s) {

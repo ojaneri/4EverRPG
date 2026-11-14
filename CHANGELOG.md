@@ -13,6 +13,10 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+
+## v0.17.6 — 2026-11-13
+- **Falas do jogador também na narração:** quando o Mestre repete a fala que o jogador escreveu na ação, ela aparece em destaque na cor desse personagem. A comparação ignora acentos, pontuação, maiúsculas e letras esticadas ("frenteeeee"). Falas dos personagens do Mestre continuam em itálico normal.
+- Falas com itálico ou negrito dentro ou fora das aspas (`"*fala*"` e `*"fala"*`) também são reconhecidas.
 ## v0.17.5 — 2026-11-13
 - Falas em destaque também com aspas simples ('...' e ‘...’), comuns nas ações dos bots. Apóstrofos como "d'água", "d'olho" e "rock'n'roll" continuam como texto normal.
 ## v0.17.4 — 2026-11-13

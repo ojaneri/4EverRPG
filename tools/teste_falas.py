@@ -63,7 +63,18 @@ try:
             checa(len(falas) == 3 and falas[0]["cor"] != falas[1]["cor"] and all(int(f["peso"]) >= 700 for f in falas), f"[{disp}] cada fala em negrito na cor do seu personagem")
             checa(all("“" in f["antes"] for f in falas), f"[{disp}] aspas curvas desenhadas antes da fala")
             mestre = pg.evaluate("document.querySelectorAll('#chat-log .msg.mestre .fala').length")
-            checa(mestre == 0, f"[{disp}] narração do Mestre não muda")
+            checa(mestre == 0, f"[{disp}] narração sem fala do jogador fica igual")
+            if disp == "desktop":
+                # Narração que repete a fala da ação + fala de personagem do Mestre (não destaca).
+                pg.evaluate("""(() => { const ts = Date.now(); receberLog(estado.log.length, [
+                  { autor: 'Kiti Kura', tipo: 'jogador', texto: 'Avanço gritando "sai da frenteeeee satanáaaaas" e desarmo o ruivo', ts },
+                  { autor: 'Mestre', tipo: 'mestre', ator: 'Kiti Kura', texto: 'Kiti Kura dispara berrando: "*Sai da frenteeeee, satanáaaaas!*" O ruivo recua e rosna: *"Você não passa daqui!"*', ts },
+                ]); })()"""); pg.wait_for_timeout(400)
+            m = pg.evaluate("""(() => { const ult = [...document.querySelectorAll('#chat-log .msg.mestre')].pop(); return [...ult.querySelectorAll('.fala')].map(f => [f.textContent, getComputedStyle(f).color]); })()""") if disp == "desktop" else None
+            if m is not None:
+                print("mestre:", m)
+                checa(len(m) == 1 and m[0][0].startswith("Sai da frente"), "[desktop] na narração, só a fala que repete a do jogador fica em destaque (a do ruivo não)")
+                checa(m and m[0][1] == falas[0]["cor"], "[desktop] a fala na narração usa a cor do personagem que falou")
             pg.locator("#chat-log").screenshot(path=f"{SAIDA}/falas-{disp}.png")
 finally:
     for pr in procs: pr.terminate()
