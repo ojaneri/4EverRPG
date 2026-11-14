@@ -3,6 +3,13 @@
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
 
+
+## v0.14.0 — 2026-11-13
+- **Sala de espera viva:** vitrine da história no topo, com a ilustração do livreto em movimento lento, partículas do ambiente (brasas, vaga-lumes, chuva de dados, poeira, estrelas), o gancho digitado letra por letra, a apresentação e o clima da aventura. Sem segredos do roteiro (mesmos textos do livreto).
+- **Música na sala de espera:** cada ambiente tem sua trilha enquanto o grupo se monta (ex.: Viola ao Luar no folclore, Clube no cyber). No celular, o volume aparece no topo da sala de espera.
+- Dicas de jogo girando embaixo do grupo, reticências animadas no "Aguardando", cartões de quem chega entrando com animação e o botão "Iniciar aventura" pulsando quando está liberado.
+- **Sons:** efeito de porta e acorde quando alguém novo entra na mesa (quem entrou não ouve), e uma fanfarra de início de partida para todos quando a aventura começa. Créditos em `public/musicas/CREDITOS.md`.
+- Teste de navegador `tools/teste_sala_espera.py`.
 ## v0.13.0 — 2026-11-13
 - **Observar partidas (admin):** novo menu "👁 Observar", visível só para os emails de `ADMIN_EMAILS`. Lista todas as mesas em andamento, públicas e privadas, com pessoas online, bots e personagens.
 - O admin assiste a mesa ao vivo (narração, ações, dados e bate-papo geral) sem aparecer no grupo e sem poder agir: o servidor recusa qualquer ação vinda do observador.

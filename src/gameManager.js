@@ -1179,7 +1179,11 @@ function aplicarEstados(room, texto) {
 }
 
 // Faixa a tocar: a variante do ambiente (ex.: cyber-batalha), se existir.
+// Trilha da sala de espera, enquanto o grupo se monta (uma por ambiente).
+const MUSICA_LOBBY = { fantasia: 'taverna', cyber: 'cyber-taverna', pericia: 'cyber-misterio', folclore: 'folclore-calmo', sertao: 'sertao-taverna', espacial: 'espacial-calmo' };
+
 function musicaDoAmbiente(room) {
+  if (room.status === 'lobby' && !room.musica) return MUSICA_LOBBY[room.ambiente || 'fantasia'] || 'taverna';
   if (!room.musica) return null;
   const prefixo = getAmbiente(room.ambiente).musicaPrefixo;
   return prefixo && MUSICAS.some((m) => m.id === prefixo + room.musica) ? prefixo + room.musica : room.musica;

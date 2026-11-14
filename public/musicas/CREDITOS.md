@@ -22,6 +22,8 @@ CC0 não exige atribuição; os créditos ficam aqui (e na página "Como Jogar")
 | etapa, nivel, vitoria, derrota, critico | 85 short music jingles | Kenney | https://opengameart.org/content/85-short-music-jingles |
 | ataque, empunhar, magia, pocao | RPG Sound Pack | artisticdude | https://opengameart.org/content/rpg-sound-pack |
 | sua-vez | Sininho de "sua vez" (duas notas sintetizadas com ffmpeg) | feito para o 4Ever | — |
+| entrada | Porta abrindo (doorOpen_1, 50 RPG sound effects) + jingle curto (jingles_PIZZA00, 85 short music jingles), mixados | Kenney | https://opengameart.org/content/85-short-music-jingles |
+| inicio | Sopro e batida grave sintetizados com ffmpeg + jingle (jingles_HIT15, 85 short music jingles) | Kenney / feito para o 4Ever | https://opengameart.org/content/85-short-music-jingles |
 
 ## Músicas do ambiente cyber (`public/musicas/cyber-*.mp3`)
 | Arquivo | Faixa | Autor | Fonte |

@@ -332,4 +332,8 @@ function getAdventureById(id) {
   return ADVENTURES.find((a) => a.id === id);
 }
 
+// Vitrine da sala de espera (textos do livreto, sem segredos do roteiro, e a ilustração).
+const VITRINES = require('./vitrines.json');
+for (const a of ADVENTURES) a.vitrine = VITRINES[a.id] || null;
+
 module.exports = { ADVENTURES, getAdventureById };

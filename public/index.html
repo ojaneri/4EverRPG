@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>4Ever — Aventuras de RPG com Mestre de IA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎲%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/style.css?v=1794614452" />
+<link rel="stylesheet" href="css/style.css?v=1794614920" />
 </head>
 <body>
   <header class="topo-site">
@@ -196,6 +196,8 @@
         <button type="button" id="btn-config-lobby" class="escondido">⚙️ Configurações</button>
       </div>
 
+      <div id="vitrine-lobby" class="vitrine-lobby" aria-label="Prévia da história"></div>
+
       <div id="missao-lobby" class="missao-lobby escondido"></div>
 
       <div id="bloco-criar-personagem">
@@ -230,6 +232,7 @@
         <div id="lista-grupo" class="lista-grupo"></div>
         <button type="button" id="btn-iniciar-aventura" class="escondido">Iniciar aventura</button>
         <p id="msg-espera" class="msg-espera"></p>
+        <p id="dica-espera" class="dica-espera"></p>
       </div>
       <p class="erro" id="erro-personagem"></p>
     </section>
@@ -466,6 +469,6 @@
 
   <script src="socket.io/socket.io.js"></script>
   <script src="js/musica.js?v=1794588062"></script>
-  <script src="js/app.js?v=1794614452"></script>
+  <script src="js/app.js?v=1794614920"></script>
 </body>
 </html>

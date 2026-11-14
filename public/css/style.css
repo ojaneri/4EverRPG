@@ -1141,3 +1141,95 @@ body.observando #btn-concluir-etapa,
 body.observando #faixa-morto,
 body.observando #sobreposicao-afastado,
 body.observando #modal-dado-pausa { display: none !important; }
+
+/* =========================================================================
+   Sala de espera: vitrine da história, dicas e chegada dos jogadores
+   ========================================================================= */
+.vitrine-lobby {
+  --cor-v: #b08cff;
+  position: relative; overflow: hidden; isolation: isolate;
+  max-width: 900px; width: 100%; margin: 0 auto 18px; min-height: 340px;
+  border-radius: 16px; border: 1px solid color-mix(in srgb, var(--cor-v) 45%, transparent);
+  box-shadow: 0 18px 50px rgba(0,0,0,.55), 0 0 40px color-mix(in srgb, var(--cor-v) 18%, transparent);
+  display: flex; align-items: flex-end; background: #0d0b16;
+  animation: vitrine-entra .9s ease-out both;
+}
+.vitrine-lobby:empty { display: none; }
+.vitrine-arte {
+  position: absolute; inset: -6%; z-index: -3;
+  background-size: cover; background-position: center 30%;
+  animation: ken-burns 38s ease-in-out infinite alternate;
+}
+.vitrine-sombra {
+  position: absolute; inset: 0; z-index: -2;
+  background: linear-gradient(180deg, rgba(13,11,22,.25) 0%, rgba(13,11,22,.15) 30%, rgba(13,11,22,.82) 68%, #0d0b16 100%);
+}
+.vitrine-particulas { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.vitrine-particulas i {
+  position: absolute; width: var(--tam); height: var(--tam); border-radius: 50%;
+  background: #ffb35c; box-shadow: 0 0 10px 2px rgba(255,150,60,.7);
+  opacity: 0; animation: brasa var(--dur) linear infinite;
+}
+/* Cada ambiente com suas partículas */
+.vitrine-lobby[data-amb="cyber"] .vitrine-particulas i,
+.vitrine-lobby[data-amb="pericia"] .vitrine-particulas i {
+  width: 1.5px; height: calc(var(--tam) * 5); border-radius: 2px;
+  background: #4ff3ff; box-shadow: 0 0 8px #4ff3ff; animation-name: chuva-dados;
+}
+.vitrine-lobby[data-amb="pericia"] .vitrine-particulas i { background: #9ad1ff; box-shadow: 0 0 6px #9ad1ff; }
+.vitrine-lobby[data-amb="folclore"] .vitrine-particulas i { background: #d9ff7a; box-shadow: 0 0 12px 3px rgba(190,255,90,.75); animation-name: vagalume; }
+.vitrine-lobby[data-amb="sertao"] .vitrine-particulas i { background: #e8b878; box-shadow: none; opacity: .5; animation-name: poeira; }
+.vitrine-lobby[data-amb="espacial"] .vitrine-particulas i { background: #fff; box-shadow: 0 0 6px #cfe3ff; animation-name: estrela; }
+.vitrine-conteudo { padding: 22px 26px 24px; width: 100%; }
+.vitrine-genero {
+  display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
+  color: #120e22; background: var(--cor-v); padding: 4px 12px; border-radius: 99px;
+  animation: subir-fade .7s .2s ease-out both;
+}
+.vitrine-titulo {
+  font-family: 'Cinzel', Georgia, serif; font-size: clamp(1.6rem, 4vw, 2.5rem); line-height: 1.1;
+  margin: 10px 0 8px; color: #fff; text-shadow: 0 3px 18px rgba(0,0,0,.9), 0 0 24px color-mix(in srgb, var(--cor-v) 40%, transparent);
+  animation: subir-fade .8s .35s ease-out both;
+}
+.vitrine-gancho {
+  font-family: 'Cinzel', Georgia, serif; font-weight: 600; font-size: 1.05rem; line-height: 1.45;
+  color: var(--cor-v); min-height: 2.9em; margin: 0 0 8px; text-shadow: 0 2px 10px rgba(0,0,0,.9);
+}
+.vitrine-gancho.digitando::after { content: '▍'; margin-left: 2px; animation: piscar .8s steps(1) infinite; }
+.vitrine-texto { color: #ddd6ff; font-size: .92rem; line-height: 1.55; margin: 0; max-width: 720px; animation: subir-fade 1s 1s ease-out both; }
+.vitrine-clima { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.vitrine-clima span {
+  font-size: .75rem; color: #e8e4ff; border: 1px solid rgba(255,255,255,.3); background: rgba(0,0,0,.3);
+  padding: 3px 10px; border-radius: 99px; animation: subir-fade .6s ease-out both;
+}
+.dica-espera { color: var(--texto-fraco); font-size: .85rem; text-align: center; margin: 10px 0 0; min-height: 2.6em; }
+.dica-espera.aparece { animation: subir-fade .7s ease-out both; }
+.msg-espera.aguardando::after { content: '...'; display: inline-block; width: 1.2em; text-align: left; animation: reticencias 1.4s steps(4) infinite; overflow: hidden; vertical-align: bottom; }
+.item-grupo { transition: border-color .4s, box-shadow .4s; }
+.item-grupo.pronto { border-color: rgba(63,207,122,.45); }
+.item-grupo.chegou { animation: chegar .7s cubic-bezier(.2,1.5,.4,1) both; }
+#btn-iniciar-aventura:not([disabled]):not(.escondido) { animation: pulsar-botao 2.2s ease-in-out infinite; }
+
+@keyframes vitrine-entra { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes ken-burns { from { transform: scale(1) translate(0, 0); } to { transform: scale(1.12) translate(-2%, -3%); } }
+@keyframes subir-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes piscar { 50% { opacity: 0; } }
+@keyframes reticencias { from { width: 0; } to { width: 1.2em; } }
+@keyframes chegar { 0% { opacity: 0; transform: scale(.6) translateY(16px); } 100% { opacity: 1; transform: none; } }
+@keyframes pulsar-botao { 0%, 100% { box-shadow: 0 0 0 0 rgba(176,140,255,.55); } 50% { box-shadow: 0 0 0 10px rgba(176,140,255,0); } }
+@keyframes brasa { 0% { opacity: 0; transform: translate(0, 40px); } 15% { opacity: .9; } 100% { opacity: 0; transform: translate(30px, -260px); } }
+@keyframes chuva-dados { 0% { opacity: 0; transform: translateY(-200px); } 20% { opacity: .8; } 100% { opacity: 0; transform: translateY(260px); } }
+@keyframes vagalume { 0%, 100% { opacity: 0; transform: translate(0, 0); } 25% { opacity: 1; transform: translate(18px, -14px); } 50% { opacity: .2; transform: translate(-10px, -30px); } 75% { opacity: .9; transform: translate(12px, -8px); } }
+@keyframes poeira { 0% { opacity: 0; transform: translate(-60px, 0); } 30% { opacity: .5; } 100% { opacity: 0; transform: translate(220px, -20px); } }
+@keyframes estrela { 0%, 100% { opacity: .1; transform: scale(.6); } 50% { opacity: 1; transform: scale(1.2); } }
+
+@media (max-width: 640px) {
+  .vitrine-lobby { min-height: 300px; border-radius: 12px; }
+  .vitrine-conteudo { padding: 16px; }
+  .vitrine-gancho { font-size: .95rem; }
+  .vitrine-texto { font-size: .85rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vitrine-arte, .vitrine-particulas i, #btn-iniciar-aventura { animation: none !important; }
+  .vitrine-particulas { display: none; }
+}

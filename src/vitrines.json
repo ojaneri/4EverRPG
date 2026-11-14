@@ -1,0 +1,146 @@
+{
+  "sombras-de-corvile": {
+    "genero": "Fantasia · Mistério",
+    "cor": "#7fb6ff",
+    "gancho": "Há três semanas, nenhuma caravana sai de Corvile. À noite, luzes estranhas piscam na boca da velha mina de prata.",
+    "texto": "Um vilarejo agrícola cercado de colinas, portas trancadas, animais inquietos e moradores que mal abrem a janela. Alguém precisa descobrir o que aconteceu com quem sumiu, e o caminho passa pelas galerias de uma mina abandonada há uma geração. Mais investigação que espada, e uma escolha difícil no fim.",
+    "clima": [
+      "Mistério",
+      "Tensão",
+      "Escolha moral"
+    ],
+    "imagem": "img/aventuras/sombras-de-corvile.jpg"
+  },
+  "cofre-de-thalveira": {
+    "genero": "Fantasia · Assalto",
+    "cor": "#f2c14e",
+    "gancho": "Dentro do cofre de Mestre Odrin está algo que não pode ser vendido. O comprador já está a caminho.",
+    "texto": "Thalveira é uma cidade portuária de casas de penhores cheias de relíquias de origem duvidosa. Guardas noturnos, alarmes arcanos, funcionários que talvez aceitem uma moeda e uma rota de fuga que pode dar errado. Planeje, convença, engane e, se tudo falhar, corra.",
+    "clima": [
+      "Planejamento",
+      "Lábia",
+      "Fuga"
+    ],
+    "imagem": "img/aventuras/cofre-de-thalveira.jpg"
+  },
+  "o-que-desperta-sob-o-farol": {
+    "genero": "Fantasia · Horror costeiro",
+    "cor": "#6fe3c1",
+    "gancho": "Há três noites o farol se apaga sozinho, sempre à mesma hora. E os marinheiros juram ouvir um canto vindo da água.",
+    "texto": "Um promontório de pedra batido pelo mar, um farol antigo e grutas escuras na base do penhasco. O faroleiro não responde às mensagens, e quando aparece já não parece o mesmo. Explore com cuidado, escolha em quem confiar e devolva a luz antes do primeiro naufrágio.",
+    "clima": [
+      "Exploração",
+      "Horror leve",
+      "Confiança"
+    ],
+    "imagem": "img/aventuras/o-que-desperta-sob-o-farol.jpg"
+  },
+  "a-invasao-cyber": {
+    "genero": "Cyberpunk · Hackers",
+    "cor": "#00e5ff",
+    "gancho": "23h. O ransomware HIDRA tomou Nova Aurora: o hospital sem prontuários, o metrô parado e um pedido de resgate em todos os telões.",
+    "texto": "Nova Aurora, 2049: uma metrópole brasileira hiperconectada de letreiros holográficos e drones. A Agência de Defesa Cibernética convoca a sua equipe para conter o ataque, seguir os rastros digitais e conseguir a chave antes do amanhecer. Logs, engenharia social, invasões e contra-ataques, com perigo real fora da tela também.",
+    "clima": [
+      "Investigação forense",
+      "Ação",
+      "Dilemas éticos"
+    ],
+    "imagem": "img/aventuras/a-invasao-cyber.jpg"
+  },
+  "piratas-da-nevoa-de-sal": {
+    "genero": "Fantasia · Aventura pirata",
+    "cor": "#ff8a5c",
+    "gancho": "Uma névoa prateada engole navios e os devolve vazios, com a mesa posta e o chá ainda quente.",
+    "texto": "O Arquipélago das Mil Marés tem portos piratas, tavernas sobre palafitas e mares cheios de magia salgada. A bordo do Gaivota Torta, um navio de piratas falidos, o grupo caça as três partes de um mapa que leva ao coração da névoa e ao tesouro de uma rainha pirata que “nunca morreu”. Abordagens, duelos no convés, motins e barganhas com o mar.",
+    "clima": [
+      "Humor",
+      "Duelos",
+      "Tesouros amaldiçoados"
+    ],
+    "imagem": "img/aventuras/piratas-da-nevoa-de-sal.jpg"
+  },
+  "a-noite-do-boitata": {
+    "genero": "Folclore brasileiro",
+    "cor": "#5fb4ff",
+    "gancho": "Toda noite um fogo azul serpenteia pela mata sem queimar as árvores. E quem o vê esquece o próprio nome.",
+    "texto": "Vila de São Bento, 1890, à beira de uma mata atlântica fechada e de rios escuros, com cafezais avançando sobre a floresta. O Boitatá, a cobra de fogo que protege as matas, acordou com raiva, e dizem que na Lua Nova o fogo desce até a vila. Os Encantados têm regras próprias e cobram respeito.",
+    "clima": [
+      "Mágico",
+      "Assombrado",
+      "Natureza × ganância"
+    ],
+    "imagem": "img/aventuras/a-noite-do-boitata.jpg"
+  },
+  "sertao-de-ferro": {
+    "genero": "Steampunk sertanejo",
+    "cor": "#ffb347",
+    "gancho": "A torre de água de Pedra Branca parou. O trem com a peça de reposição foi tomado por cangaceiros de braços de engrenagem. A cidade tem três dias de água.",
+    "texto": "Um sertão de 1920 onde a seca foi “vencida” pelas máquinas a vapor da Companhia Ferro & Sol: trens blindados cortam a caatinga e cada cidade vive em volta de uma torre de água mecânica. Duelos ao meio-dia, trens em movimento, cordel e feira, e uma pergunta que ninguém quer responder: de quem é a água?",
+    "clima": [
+      "Faroeste",
+      "Vapor",
+      "Justiça"
+    ],
+    "imagem": "img/aventuras/sertao-de-ferro.jpg"
+  },
+  "estacao-orion-7": {
+    "genero": "Ficção científica · Alienígenas",
+    "cor": "#b48bff",
+    "gancho": "A estação mineradora em órbita de Júpiter parou de responder há 9 dias. Os 200 tripulantes dormem em criogenia, e ninguém se lembra de ter entrado nas cápsulas.",
+    "texto": "Ano 2187. Corredores industriais, gravidade artificial instável e docas cheias de blocos de gelo vindos da lua Europa. A IA da estação insiste que está tudo bem. Não está: algo veio no gelo. Algo que se espalha pelos dutos, imita vozes e fala por padrões de luz. Suspense claustrofóbico, recursos escassos e decisões duras.",
+    "clima": [
+      "Suspense",
+      "Horror sci-fi",
+      "Sobrevivência"
+    ],
+    "imagem": "img/aventuras/estacao-orion-7.jpg"
+  },
+  "o-print-que-mentia": {
+    "genero": "Perícia · Tribunal",
+    "cor": "#4cc9f0",
+    "gancho": "Um print de WhatsApp pôs um jovem de 19 anos na cadeia. O júri é na sexta. A família jura que a conversa nunca existiu.",
+    "texto": "Uma cidade do interior paulista, um fórum lotado e um laboratório de perícia improvisado. A sua equipe tem poucos dias para examinar o celular, o backup e cada pixel daquela conversa. Mas atenção: prova sem lacre, sem cadeia de custódia ou sem ordem judicial cai no tribunal. Drama de júri contra o relógio.",
+    "clima": [
+      "Perícia digital",
+      "Tribunal",
+      "Contra o relógio"
+    ],
+    "imagem": "img/aventuras/o-print-que-mentia.jpg"
+  },
+  "golpe-do-pix-fantasma": {
+    "genero": "Perícia · Crime financeiro",
+    "cor": "#7ae582",
+    "gancho": "Em uma semana, 37 idosos perderam R$ 1,2 milhão para uma falsa central do banco. O dinheiro some em minutos.",
+    "texto": "Uma força-tarefa de crimes cibernéticos em Campinas. Uma voz que sabia nome, CPF e últimas compras de cada vítima, um número que parecia oficial e dezenas de contas laranja levando tudo para as criptomoedas. Siga o dinheiro, descubra de onde vazam os dados e chegue antes do saque.",
+    "clima": [
+      "Rastro do dinheiro",
+      "Operação",
+      "Caça à quadrilha"
+    ],
+    "imagem": "img/aventuras/golpe-do-pix-fantasma.jpg"
+  },
+  "o-contrato-assinado-por-um-morto": {
+    "genero": "Perícia · Fraude digital",
+    "cor": "#f4a261",
+    "gancho": "Seu Arlindo morreu na segunda. Na quinta, “assinou” um empréstimo de R$ 480 mil, com selfie e tudo.",
+    "texto": "Belo Horizonte, um velório recente e uma família em guerra pela herança. O banco jura que a assinatura eletrônica é infalível e cobra a viúva. Trilha de auditoria, IP, aparelho, horários e uma selfie que não deveria existir: a perícia vai mostrar quem esteve do outro lado da tela.",
+    "clima": [
+      "Mistério familiar",
+      "Assinatura digital",
+      "Herança"
+    ],
+    "imagem": "img/aventuras/o-contrato-assinado-por-um-morto.jpg"
+  },
+  "sinal-perdido-na-serra": {
+    "genero": "Perícia · Desaparecimento",
+    "cor": "#e5989b",
+    "gancho": "Bianca saiu de uma festa na serra às 2h17 e sumiu. O celular parou de dar sinal às 2h41. Cada hora conta.",
+    "texto": "Petrópolis, neblina, estradas sinuosas e câmeras que ninguém olha. Reconstrua a linha do tempo da noite com fotos, stories, câmeras, dados de antena e histórico de localização (com ordem judicial, sempre). Um caso de desaparecimento contra o relógio, em que encontrar não basta: é preciso proteger.",
+    "clima": [
+      "True crime",
+      "Linha do tempo",
+      "Corrida contra o tempo"
+    ],
+    "imagem": "img/aventuras/sinal-perdido-na-serra.jpg"
+  }
+}

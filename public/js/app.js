@@ -139,6 +139,7 @@ function mostrarTela(id) {
   document.querySelectorAll('.tela').forEach((t) => t.classList.toggle('tela-ativa', t.id === id));
   document.body.classList.toggle('em-mesa', id === 'tela-jogo');
   document.documentElement.classList.toggle('em-mesa', id === 'tela-jogo');
+  try { arrumarBarraMesa(); } catch { /* ainda carregando o script */ }
 }
 
 function marcarNav(rota) {
@@ -727,6 +728,7 @@ function renderEstado(rs) {
   estado.dadoPrazo = rs.dadoRestanteMs != null ? Date.now() + rs.dadoRestanteMs : null;
   if (rs.logTamanho > estado.log.length) pedirLogCompleto();
 
+  sonsDaMesa(rs);
   const eu = meuJogador();
   if (!eu && !estado.observando) return;
   const rota = `#/${estado.observando ? 'observar' : 'sala'}/${rs.codigo}`;
@@ -779,13 +781,103 @@ function renderEstado(rs) {
   atualizarControleTurno();
 }
 
+// ---------------------------------------------------------------------------
+// Sala de espera: vitrine da história (arte animada, gancho digitado, clima),
+// trilha do ambiente, dicas girando e quem chega entra com animação.
+// ---------------------------------------------------------------------------
+const DICAS_ESPERA = [
+  '🎲 Em ações arriscadas o Mestre pede um teste: role o d20 e some o seu atributo.',
+  '🏳️ Na hora do dado dá para desistir da ação. Você perde a vez, e o Mestre decide as consequências.',
+  '💬 O Chat não entra na história: use para combinar o plano com o grupo (dá para mandar áudio).',
+  '🎨 Cada personagem tem uma cor. Suas falas e seu cartão ficam nela.',
+  '🎒 Itens e armas ficam no Inventário. Usar um item gasta a sua vez.',
+  '🏕️ Uma vez por cena o grupo pode descansar e recuperar metade da vida.',
+  '📜 Os Objetivos mostram a missão e as etapas. O Mestre marca cada etapa cumprida.',
+  '✍️ Descreva o que seu personagem faz e como faz. Detalhes rendem narrações melhores.',
+  '🤝 Ajudar um aliado também é uma ação: cure, proteja, distraia o inimigo.',
+];
+let vitrineCodigo = null;
+let vitrineTimers = [];
+const reduzMovimento = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function escreverDevagar(el, texto) {
+  if (reduzMovimento()) { el.textContent = texto; return; }
+  el.textContent = '';
+  el.classList.add('digitando');
+  let i = 0;
+  const t = setInterval(() => {
+    i += 1;
+    el.textContent = texto.slice(0, i);
+    if (i >= texto.length) {
+      clearInterval(t);
+      el.classList.remove('digitando');
+    }
+  }, 32);
+  vitrineTimers.push(t);
+}
+
+function renderVitrine(rs) {
+  if (vitrineCodigo === rs.codigo) return;
+  vitrineCodigo = rs.codigo;
+  vitrineTimers.forEach(clearInterval);
+  vitrineTimers = [];
+  const av = (estado.config.ADVENTURES || []).find((a) => a.titulo === rs.aventuraTitulo);
+  const v = av && av.vitrine;
+  const el = $('vitrine-lobby');
+  el.dataset.amb = rs.ambiente || 'fantasia';
+  el.style.setProperty('--cor-v', (v && v.cor) || '#b08cff');
+  const particulas = Array.from({ length: 26 }, () => {
+    const r = Math.random;
+    return `<i style="left:${(r() * 100).toFixed(1)}%;top:${(r() * 100).toFixed(1)}%;--tam:${(2 + r() * 4).toFixed(1)}px;--dur:${(7 + r() * 9).toFixed(1)}s;animation-delay:-${(r() * 16).toFixed(1)}s"></i>`;
+  }).join('');
+  const titulo = rs.aventuraTitulo || 'Aventura personalizada';
+  el.innerHTML = `
+    <div class="vitrine-arte" style="background-image:url('${v ? v.imagem : 'img/aventuras/personalizada.jpg'}')"></div>
+    <div class="vitrine-sombra"></div>
+    <div class="vitrine-particulas" aria-hidden="true">${particulas}</div>
+    <div class="vitrine-conteudo">
+      <span class="vitrine-genero">${esc(v ? v.genero : 'Aventura personalizada')}</span>
+      <h2 class="vitrine-titulo">${av ? `${esc(av.icone)} ` : '✨ '}${esc(titulo)}</h2>
+      <p class="vitrine-gancho" id="vitrine-gancho"></p>
+      <p class="vitrine-texto">${esc(v ? v.texto : 'Uma história escrita pelo anfitrião. Ninguém sabe o que vem por aí: monte seu personagem e espere o grupo.')}</p>
+      ${v ? `<div class="vitrine-clima">${v.clima.map((c, i) => `<span style="animation-delay:${1.2 + i * 0.25}s">${esc(c)}</span>`).join('')}</div>` : ''}
+    </div>`;
+  escreverDevagar($('vitrine-gancho'), v ? v.gancho : 'O Mestre já está lendo o roteiro...');
+  // Dicas girando embaixo do grupo.
+  const dica = $('dica-espera');
+  let n = Math.floor(Math.random() * DICAS_ESPERA.length);
+  const trocar = () => {
+    dica.classList.remove('aparece');
+    void dica.offsetWidth; // reinicia a animação
+    dica.textContent = DICAS_ESPERA[n++ % DICAS_ESPERA.length];
+    dica.classList.add('aparece');
+  };
+  trocar();
+  vitrineTimers.push(setInterval(trocar, 8000));
+}
+
+// Sons da mesa: alguém novo entrou / a aventura começou.
+let somMesa = { codigo: null, ids: [], status: null };
+function sonsDaMesa(rs) {
+  const ids = rs.personagens.map((p) => p.id);
+  if (somMesa.codigo === rs.codigo) {
+    if (ids.some((id) => !somMesa.ids.includes(id) && id !== estado.meuId)) Musica.efeito('entrada', 0.8);
+    if (somMesa.status === 'lobby' && rs.status === 'em_jogo') Musica.efeito('inicio');
+  }
+  somMesa = { codigo: rs.codigo, ids, status: rs.status };
+}
+
+const jaVistosLobby = new Set();
 function renderSalaEspera(rs) {
   eraMinhaVez = false; // no lobby ninguém tem a vez: a primeira vez da aventura toca o som
+  renderVitrine(rs);
   const lista = $('lista-grupo');
   lista.innerHTML = '';
   rs.personagens.forEach((p) => {
     const div = document.createElement('div');
-    div.className = 'item-grupo';
+    const chave = `${rs.codigo}:${p.id}`;
+    div.className = `item-grupo${jaVistosLobby.has(chave) ? '' : ' chegou'}${p.personagem ? ' pronto' : ''}`;
+    jaVistosLobby.add(chave);
     let status;
     if (!p.conectado) status = '<span class="status-offline">offline</span>';
     else if (p.personagem) status = '<span class="status-ok">pronto ✓</span>';
@@ -810,7 +902,10 @@ function renderSalaEspera(rs) {
   } else {
     btn.classList.add('escondido');
     msg.textContent = rs.processando ? 'O Mestre está preparando a aventura...' : todosProntos ? 'Aguardando o anfitrião iniciar a aventura...' : 'Aguardando todos escolherem personagem...';
-  }
+  }  // Reticências animadas no lugar do "..." fixo.
+  const esperando = /\.\.\.$/.test(msg.textContent);
+  msg.classList.toggle('aguardando', esperando);
+  if (esperando) msg.textContent = msg.textContent.slice(0, -3);
 }
 
 let corAberta = false; // o seletor de cor do cartão continua aberto entre atualizações
@@ -908,12 +1003,15 @@ function arrumarBarraMesa() {
   const extras = $('abas-extras');
   const cab = document.querySelector('.jogo-cabecalho');
   const musica = $('controle-musica');
+  const noTopo = () => document.querySelector('.topo-site').insertBefore(musica, document.querySelector('.conta-topo'));
   if (ehCelular()) {
     itensCabecalhoMesa.forEach((el) => extras.appendChild(el));
-    extras.appendChild(musica);
+    // Na mesa o volume vai para a linha das abas; fora dela (sala de espera) fica no topo.
+    if (document.body.classList.contains('em-mesa')) extras.appendChild(musica);
+    else noTopo();
   } else {
     itensCabecalhoMesa.forEach((el) => cab.appendChild(el));
-    document.querySelector('.topo-site').insertBefore(musica, document.querySelector('.conta-topo'));
+    noTopo();
   }
 }
 mqCelular.addEventListener('change', () => {
