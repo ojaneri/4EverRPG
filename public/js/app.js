@@ -683,10 +683,15 @@ function abrirMesa({ state, meuId, observando = false }) {
     document.querySelectorAll('.cartao-classe').forEach((el) => el.classList.remove('selecionado'));
     renderChatLateral();
   }
+  // Reconexão na mesma mesa com a pessoa lendo lá em cima: não pula para o fim.
+  const lendo = !trocouDeMesa && estado.log.length && !seguidorLog().estaNoFim()
+    ? { topo: $('chat-log').scrollTop, antes: estado.log.filter((m) => !m.efemero).length }
+    : null;
   estado.log = [];
   logRenderizado = 0;
   $('chat-log').innerHTML = '';
   receberLog(0, state.log || [], { inicial: true });
+  if (lendo) seguidorLog().manter(lendo.topo, (state.log || []).filter((m) => !m.efemero).length - lendo.antes);
   $('codigo-exibido').textContent = state.codigo;
   $('codigo-jogo-ativo').textContent = state.codigo;
   renderEstado(state);
@@ -2082,10 +2087,14 @@ async function pedirLogCompleto() {
   pedindoLog = true;
   try {
     const r = await emitir('pedirLog', {}, 15000);
+    const lendo = estado.log.length && !seguidorLog().estaNoFim()
+      ? { topo: $('chat-log').scrollTop, antes: estado.log.filter((m) => !m.efemero).length }
+      : null;
     estado.log = [];
     logRenderizado = 0;
     $('chat-log').innerHTML = '';
     receberLog(0, r.state.log || [], { inicial: true });
+    if (lendo) seguidorLog().manter(lendo.topo, (r.state.log || []).filter((m) => !m.efemero).length - lendo.antes);
   } catch { /* tenta de novo na próxima atualização */ }
   pedindoLog = false;
 }
@@ -2194,15 +2203,25 @@ function seguidorRolagem(lista) {
     if (noFim) zerar();
   }, { passive: true });
   btn.addEventListener('click', () => irAoFim(true));
+  const mostrarNovas = (n) => {
+    if (n <= 0) return;
+    novas += n;
+    btn.textContent = `⬇ ${novas} nova${novas > 1 ? 's' : ''}`;
+    btn.classList.remove('escondido');
+  };
   return {
     irAoFim,
+    estaNoFim: () => noFim,
+    // A lista foi redesenhada (reconexão): volta para onde a pessoa lia e conta as novas.
+    manter(topo, n) {
+      noFim = false;
+      requestAnimationFrame(() => requestAnimationFrame(() => (lista.scrollTop = topo)));
+      mostrarNovas(n);
+    },
     // Depois de acrescentar `n` mensagens. `forcar`: carga inicial ou mensagem minha.
     chegaram(n, { forcar = false } = {}) {
       if (forcar || noFim) return irAoFim();
-      if (n <= 0) return;
-      novas += n;
-      btn.textContent = `⬇ ${novas} nova${novas > 1 ? 's' : ''}`;
-      btn.classList.remove('escondido');
+      mostrarNovas(n);
     },
     // A altura mudou (imagem ou áudio carregou): segue no fim só se já estava lá.
     ajustar() {

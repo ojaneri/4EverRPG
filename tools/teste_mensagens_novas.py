@@ -64,6 +64,14 @@ try:
         beto.screenshot(path=f"{OUT}/novas-log-celular.png")
         beto.click("#chat-log + .btn-novas"); beto.wait_for_timeout(1200)
         checa(beto.evaluate(FIM + "('chat-log')") and beto.is_hidden("#chat-log + .btn-novas"), "clicar no contador leva à última mensagem e o contador some")
+        # Reconexão (queda de internet / reinício): Beto lendo lá em cima continua onde estava.
+        beto.evaluate("document.getElementById('chat-log').scrollTop = 0"); beto.wait_for_timeout(300)
+        beto.evaluate("socket.disconnect()"); beto.wait_for_timeout(300)
+        ana.fill("#chat-lateral-texto", "enquanto Beto caiu"); ana.press("#chat-lateral-texto", "Enter")
+        beto.evaluate("socket.connect()"); beto.wait_for_timeout(2500)
+        checa(beto.evaluate("document.getElementById('chat-log').scrollTop") < 5, f"depois de reconectar, Beto continua onde lia (scrollTop={beto.evaluate('document.getElementById(\'chat-log\').scrollTop')})")
+        beto.click("#chat-log + .btn-novas") if beto.is_visible("#chat-log + .btn-novas") else beto.evaluate("rolarLogParaFim()")
+        beto.wait_for_timeout(800)
         # Ana no fim acompanha sozinha (a ação do Beto é narrada).
         checa(ana.evaluate(FIM + "('chat-log')"), "Ana, que estava no fim, continua no fim")
         # --- Chat (Beto na aba Chat) ---

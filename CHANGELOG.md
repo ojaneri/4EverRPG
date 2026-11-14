@@ -9,6 +9,9 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+
+## v0.17.2 — 2026-11-13
+- Balão "⬇ N novas": quando a conexão volta (queda de internet ou reinício do servidor) e o log é redesenhado, quem estava lendo lá em cima continua no mesmo ponto, e o balão mostra as mensagens que chegaram. Antes pulava para o fim.
 ## v0.17.1 — 2026-11-13
 - **Mensagens novas sem puxar quem está lendo:** no log da mesa e no Chat, quem rolou para cima não é mais levado para o fim quando chega mensagem. Aparece um botão "⬇ N novas" no rodapé da lista; o clique desce até a última. Quem já está no fim continua acompanhando, e quem manda uma mensagem vai para o fim.
 - Teste de navegador `tools/teste_mensagens_novas.py`.
