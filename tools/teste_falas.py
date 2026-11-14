@@ -48,7 +48,7 @@ try:
         ana.fill("#input-acao", 'Eu olho pra todos e falo "Agora vamos quebrar o pau!" e saco o cajado'); ana.press("#input-acao", "Enter")
         beto.wait_for_function("!document.getElementById('input-acao').disabled && document.querySelector('#form-acao button[type=submit]') && !document.querySelector('#form-acao button[type=submit]').disabled", timeout=25000)
         fecha(ana); fecha(beto)
-        beto.fill("#input-acao", 'Coço a barba e respondo “Calma, gente. Primeiro a gente conversa.” enquanto olho a porta'); beto.press("#input-acao", "Enter")
+        beto.fill("#input-acao", "Coço a barba e respondo “Calma, gente. Primeiro a gente conversa.” e bebo um gole d'água. Depois sussurro 'pingo d'olho, vem comigo' e olho a porta"); beto.press("#input-acao", "Enter")
         ana.wait_for_timeout(4000); fecha(ana); fecha(beto)
         falhas = 0
         def checa(cond, msg):
@@ -59,8 +59,8 @@ try:
             pg.evaluate("rolarLogParaFim()"); pg.wait_for_timeout(600)
             falas = pg.evaluate("""[...document.querySelectorAll('#chat-log .msg.jogador .fala')].map(f => ({ t: f.textContent, cor: getComputedStyle(f).color, antes: getComputedStyle(f, '::before').content, peso: getComputedStyle(f).fontWeight }))""")
             print(disp, falas)
-            checa(len(falas) == 2 and falas[0]["t"] == "Agora vamos quebrar o pau!" and falas[1]["t"] == "Calma, gente. Primeiro a gente conversa.", f"[{disp}] as duas falas (aspas retas e curvas) são reconhecidas")
-            checa(len(falas) == 2 and falas[0]["cor"] != falas[1]["cor"] and all(int(f["peso"]) >= 700 for f in falas), f"[{disp}] cada fala em negrito na cor do seu personagem")
+            checa(len(falas) == 3 and falas[0]["t"] == "Agora vamos quebrar o pau!" and falas[1]["t"] == "Calma, gente. Primeiro a gente conversa." and falas[2]["t"] == "pingo d'olho, vem comigo", f"[{disp}] falas com aspas retas, curvas e simples são reconhecidas (apóstrofo de d'água não)")
+            checa(len(falas) == 3 and falas[0]["cor"] != falas[1]["cor"] and all(int(f["peso"]) >= 700 for f in falas), f"[{disp}] cada fala em negrito na cor do seu personagem")
             checa(all("“" in f["antes"] for f in falas), f"[{disp}] aspas curvas desenhadas antes da fala")
             mestre = pg.evaluate("document.querySelectorAll('#chat-log .msg.mestre .fala').length")
             checa(mestre == 0, f"[{disp}] narração do Mestre não muda")

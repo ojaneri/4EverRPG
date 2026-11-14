@@ -2758,10 +2758,14 @@ function escapeHtml(s) {
 
 // Markdown mínimo e seguro: escapa tudo primeiro, só depois converte **negrito**,
 // *itálico* e `código` em tags — nunca interpreta HTML vindo do texto original.
-// Falas entre aspas ("...", “...”, «...») nas ações dos jogadores viram destaque
+// Falas entre aspas ("...", “...”, «...», '...') nas ações dos jogadores viram destaque
 // na cor do personagem (as aspas curvas vêm do CSS). Recebe HTML já escapado.
 function marcarFalas(html) {
-  return html.replace(/(["“«])([^"“”«»\n<>]{1,300}?)(["”»])/g, (_m, _a, fala) => `<span class="fala">${fala}</span>`);
+  return html
+    .replace(/(["“«])([^"“”«»\n<>]{1,300}?)(["”»])/g, (_m, _a, fala) => `<span class="fala">${fala}</span>`)
+    // Aspas simples: só quando abrem depois de espaço/pontuação e fecham antes de espaço/pontuação
+    // (assim "d'água" e "pingo d'olho" continuam apóstrofos).
+    .replace(/(^|[\s(:—–-])['‘]((?:[^'‘’\n<>]|['’](?=[\p{L}\p{N}])){2,300}?)['’](?=$|[\s.,;:!?)…—–-])/gu, (_m, antes, fala) => `${antes}<span class="fala">${fala}</span>`);
 }
 
 function formatarTexto(s) {

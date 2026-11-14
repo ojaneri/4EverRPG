@@ -12,6 +12,9 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+
+## v0.17.5 — 2026-11-13
+- Falas em destaque também com aspas simples ('...' e ‘...’), comuns nas ações dos bots. Apóstrofos como "d'água", "d'olho" e "rock'n'roll" continuam como texto normal.
 ## v0.17.4 — 2026-11-13
 - **Falas em destaque:** nas ações dos jogadores (e dos bots), o que está entre aspas ("...", “...” ou «...») aparece como diálogo de livro: negrito serifado na cor do personagem, com aspas curvas. Só muda a tela; o texto enviado ao Mestre e o diário continuam iguais.
 - Teste de navegador `tools/teste_falas.py`.
