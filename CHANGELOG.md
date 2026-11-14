@@ -15,6 +15,13 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+## v0.19.1 — 2026-11-14
+- **Mestre em streaming:** as chamadas à IA agora usam `stream: true` (SSE). O gateway sixtysix corta respostas sem streaming que passam de ~30s (HTTP 504), o que acontecia nos dias de gateway lento. A resposta continua sendo montada inteira antes de ir para a mesa; se o gateway ignorar o stream, o JSON comum segue funcionando. `RPG_AI_STREAM=0` desliga.
+- Tempo máximo de espera pela IA passou de 60s para 120s (`RPG_AI_TIMEOUT_MS`), porque com streaming a resposta não é mais cortada pelo gateway.
+- Erro no meio do stream conta como falha temporária: tenta de novo e, na última tentativa, usa o modelo reserva.
+- **Ilustrações com gpt-image:** `response_format` só é enviado para modelos que o aceitam. Os `gpt-image-2.6-flare` e `gpt-image-2.6-sunburst` recusavam o pedido (HTTP 400), então, se o monitor ativasse um deles, todas as ilustrações falhariam.
+- Testes: `tools/teste_ia_stream.js` (leitor de SSE/JSON e regra do response_format, 8 verificações); o Mestre simulado responde em SSE quando recebe `stream: true` e recusa `response_format` nos gpt-image, como o gateway real; a bateria confere que o Mestre chamou a IA em streaming.
+
 ## v0.19.0 — 2026-11-14
 - **As 12 histórias reescritas** a partir de uma análise de cada uma feita pelo próprio modelo do Mestre (fable), com as melhorias aprovadas: lugares com cheiro, som e textura; o segredo de cada história definido e revelado só por pistas (com custo quando o teste falha, sem travar); NPCs com nome, fala e motivação; um desafio para cada classe em cada etapa; um relógio de pressão anunciado na narração (badaladas, marés, horas, barris de água, períodos até o júri, dinheiro sacado); finais com escolha e consequência; recompensas com nome.
 - Testes e recompensas usam o sistema do jogo (força, agilidade, mente, espírito; fácil, médio, difícil, muito difícil). Nomes repetidos entre histórias foram trocados.

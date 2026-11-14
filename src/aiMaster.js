@@ -33,7 +33,9 @@ function getConfig() {
     // Proxy SOCKS5 opcional (ex.: socks5h://127.0.0.1:1080 — túnel via Tailscale)
     proxy: process.env.RPG_AI_PROXY || '',
     // Tempo máximo de espera por uma resposta da IA (ms)
-    timeoutMs: Number(process.env.RPG_AI_TIMEOUT_MS) || 60000,
+    timeoutMs: Number(process.env.RPG_AI_TIMEOUT_MS) || 120000,
+    // Respostas em streaming (SSE). RPG_AI_STREAM=0 volta ao JSON comum.
+    stream: process.env.RPG_AI_STREAM !== '0',
   };
 }
 
@@ -249,7 +251,10 @@ async function chamarIAUmaVez({ system, messages, maxTokens, modelo }) {
   if (!cfg.apiKey) {
     throw new Error('RPG_AI_API_KEY não configurada. Copie .env.example para .env e defina sua chave.');
   }
+  // Streaming (SSE): o gateway corta respostas sem streaming que passam de ~30s
+  // (HTTP 504 "use streaming"); com stream os bytes fluem e a resposta chega inteira.
   const body = { model: modelo, max_tokens: maxTokens, system, messages };
+  if (cfg.stream) body.stream = true;
 
   const url = `${cfg.baseUrl}${cfg.apiPath}`;
   const headers = {
@@ -291,7 +296,17 @@ async function chamarIAUmaVez({ system, messages, maxTokens, modelo }) {
     throw erro;
   }
 
-  const data = await res.json();
+  const bruto = await res.text();
+  let data;
+  try {
+    data = lerResposta(bruto);
+  } catch (e) {
+    console.error(`[IA Mestre] resposta inválida (${modelo}): ${e.message}`);
+    const erro = new MasterUnavailableError('O Mestre (IA) se atrapalhou na resposta. Tente novamente em instantes.');
+    erro.temporario = true;
+    erro.detalhe = e.message;
+    throw erro;
+  }
   const texto = (data.content || [])
     .filter((b) => b.type === 'text')
     .map((b) => b.text)
@@ -303,6 +318,41 @@ async function chamarIAUmaVez({ system, messages, maxTokens, modelo }) {
     return terminarNaUltimaFrase(texto);
   }
   return texto;
+}
+
+// Monta a resposta da Messages API a partir do corpo recebido: um stream SSE
+// (content_block_* / message_delta) ou, se o gateway ignorou o stream, o JSON comum.
+function lerResposta(bruto) {
+  const corpo = String(bruto || '').trim();
+  if (corpo.startsWith('{')) return JSON.parse(corpo);
+  const blocos = [];
+  let stopReason = null;
+  let usage = {};
+  let eventos = 0;
+  for (const linha of corpo.split(/\r?\n/)) {
+    if (!linha.startsWith('data:')) continue;
+    const dado = linha.slice(5).trim();
+    if (!dado || dado === '[DONE]') continue;
+    let ev;
+    try {
+      ev = JSON.parse(dado);
+    } catch {
+      continue;
+    }
+    eventos++;
+    if (ev.type === 'error') throw new Error(`erro no stream: ${(ev.error && ev.error.message) || JSON.stringify(ev).slice(0, 200)}`);
+    if (ev.type === 'message_start' && ev.message) usage = { ...ev.message.usage };
+    else if (ev.type === 'content_block_start') blocos[ev.index] = { ...ev.content_block, text: ev.content_block.text || '' };
+    else if (ev.type === 'content_block_delta' && ev.delta && ev.delta.type === 'text_delta') {
+      if (!blocos[ev.index]) blocos[ev.index] = { type: 'text', text: '' };
+      blocos[ev.index].text += ev.delta.text;
+    } else if (ev.type === 'message_delta') {
+      if (ev.delta && ev.delta.stop_reason) stopReason = ev.delta.stop_reason;
+      if (ev.usage) usage = { ...usage, ...ev.usage };
+    }
+  }
+  if (!eventos) throw new Error(`corpo sem eventos SSE nem JSON: ${corpo.slice(0, 120)}`);
+  return { content: blocos.filter(Boolean), stop_reason: stopReason, usage };
 }
 
 // Se a resposta foi cortada no meio, termina na última frase completa.
@@ -461,4 +511,4 @@ async function comentarioBot({ room, bot, cenaRecente, travado }) {
   return String(texto || '').replace(/^["“']|["”']$/g, '').replace(/[*_#`]/g, '').trim().slice(0, 300);
 }
 
-module.exports = { callMaster, resumirHistorico, buildSystemPrompt, MasterUnavailableError, criarPersonagemBot, decidirAcaoBot, comentarioBot, TRACOS_BOT };
+module.exports = { callMaster, resumirHistorico, buildSystemPrompt, MasterUnavailableError, criarPersonagemBot, decidirAcaoBot, comentarioBot, TRACOS_BOT, lerResposta };

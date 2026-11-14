@@ -75,6 +75,8 @@ function salvar(codigo, id, buffer) {
   });
 }
 
+const aceitaResponseFormat = (modelo) => !/(^|\/)gpt-image/i.test(String(modelo || ''));
+
 // Gera a ilustração e devolve o nome do arquivo salvo.
 // `modelo` força um modelo específico (usado pelo monitor para testar antes de ativar).
 async function gerar(codigo, estilo, descricao, modelo) {
@@ -83,7 +85,10 @@ async function gerar(codigo, estilo, descricao, modelo) {
   if (!cfg.apiKey) throw new Error('Geração de imagens desligada (RPG_IMG_API_KEY ausente).');
   const url = `${cfg.baseUrl}/images/generations`;
   const headers = { 'content-type': 'application/json', authorization: `Bearer ${cfg.apiKey}`, 'x-api-key': cfg.apiKey };
-  const corpoReq = JSON.stringify({ model: cfg.modelo, prompt: (estilo || ESTILO) + descricao, n: 1, size: cfg.tamanho, response_format: 'b64_json' });
+  const pedido = { model: cfg.modelo, prompt: (estilo || ESTILO) + descricao, n: 1, size: cfg.tamanho };
+  // Os gpt-image recusam `response_format` (HTTP 400) e já devolvem b64_json por padrão.
+  if (aceitaResponseFormat(cfg.modelo)) pedido.response_format = 'b64_json';
+  const corpoReq = JSON.stringify(pedido);
   const res = cfg.proxy
     ? await socksPostJson(url, headers, corpoReq, cfg.proxy, cfg.timeoutMs)
     : await fetch(url, { method: 'POST', headers, body: corpoReq, signal: AbortSignal.timeout(cfg.timeoutMs) });
@@ -231,6 +236,6 @@ function apagarSala(codigo) {
 }
 
 module.exports = {
-  disponivel, gerar, caminhoArquivo, apagarSala, ARQ_ATIVACAO,
+  disponivel, gerar, caminhoArquivo, apagarSala, ARQ_ATIVACAO, aceitaResponseFormat,
   bibliotecaPara, procurarNaBiblioteca, guardarNaBiblioteca, registrarUso, urlBiblioteca, caminhoBiblioteca, slug,
 };

@@ -22,17 +22,53 @@ http.createServer((req, res) => {
       res.setHeader('content-type', 'audio/mpeg');
       return res.end(Buffer.from('ID3fake-mp3-do-mock'));
     }
+    if (req.url.startsWith('/__stream')) {
+      res.setHeader('content-type', 'application/json');
+      return res.end(JSON.stringify({ chamadasStream: global.chamadasStream || 0 }));
+    }
     if (req.url.startsWith('/__imagens')) {
       res.setHeader('content-type', 'application/json');
       return res.end(JSON.stringify({ geradas: global.imagensGeradas || 0 }));
     }
     if (req.url.includes('/images/generations')) {
+      const pedido = JSON.parse(corpo || '{}');
+      // Como o gateway real: os gpt-image recusam response_format.
+      if (/gpt-image/.test(pedido.model || '') && pedido.response_format) {
+        res.statusCode = 400;
+        res.setHeader('content-type', 'application/json');
+        return res.end(JSON.stringify({ error: { message: 'Pedido inválido. Confira os parâmetros enviados.' } }));
+      }
       global.imagensGeradas = (global.imagensGeradas || 0) + 1;
       // Gerador de imagens simulado: devolve um PNG mínimo.
       res.setHeader('content-type', 'application/json');
       return res.end(JSON.stringify({ data: [{ b64_json: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' }] }));
     }
     const b = JSON.parse(corpo || '{}');
+    // Pedido com stream: true -> devolve a mesma resposta como eventos SSE da Messages API.
+    if (b.stream) {
+      global.chamadasStream = (global.chamadasStream || 0) + 1;
+      const endOriginal = res.end.bind(res);
+      res.end = (s) => {
+        let j;
+        try {
+          j = JSON.parse(s);
+        } catch {
+          return endOriginal(s);
+        }
+        if (!Array.isArray(j.content)) return endOriginal(s);
+        res.setHeader('content-type', 'text/event-stream');
+        const ev = (tipo, dados) => `event: ${tipo}\ndata: ${JSON.stringify({ type: tipo, ...dados })}\n\n`;
+        let out = ev('message_start', { message: { id: 'msg_mock', model: b.model, content: [], usage: { input_tokens: 10, output_tokens: 1 } } });
+        j.content.forEach((bloco, i) => {
+          out += ev('content_block_start', { index: i, content_block: { type: 'text', text: '' } });
+          for (const pedaco of String(bloco.text || '').match(/[\s\S]{1,40}/g) || []) out += ev('content_block_delta', { index: i, delta: { type: 'text_delta', text: pedaco } });
+          out += ev('content_block_stop', { index: i });
+        });
+        out += ev('message_delta', { delta: { stop_reason: j.stop_reason || 'end_turn' }, usage: { output_tokens: 5 } });
+        out += ev('message_stop', {});
+        return endOriginal(out);
+      };
+    }
     const ultima = (b.messages || []).slice(-1)[0]?.content || '';
     const sys = b.system || '';
     let t;

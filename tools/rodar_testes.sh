@@ -4,6 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 node tools/teste_tts.js
+node tools/teste_ia_stream.js
 TMP=$(mktemp -d)
 trap 'kill $(jobs -p) 2>/dev/null || true; rm -rf "$TMP"' EXIT
 touch "$TMP/emails.txt"
@@ -20,3 +21,5 @@ iniciar
 node tools/teste_mesa.js http://127.0.0.1:3095/ "$TMP/emails.txt" 1 "$TMP/data"
 kill $SERVIDOR; sleep 1; iniciar   # reinicia para testar a persistência
 node tools/teste_mesa.js http://127.0.0.1:3095/ "$TMP/emails.txt" 2 "$TMP/data"
+# O Mestre deve ter usado streaming (SSE) nas chamadas à IA.
+curl -s 127.0.0.1:3096/__stream | grep -q '"chamadasStream":[1-9]' && echo "OK: Mestre chamou a IA em streaming." || { echo "FALHA: nenhuma chamada em streaming"; exit 1; }
