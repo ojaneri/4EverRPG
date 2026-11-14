@@ -2094,11 +2094,16 @@ const AVISO_CURTO_MAX = 70; // caracteres
 function renderLogNovo({ tocarNarracao }) {
   const container = $('chat-log');
   let ultimaFalaMestre = null;
+  let contadas = 0;
+  let minha = false;
+  const meuNome = meuNomeExibicao();
 
   for (let i = logRenderizado; i < estado.log.length; i++) {
     const msg = estado.log[i];
     // Aviso passageiro (ex.: "fulano se reconectou"): só aparece se for recente e some em 3s.
     if (msg.efemero && Date.now() - msg.ts > 3000) continue;
+    if (!msg.efemero) contadas++;
+    if (msg.tipo === 'jogador' && msg.autor === meuNome) minha = true;
     if (msg.tipo === 'imagem') {
       container.appendChild(linhaImagem(msg));
       continue;
@@ -2152,7 +2157,7 @@ function renderLogNovo({ tocarNarracao }) {
     }
   }
   logRenderizado = estado.log.length;
-  rolarLogParaFim();
+  seguidorLog().chegaram(contadas, { forcar: !tocarNarracao || minha });
 
   // Toca só a fala mais recente do Mestre (nunca o histórico ao entrar na sala).
   if (tocarNarracao && ultimaFalaMestre && $('chk-narracao-voz').checked) {
@@ -2161,13 +2166,58 @@ function renderLogNovo({ tocarNarracao }) {
   }
 }
 
-// Leva o log até as mensagens mais recentes (depois do layout, para funcionar
-// também quando a tela de jogo acabou de aparecer).
+// Rolagem estilo app de mensagens: quem está no fim acompanha as novas; quem rolou
+// para cima para ler não é puxado. Aparece "⬇ N novas" e o clique leva ao fim.
+function seguidorRolagem(lista) {
+  const env = document.createElement('div');
+  env.className = 'envoltorio-rolagem';
+  lista.parentNode.insertBefore(env, lista);
+  env.appendChild(lista);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'btn-novas escondido';
+  env.appendChild(btn);
+  let novas = 0;
+  let noFim = true;
+  const zerar = () => {
+    novas = 0;
+    btn.classList.add('escondido');
+  };
+  const irAoFim = (suave = false) => {
+    noFim = true;
+    zerar();
+    requestAnimationFrame(() => lista.scrollTo({ top: lista.scrollHeight, behavior: suave ? 'smooth' : 'auto' }));
+  };
+  lista.addEventListener('scroll', () => {
+    if (!lista.clientHeight) return; // aba escondida (celular)
+    noFim = lista.scrollHeight - lista.scrollTop - lista.clientHeight < 80;
+    if (noFim) zerar();
+  }, { passive: true });
+  btn.addEventListener('click', () => irAoFim(true));
+  return {
+    irAoFim,
+    // Depois de acrescentar `n` mensagens. `forcar`: carga inicial ou mensagem minha.
+    chegaram(n, { forcar = false } = {}) {
+      if (forcar || noFim) return irAoFim();
+      if (n <= 0) return;
+      novas += n;
+      btn.textContent = `⬇ ${novas} nova${novas > 1 ? 's' : ''}`;
+      btn.classList.remove('escondido');
+    },
+    // A altura mudou (imagem ou áudio carregou): segue no fim só se já estava lá.
+    ajustar() {
+      if (noFim) irAoFim();
+    },
+  };
+}
+let segLog = null;
+let segChat = null;
+const seguidorLog = () => segLog || (segLog = seguidorRolagem($('chat-log')));
+const seguidorChat = () => segChat || (segChat = seguidorRolagem($('chat-lateral-lista')));
+
+// Leva o log até as mensagens mais recentes (ao abrir a mesa ou trocar de aba).
 function rolarLogParaFim() {
-  requestAnimationFrame(() => {
-    const c = $('chat-log');
-    c.scrollTop = c.scrollHeight;
-  });
+  seguidorLog().irAoFim();
 }
 
 // Ilustração no histórico: linha discreta (a imagem fica no fundo da mesa).
@@ -2188,7 +2238,7 @@ function cartaoImagem(msg) {
   img.src = BASE + msg.imagem;
   img.alt = msg.texto || 'Ilustração da cena';
   img.loading = 'lazy';
-  img.addEventListener('load', rolarLogParaFim); // a altura muda quando a imagem carrega
+  img.addEventListener('load', () => seguidorLog().ajustar()); // a altura muda quando a imagem carrega
   img.addEventListener('click', () => ampliarImagem(img.src, msg.texto));
   fig.appendChild(img);
   if (msg.texto) {
@@ -2730,7 +2780,7 @@ function renderChatLateral() {
       audioEl.controls = true;
       audioEl.src = URL.createObjectURL(new Blob([bytes], { type: m.mime || 'audio/webm' }));
       audioEl.className = 'player-audio';
-      audioEl.addEventListener('loadedmetadata', rolarChatParaFim); // o player muda a altura ao carregar
+      audioEl.addEventListener('loadedmetadata', () => seguidorChat().ajustar()); // o player muda a altura ao carregar
       // Play manual: para o que estiver tocando (outro áudio ou a narração).
       audioEl.addEventListener('play', () => {
         pausarAudiosChat(audioEl);
@@ -2755,16 +2805,14 @@ function renderChatLateral() {
   }
   const novasDeOutros = estado.chatMensagens.slice(chatRenderadas).some((m) => m.autor !== meuNome);
   if (novasDeOutros && !chatPrimeiraCarga && abaMesa !== 'chat') $('aba-chat-novas').classList.remove('escondido');
+  const recemChegadas = estado.chatMensagens.slice(chatRenderadas);
+  seguidorChat().chegaram(recemChegadas.length, { forcar: chatPrimeiraCarga || recemChegadas.some((m) => m.autor === meuNome) });
   chatPrimeiraCarga = false;
   chatRenderadas = estado.chatMensagens.length;
-  rolarChatParaFim();
 }
 
 function rolarChatParaFim() {
-  requestAnimationFrame(() => {
-    const c = $('chat-lateral-lista');
-    c.scrollTop = c.scrollHeight;
-  });
+  seguidorChat().irAoFim();
 }
 
 $('form-chat-lateral').addEventListener('submit', (ev) => {

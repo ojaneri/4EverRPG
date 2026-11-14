@@ -8,6 +8,10 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+
+## v0.17.1 — 2026-11-13
+- **Mensagens novas sem puxar quem está lendo:** no log da mesa e no Chat, quem rolou para cima não é mais levado para o fim quando chega mensagem. Aparece um botão "⬇ N novas" no rodapé da lista; o clique desce até a última. Quem já está no fim continua acompanhando, e quem manda uma mensagem vai para o fim.
+- Teste de navegador `tools/teste_mensagens_novas.py`.
 ## v0.17.0 — 2026-11-13
 - **Biblioteca de ilustrações compartilhada entre partidas:** toda imagem gerada vai para `data/imagens/biblioteca/<ambiente>/` com nome fácil de lembrar (ex.: `as-sombras-de-corvile--vila-de-corvile.jpg`, `as-sombras-de-corvile--uma-criatura-de-nevoa-ergue-as-garras.jpg`) e entra no índice com aventura, lugar e descrição.
 - **Antes de gerar, o jogo procura na biblioteca:** a abertura automática reaproveita a imagem da mesma aventura e do mesmo lugar; um pedido do Mestre reaproveita uma imagem de descrição parecida (limiar em `RPG_IMG_LIMIAR_REUSO`, padrão 0,5). Reaproveitar não gasta nada e não conta no limite de imagens da mesa.

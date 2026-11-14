@@ -1279,3 +1279,14 @@ body.observando #modal-dado-pausa { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .cartao-personagem-mini.cutucado, .dedo-cutucada { animation: none; }
 }
+
+/* Mensagens novas sem puxar quem está lendo lá em cima */
+.envoltorio-rolagem { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.envoltorio-rolagem > .chat-log, .envoltorio-rolagem > .chat-lateral-lista { flex: 1; min-height: 0; }
+.btn-novas {
+  position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 5;
+  padding: 6px 14px; border-radius: 99px; font-size: .85rem; font-weight: 700; white-space: nowrap;
+  background: var(--acento); color: #fff; border: none; box-shadow: 0 6px 18px rgba(0,0,0,.5);
+  animation: novas-surge .25s ease-out;
+}
+@keyframes novas-surge { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
