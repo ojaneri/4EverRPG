@@ -5,6 +5,11 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+
+## v0.15.1 — 2026-11-13
+- Avisos curtos do sistema em sequência (XP, moedas, itens...) aparecem lado a lado numa faixa, quebrando linha só quando não cabem, em vez de um embaixo do outro. Um só ícone "!" por faixa; avisos longos e os que vêm depois de uma narração continuam separados.
+- Teste de navegador `tools/teste_avisos_inline.py`.
+- Publicado sem reiniciar o servidor (só arquivos do site), para não cortar partidas em andamento.
 ## v0.15.0 — 2026-11-13
 - **Admin encerra ou apaga mesas:** botões "🏁 Encerrar" e "🗑️ Apagar" em cada mesa da lista "Observar partidas" e na faixa do modo observador, sempre com confirmação.
   - Encerrar: se a aventura está rolando, o Mestre narra um epílogo curto e a mesa fica encerrada para todos, com o aviso "A administração do 4Ever encerrou esta mesa". No lobby, encerra na hora.

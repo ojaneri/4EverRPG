@@ -1252,3 +1252,15 @@ body.observando #modal-dado-pausa { display: none !important; }
 .form-chat-espera { display: flex; gap: 8px; }
 .form-chat-espera input { flex: 1; min-width: 0; margin: 0; }
 .form-chat-espera button { padding: 8px 14px; }
+
+/* Avisos curtos do sistema em sequência: lado a lado, quebrando linha quando precisa */
+.grupo-sistema { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 6px 8px; align-self: center; max-width: 94%; }
+.grupo-sistema .msg.sistema { max-width: 100%; gap: 0; align-items: center; }
+.grupo-sistema .msg.sistema .avatar { display: none; }
+.grupo-sistema .msg.sistema:first-child .avatar { display: block; margin-right: 6px; width: 28px; height: 28px; }
+.grupo-sistema .msg.sistema .autor { display: none; }
+.grupo-sistema .msg.sistema .conteudo { padding: 5px 10px; }
+@media (max-width: 1000px) {
+  .grupo-sistema { max-width: 100%; gap: 5px 6px; }
+  .grupo-sistema .msg.sistema .texto { font-size: 0.85rem; }
+}

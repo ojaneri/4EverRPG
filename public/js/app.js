@@ -2050,6 +2050,7 @@ async function pedirLogCompleto() {
   pedindoLog = false;
 }
 
+const AVISO_CURTO_MAX = 70; // caracteres
 function renderLogNovo({ tocarNarracao }) {
   const container = $('chat-log');
   let ultimaFalaMestre = null;
@@ -2085,7 +2086,25 @@ function renderLogNovo({ tocarNarracao }) {
       div.querySelector('.conteudo').appendChild(btn);
       ultimaFalaMestre = { texto: msg.texto, idx, btn };
     }
-    container.appendChild(div);
+    // Avisos curtos do sistema em sequência (XP, itens, dano...) ficam lado a lado
+    // numa mesma faixa, quebrando linha só quando não cabem.
+    const curta = msg.tipo === 'sistema' && !msg.efemero && String(msg.texto || '').length <= AVISO_CURTO_MAX;
+    if (curta) {
+      div.classList.add('curta');
+      const ultimo = container.lastElementChild;
+      if (ultimo && ultimo.classList.contains('grupo-sistema')) {
+        ultimo.appendChild(div);
+      } else if (ultimo && ultimo.classList.contains('curta')) {
+        const grupo = document.createElement('div');
+        grupo.className = 'grupo-sistema';
+        container.insertBefore(grupo, ultimo);
+        grupo.append(ultimo, div);
+      } else {
+        container.appendChild(div);
+      }
+    } else {
+      container.appendChild(div);
+    }
     if (msg.efemero) {
       div.classList.add('efemero');
       setTimeout(() => div.classList.add('evaporando'), Math.max(0, 3000 - (Date.now() - msg.ts)));
