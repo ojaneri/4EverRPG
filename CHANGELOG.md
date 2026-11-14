@@ -15,6 +15,13 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+## v0.19.0 — 2026-11-14
+- **As 12 histórias reescritas** a partir de uma análise de cada uma feita pelo próprio modelo do Mestre (fable), com as melhorias aprovadas: lugares com cheiro, som e textura; o segredo de cada história definido e revelado só por pistas (com custo quando o teste falha, sem travar); NPCs com nome, fala e motivação; um desafio para cada classe em cada etapa; um relógio de pressão anunciado na narração (badaladas, marés, horas, barris de água, períodos até o júri, dinheiro sacado); finais com escolha e consequência; recompensas com nome.
+- Testes e recompensas usam o sistema do jogo (força, agilidade, mente, espírito; fácil, médio, difícil, muito difícil). Nomes repetidos entre histórias foram trocados.
+- Correções de enredo: em Sertão de Ferro, o trem tomado era o primeiro e o grupo escolta a última peça; na Estação Órion-7, o segredo da criogenia ficou coerente; em Sinal Perdido na Serra, o segredo deixou de ficar "em aberto".
+- Etapas da missão reescritas onde entregavam o segredo na tela (Boitatá, Cyber, Contrato). Vitrines do Boitatá e de Sinal Perdido ganharam uma frase de gancho.
+- Mesas já criadas mantêm a premissa antiga; as novas mesas usam as novas.
+
 ## v0.18.0 — 2026-11-13
 - **Ilustração automática a cada lugar novo:** quando a cena muda de local e o Mestre não pediu imagem, o jogo ilustra o lugar sozinho, desde que a última ilustração tenha mais de 4 minutos (`RPG_IMG_AUTO_MS`). Antes procura na biblioteca uma imagem do mesmo lugar da mesma aventura (sai na hora, sem custo). Continuam valendo o limite de 12 imagens por mesa e o intervalo de 3 minutos entre gerações.
 - **Instrução do Mestre:** em vez de "de vez em quando, no máximo uma a cada várias cenas", pede ilustração sempre que o grupo chegar a um lugar novo, começar um combate ou viver um momento visual marcante. A lista de imagens prontas não desencoraja mais pedir uma nova quando nenhuma serve.
