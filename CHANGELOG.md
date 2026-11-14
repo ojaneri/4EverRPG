@@ -28,6 +28,11 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 - **Ilustrações com gpt-image:** `response_format` só é enviado para modelos que o aceitam. Os `gpt-image-2.6-flare` e `gpt-image-2.6-sunburst` recusavam o pedido (HTTP 400), então, se o monitor ativasse um deles, todas as ilustrações falhariam.
 - Testes: `tools/teste_ia_stream.js` (leitor de SSE/JSON e regra do response_format, 8 verificações); o Mestre simulado responde em SSE quando recebe `stream: true` e recusa `response_format` nos gpt-image, como o gateway real; a bateria confere que o Mestre chamou a IA em streaming.
 
+## v0.20.0 — 2026-11-14
+- **Reserva de imagem pelo 9router:** se o modelo de ilustração principal falhar (fora do ar, recusa, tempo esgotado), o jogo tenta de novo com `ss/gpt-image-2.6-flare` pelo 9router local, em vez de a mesa ficar sem imagem. Quando o principal é negado (401/403/404) e entra em pausa de 30 minutos, as ilustrações vão direto para a reserva. Configuração: `RPG_9ROUTER_KEY`, `RPG_IMG_RESERVA_MODEL` (vazio desliga) e `RPG_IMG_RESERVA_URL`.
+- O teste de modelos do monitor do gateway continua sem usar a reserva.
+- Novo teste `tools/teste_imagem_reserva.js` na bateria.
+
 ## v0.19.0 — 2026-11-14
 - **As 12 histórias reescritas** a partir de uma análise de cada uma feita pelo próprio modelo do Mestre (fable), com as melhorias aprovadas: lugares com cheiro, som e textura; o segredo de cada história definido e revelado só por pistas (com custo quando o teste falha, sem travar); NPCs com nome, fala e motivação; um desafio para cada classe em cada etapa; um relógio de pressão anunciado na narração (badaladas, marés, horas, barris de água, períodos até o júri, dinheiro sacado); finais com escolha e consequência; recompensas com nome.
 - Testes e recompensas usam o sistema do jogo (força, agilidade, mente, espírito; fácil, médio, difícil, muito difícil). Nomes repetidos entre histórias foram trocados.

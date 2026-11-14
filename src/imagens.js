@@ -41,6 +41,22 @@ function config() {
   };
 }
 
+// Reserva: se o modelo principal falhar, tenta outro modelo pelo 9router local.
+// Desliga com RPG_IMG_RESERVA_MODEL vazio ou sem chave.
+function configReserva() {
+  const modelo = process.env.RPG_IMG_RESERVA_MODEL !== undefined ? process.env.RPG_IMG_RESERVA_MODEL : 'ss/gpt-image-2.6-flare';
+  const apiKey = process.env.RPG_IMG_RESERVA_KEY || process.env.RPG_9ROUTER_KEY || '';
+  if (!modelo || !apiKey) return null;
+  return {
+    baseUrl: (process.env.RPG_IMG_RESERVA_URL || 'http://127.0.0.1:20128/v1').replace(/\/+$/, ''),
+    apiKey,
+    proxy: '',
+    modelo,
+    tamanho: process.env.RPG_IMG_SIZE || '1536x1024',
+    timeoutMs: Number(process.env.RPG_IMG_TIMEOUT_MS) || 180000,
+  };
+}
+
 // Se o modelo não estiver liberado (404/403), pausa as tentativas por um tempo.
 let pausadoAte = 0;
 let pausadoEm = 0;
@@ -48,8 +64,9 @@ function disponivel() {
   // Uma ativação nova (depois da pausa) libera na hora.
   const ativo = ativacao();
   if (pausadoAte && ativo && ativo.ativadoEm > pausadoEm) pausadoAte = 0;
-  return Boolean(config().apiKey) && Date.now() > pausadoAte;
+  return (Boolean(config().apiKey) && Date.now() > pausadoAte) || Boolean(configReserva());
 }
+const principalPausado = () => Date.now() <= pausadoAte;
 
 const ESTILO =
   'Painterly fantasy tabletop RPG illustration, cinematic wide shot, rich atmospheric lighting, ' +
@@ -77,15 +94,11 @@ function salvar(codigo, id, buffer) {
 
 const aceitaResponseFormat = (modelo) => !/(^|\/)gpt-image/i.test(String(modelo || ''));
 
-// Gera a ilustração e devolve o nome do arquivo salvo.
-// `modelo` força um modelo específico (usado pelo monitor para testar antes de ativar).
-async function gerar(codigo, estilo, descricao, modelo) {
-  const cfg = config();
-  if (modelo) cfg.modelo = modelo;
-  if (!cfg.apiKey) throw new Error('Geração de imagens desligada (RPG_IMG_API_KEY ausente).');
+// Uma tentativa num gateway/modelo; devolve o buffer da imagem.
+async function pedirImagem(cfg, prompt, { pausarSeNegado = false } = {}) {
   const url = `${cfg.baseUrl}/images/generations`;
   const headers = { 'content-type': 'application/json', authorization: `Bearer ${cfg.apiKey}`, 'x-api-key': cfg.apiKey };
-  const pedido = { model: cfg.modelo, prompt: (estilo || ESTILO) + descricao, n: 1, size: cfg.tamanho };
+  const pedido = { model: cfg.modelo, prompt, n: 1, size: cfg.tamanho };
   // Os gpt-image recusam `response_format` (HTTP 400) e já devolvem b64_json por padrão.
   if (aceitaResponseFormat(cfg.modelo)) pedido.response_format = 'b64_json';
   const corpoReq = JSON.stringify(pedido);
@@ -94,21 +107,52 @@ async function gerar(codigo, estilo, descricao, modelo) {
     : await fetch(url, { method: 'POST', headers, body: corpoReq, signal: AbortSignal.timeout(cfg.timeoutMs) });
   const corpo = await res.json().catch(() => ({}));
   if (!res.ok) {
-    if (res.status === 404 || res.status === 403 || res.status === 401) {
+    if (pausarSeNegado && (res.status === 404 || res.status === 403 || res.status === 401)) {
       pausadoEm = Date.now();
       pausadoAte = pausadoEm + 30 * 60 * 1000;
     }
     throw new Error(`HTTP ${res.status}: ${JSON.stringify(corpo).slice(0, 200)}`);
   }
   const item = corpo.data && corpo.data[0];
-  let buffer;
-  if (item && item.b64_json) buffer = Buffer.from(item.b64_json, 'base64');
-  else if (item && item.url) {
+  if (item && item.b64_json) return Buffer.from(item.b64_json, 'base64');
+  if (item && item.url) {
     const img = await fetch(item.url, { signal: AbortSignal.timeout(60000) });
-    buffer = Buffer.from(await img.arrayBuffer());
-  } else throw new Error('Resposta sem imagem.');
-  const id = crypto.randomBytes(6).toString('hex');
-  return salvar(codigo, id, buffer);
+    return Buffer.from(await img.arrayBuffer());
+  }
+  throw new Error('Resposta sem imagem.');
+}
+
+// Gera a ilustração e devolve o nome do arquivo salvo.
+// `modelo` força um modelo específico (usado pelo monitor para testar antes de ativar);
+// nesse caso não usa a reserva.
+async function gerar(codigo, estilo, descricao, modelo) {
+  const prompt = (estilo || ESTILO) + descricao;
+  const cfg = config();
+  if (modelo) {
+    if (!cfg.apiKey) throw new Error('Geração de imagens desligada (RPG_IMG_API_KEY ausente).');
+    cfg.modelo = modelo;
+    return salvar(codigo, crypto.randomBytes(6).toString('hex'), await pedirImagem(cfg, prompt));
+  }
+  const reserva = configReserva();
+  let buffer;
+  let erroPrincipal = null;
+  if (cfg.apiKey && !principalPausado()) {
+    try {
+      buffer = await pedirImagem(cfg, prompt, { pausarSeNegado: true });
+    } catch (e) {
+      erroPrincipal = e;
+    }
+  } else erroPrincipal = new Error(cfg.apiKey ? 'modelo principal em pausa' : 'sem chave do modelo principal');
+  if (!buffer) {
+    if (!reserva) throw erroPrincipal;
+    console.warn(`[imagens] ${cfg.modelo} falhou (${erroPrincipal.message.slice(0, 120)}); tentando a reserva ${reserva.modelo}`);
+    try {
+      buffer = await pedirImagem(reserva, prompt);
+    } catch (e) {
+      throw new Error(`principal: ${erroPrincipal.message.slice(0, 150)} | reserva: ${e.message.slice(0, 150)}`);
+    }
+  }
+  return salvar(codigo, crypto.randomBytes(6).toString('hex'), buffer);
 }
 
 // ---------------------------------------------------------------------------
