@@ -16,6 +16,7 @@ const estado = {
   sessao: null, // { token, usuario }
   codigo: null, // mesa atual
   meuId: null, // meu id de jogador na mesa atual
+  observando: false, // admin assistindo a mesa (invisível, sem agir)
   roomState: null,
   log: [],
   chatMensagens: [],
@@ -157,7 +158,7 @@ async function aplicarRota() {
   marcarNav(nome === 'sala' ? '' : nome);
 
   // Saiu da mesa? Avisa o servidor (a vez passa para o próximo).
-  if (estado.codigo && !(nome === 'sala' && param.toUpperCase() === estado.codigo)) {
+  if (estado.codigo && !((nome === 'sala' || nome === 'observar') && param.toUpperCase() === estado.codigo)) {
     sairDaMesaAtual();
   }
 
@@ -188,6 +189,13 @@ async function aplicarRota() {
       return mostrarTela('tela-conta');
     case 'sala':
       return entrarNaMesa(param.toUpperCase());
+    case 'observar':
+      if (!estado.sessao.usuario.admin) return (location.hash = '#/');
+      if (param) return observarMesa(param.toUpperCase());
+      mostrarTela('tela-observar');
+      carregarObservar();
+      atualizarListaTimer = setInterval(carregarObservar, 10000);
+      return;
     default:
       location.hash = '#/';
   }
@@ -210,6 +218,7 @@ function atualizarTopo() {
   $('link-conta').classList.toggle('escondido', !logado);
   $('link-entrar').classList.toggle('escondido', logado);
   if (logado) $('link-conta').textContent = `👤 ${estado.sessao.usuario.nome}`;
+  $('link-observar').classList.toggle('escondido', !(logado && estado.sessao.usuario.admin));
 }
 
 // ---------------------------------------------------------------------------
@@ -307,7 +316,7 @@ function conectarSocket() {
   socket.on('connect', () => {
     $('faixa-conexao').classList.add('escondido');
     // Reconectou no meio de uma partida: volta para a mesma mesa automaticamente.
-    if (estado.codigo) entrarNaMesa(estado.codigo, { silencioso: true });
+    if (estado.codigo) (estado.observando ? observarMesa : entrarNaMesa)(estado.codigo, { silencioso: true });
   });
   socket.on('disconnect', () => {
     if (estado.sessao) $('faixa-conexao').classList.remove('escondido');
@@ -366,6 +375,21 @@ async function carregarJogosAbertos() {
     lista.innerHTML = jogos.length
       ? jogos.map((j) => cartaoJogo(j)).join('')
       : '<p class="vazio">Nenhuma mesa aberta agora. Que tal <a href="#/">criar uma</a>?</p>';
+  } catch (e) {
+    lista.innerHTML = `<p class="erro">${esc(e.message)}</p>`;
+  }
+}
+
+// Admin: todas as mesas em andamento, para assistir sem aparecer.
+async function carregarObservar() {
+  const lista = $('lista-observar');
+  try {
+    const { jogos } = await api('api/observar');
+    lista.innerHTML = jogos.length
+      ? jogos.map((j) => cartaoJogo(j,
+        `<p class="meu-personagem">${j.publica ? '🌐 pública' : '🔒 privada'} · rodada ${j.rodada} · ${j.humanosOnline} pessoa(s) online${j.bots ? ` · 🤖 ${j.bots} bot(s)` : ''}${j.personagens.length ? ` · ${j.personagens.map(esc).join(', ')}` : ''}</p>`
+      ).replace(`href="#/sala/${esc(j.codigo)}"`, `href="#/observar/${esc(j.codigo)}"`)).join('')
+      : '<p class="vazio">Nenhuma partida em andamento agora.</p>';
   } catch (e) {
     lista.innerHTML = `<p class="erro">${esc(e.message)}</p>`;
   }
@@ -582,8 +606,30 @@ async function entrarNaMesa(codigo, { silencioso = false } = {}) {
   }
 }
 
-function abrirMesa({ state, meuId }) {
-  const trocouDeMesa = estado.codigo !== state.codigo;
+async function observarMesa(codigo, { silencioso = false } = {}) {
+  if (!socket) return;
+  estado.observando = true;
+  if (!socket.connected) {
+    estado.codigo = codigo;
+    return;
+  }
+  try {
+    const r = await emitir('observarJogo', { codigo }, 15000);
+    abrirMesa(r);
+  } catch (e) {
+    if (silencioso) return;
+    estado.codigo = null;
+    estado.observando = false;
+    alert(e.message);
+    location.hash = '#/observar';
+  }
+}
+
+function abrirMesa({ state, meuId, observando = false }) {
+  const trocouDeMesa = estado.codigo !== state.codigo || estado.observando !== observando;
+  estado.observando = observando;
+  document.body.classList.toggle('observando', observando);
+  $('faixa-observando').classList.toggle('escondido', !observando);
   estado.codigo = state.codigo;
   estado.meuId = meuId;
   if (trocouDeMesa || !estado.roomState) {
@@ -615,6 +661,8 @@ function sairDaMesaAtual() {
   estado.codigo = null;
   estado.meuId = null;
   estado.roomState = null;
+  estado.observando = false;
+  document.body.classList.remove('observando');
 }
 
 function copiar(texto, botao) {
@@ -680,8 +728,9 @@ function renderEstado(rs) {
   if (rs.logTamanho > estado.log.length) pedirLogCompleto();
 
   const eu = meuJogador();
-  if (!eu) return;
-  if (location.hash !== `#/sala/${rs.codigo}`) history.replaceState(null, '', `#/sala/${rs.codigo}`);
+  if (!eu && !estado.observando) return;
+  const rota = `#/${estado.observando ? 'observar' : 'sala'}/${rs.codigo}`;
+  if (location.hash !== rota) history.replaceState(null, '', rota);
   aplicarConfigSala(rs);
 
   if (estado.ambienteGrade !== (rs.ambiente || 'fantasia')) {
@@ -690,9 +739,11 @@ function renderEstado(rs) {
     estado.classeEscolhida = null;
     $('ficha-personagem').classList.add('escondido');
   }
-  const morto = !!(eu.personagem && eu.personagem.morto);
+  const morto = !!(eu && eu.personagem && eu.personagem.morto);
   if (!morto) estado.criandoNovo = false;
-  if (!eu.personagem || rs.status === 'lobby' || (morto && estado.criandoNovo)) {
+  if (estado.observando) {
+    // observador vai direto para a mesa (no lobby, vê a montagem do grupo pelo painel)
+  } else if (!eu.personagem || rs.status === 'lobby' || (morto && estado.criandoNovo)) {
     mostrarTela('tela-personagem');
     marcarNav('');
     $('bloco-criar-personagem').classList.toggle('escondido', !!eu.personagem && !morto);
@@ -715,7 +766,7 @@ function renderEstado(rs) {
   $('btn-encerrar').classList.toggle('escondido', !(souHost() && rs.status === 'em_jogo'));
   $('faixa-encerrada').classList.toggle('escondido', rs.status !== 'encerrada');
   $('faixa-morto').classList.toggle('escondido', !(morto && rs.status === 'em_jogo'));
-  $('sobreposicao-afastado').classList.toggle('escondido', !(eu.afastado && rs.status === 'em_jogo'));
+  $('sobreposicao-afastado').classList.toggle('escondido', !(eu && eu.afastado && rs.status === 'em_jogo'));
   renderPainelGrupo(rs);
   renderPainelMissao(rs);
   renderPainelCena(rs);

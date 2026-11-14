@@ -2,6 +2,11 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+
+## v0.13.0 — 2026-11-13
+- **Observar partidas (admin):** novo menu "👁 Observar", visível só para os emails de `ADMIN_EMAILS`. Lista todas as mesas em andamento, públicas e privadas, com pessoas online, bots e personagens.
+- O admin assiste a mesa ao vivo (narração, ações, dados e bate-papo geral) sem aparecer no grupo e sem poder agir: o servidor recusa qualquer ação vinda do observador.
+- Testes: bateria do servidor (11 verificações novas) e `tools/teste_observador.py` no navegador (computador e celular).
 ## v0.12.0 — 2026-11-13
 
 ### Cor de cada personagem

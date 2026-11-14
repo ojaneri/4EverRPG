@@ -1123,3 +1123,21 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .link-livreto span { display: grid; font-size: 0.9rem; }
 .link-livreto small { color: var(--texto-fraco); font-size: 0.78rem; }
 .link-livreto:hover { background: rgba(155, 123, 209, 0.16); }
+
+/* ---------- Modo observador (admin): só assiste ---------- */
+.faixa-observando { background: #1d2a3a; border-color: #4c8ef7; color: #cfe0ff; }
+.faixa-observando a { color: #9cc2ff; margin-left: 6px; }
+body.observando #form-acao,
+body.observando .linha-ferramentas,
+body.observando .botoes-teste,
+body.observando #btn-rolar-dado,
+body.observando #btn-desistir-teste,
+body.observando #buscaveis,
+body.observando #sugestoes,
+body.observando #form-chat-lateral,
+body.observando #btn-encerrar,
+body.observando #btn-config,
+body.observando #btn-concluir-etapa,
+body.observando #faixa-morto,
+body.observando #sobreposicao-afastado,
+body.observando #modal-dado-pausa { display: none !important; }

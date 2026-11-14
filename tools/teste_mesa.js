@@ -105,6 +105,42 @@ async function fase1() {
   ok(logIni[0].tipo === 'missao' && logIni[1].tipo === 'mestre', 'cartão "Sua missão" aparece antes da primeira narração');
   ok(A.estado.turnoRestanteMs > 0, `timer da vez ativo (${A.estado.turnoRestanteMs} ms)`);
 
+  // --- Observar partidas (admin invisível, só assiste) ---
+  {
+    const rAdm = await post('api/registrar', { nome: 'Admin', email: 'admin@teste.dev' });
+    const tAdm = rAdm.json.token;
+    ok(rAdm.json.usuario.admin === true && !(await get('api/eu', r2.json.token)).json.usuario.admin, 'só o email de ADMIN_EMAILS é marcado como admin');
+    ok((await get('api/observar', r2.json.token)).status === 403, 'jogador comum não lista partidas para observar');
+    const lista = (await get('api/observar', tAdm)).json.jogos.map((j) => j.codigo);
+    ok(lista.includes(codigo) && lista.includes(priv.state.codigo), 'admin vê mesas públicas e privadas em andamento');
+    ok(!(await emit(B, 'observarJogo', { codigo })).ok, 'jogador comum não consegue observar');
+    const O = await conectar(tAdm);
+    O.chats = [];
+    O.on('chatMensagem', (m) => O.chats.push(m));
+    const antesB = B.estado.personagens.length;
+    const obs = await emit(O, 'observarJogo', { codigo: priv.state.codigo });
+    ok(obs.ok && obs.observando === true && obs.meuId === null, 'admin abre mesa privada como observador');
+    const o = await emit(O, 'observarJogo', { codigo });
+    await sleep(150);
+    ok(o.ok && o.meuId === null && o.state.log.length > 0, 'admin observa a mesa em andamento e recebe o histórico');
+    ok(B.estado.personagens.length === antesB && !B.estado.personagens.some((p) => /admin/i.test(p.nome)), 'jogadores não veem o observador na mesa');
+    ok((await emit(O, 'pedirLog', { codigo })).ok, 'observador pode recarregar o log');
+    const bloqueios = await Promise.all([
+      emit(O, 'acaoJogador', { codigo, texto: 'eu ataco' }),
+      emit(O, 'chatTexto', { codigo, texto: 'oi' }),
+      emit(O, 'escolherPersonagem', { codigo, personagem: personagem('Espiao', 'batedor') }),
+      emit(O, 'rolarDado', { codigo }),
+      emit(O, 'passarVez', { codigo }),
+      emit(O, 'encerrarAventura', { codigo }),
+    ]);
+    ok(bloqueios.every((r) => !r.ok && /observando/.test(r.erro)), `observador não consegue agir (${bloqueios[0].erro})`);
+    await emit(A, 'chatTexto', { codigo, texto: 'mensagem para a mesa' });
+    await sleep(150);
+    ok(O.chats.some((m) => m.texto === 'mensagem para a mesa'), 'observador recebe o bate-papo geral em tempo real');
+    ok(A.estado.status === 'em_jogo' && A.estado.turnoAtual === 'Thalrik' && B.estado.personagens.length === antesB, 'mesa segue igual depois do observador');
+    O.disconnect();
+  }
+
   // --- Dado: validações ---
   const rolaSemTeste = await emit(A, 'rolarDado', { codigo });
   ok(!rolaSemTeste.ok, `rolar sem teste pendente é recusado: ${rolaSemTeste.erro}`);

@@ -57,8 +57,15 @@ function usuarioPorEmail(email) {
   return null;
 }
 
+// Administradores (ADMIN_EMAILS, separados por vírgula) podem observar qualquer mesa.
+function ehAdmin(u) {
+  if (!u || !u.email) return false;
+  const lista = String(process.env.ADMIN_EMAILS || '').toLowerCase().split(',').map((e) => e.trim()).filter(Boolean);
+  return lista.includes(String(u.email).toLowerCase());
+}
+
 function publico(u) {
-  return u ? { id: u.id, nome: u.nome, email: u.email } : null;
+  return u ? { id: u.id, nome: u.nome, email: u.email, ...(ehAdmin(u) ? { admin: true } : {}) } : null;
 }
 
 function criarSessao(userId) {
@@ -172,6 +179,7 @@ setInterval(() => {
 }, 60 * 60 * 1000).unref();
 
 module.exports = {
+  ehAdmin,
   registrar,
   enviarMagicLink,
   consumirMagicLink,

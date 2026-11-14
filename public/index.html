@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>4Ever — Aventuras de RPG com Mestre de IA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎲%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/style.css?v=1794588062" />
+<link rel="stylesheet" href="css/style.css?v=1794614452" />
 </head>
 <body>
   <header class="topo-site">
@@ -15,6 +15,7 @@
       <a href="#/jogos" data-rota="jogos">Jogos Abertos</a>
       <a href="#/minhas" data-rota="minhas">Minhas Partidas</a>
       <a href="#/como-jogar" data-rota="como-jogar">Como Jogar</a>
+      <a href="#/observar" id="link-observar" class="escondido" data-rota="observar">👁 Observar</a>
     </nav>
     <div id="controle-musica" class="controle-musica escondido" title="Música de fundo (volume só para você)">
       <span id="musica-nome"></span>
@@ -132,6 +133,15 @@
         <h2>Minhas Partidas</h2>
         <p class="subtitulo">Mesas de que você participa (ficam guardadas por 24h sem atividade).</p>
         <div id="lista-minhas" class="lista-jogos"></div>
+      </div>
+    </section>
+
+    <!-- TELA: OBSERVAR PARTIDAS (admin) -->
+    <section id="tela-observar" class="tela">
+      <div class="pagina">
+        <h2>👁 Observar partidas</h2>
+        <p class="subtitulo">Todas as mesas em andamento, públicas e privadas. Você assiste sem aparecer para ninguém e sem poder agir.</p>
+        <div id="lista-observar" class="lista-jogos"></div>
       </div>
     </section>
 
@@ -291,6 +301,7 @@
         </header>
 
         <div id="faixa-morto" class="faixa-encerrada faixa-morto escondido">☠️ Seu personagem morreu. <button type="button" id="btn-novo-personagem">Criar novo personagem</button></div>
+        <div id="faixa-observando" class="faixa-encerrada faixa-observando escondido">👁 Modo observador: ninguém na mesa vê você e você não pode agir. <a href="#/observar">Voltar à lista</a></div>
         <div id="faixa-encerrada" class="faixa-encerrada escondido">🏁 Esta aventura foi encerrada. Exporte o diário para guardar a história.</div>
 
         <div id="painel-cena" class="painel-cena escondido">
@@ -455,6 +466,6 @@
 
   <script src="socket.io/socket.io.js"></script>
   <script src="js/musica.js?v=1794588062"></script>
-  <script src="js/app.js?v=1794588062"></script>
+  <script src="js/app.js?v=1794614452"></script>
 </body>
 </html>

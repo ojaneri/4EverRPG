@@ -103,6 +103,10 @@ app.post('/api/sair', (req, res) => {
 });
 
 app.get('/api/jogos-abertos', exigirLogin, (req, res) => res.json({ jogos: gameManager.listarJogosAbertos() }));
+app.get('/api/observar', exigirLogin, (req, res) => {
+  if (!auth.ehAdmin(req.usuario)) return res.status(403).json({ erro: 'Só administradores.' });
+  res.json({ jogos: gameManager.listarPartidasRodando() });
+});
 app.get('/api/minhas-partidas', exigirLogin, (req, res) => res.json({ jogos: gameManager.listarMinhasPartidas(req.usuario.id) }));
 
 // Magic link: troca o link de uso único por uma sessão de 30 dias, guarda no
@@ -235,7 +239,8 @@ function usuarioDo(socket) {
 }
 
 // Entra na sala do Socket.IO (e sai da anterior, se trocou de mesa).
-function vincularSala(socket, codigo) {
+function vincularSala(socket, codigo, { observando = false } = {}) {
+  socket.data.observando = observando;
   if (socket.data.codigo && socket.data.codigo !== codigo) {
     socket.leave(socket.data.codigo);
     gameManager.disconnectSocket(socket.id, socket.data.codigo);
@@ -257,8 +262,17 @@ function handler(fn) {
   };
 }
 
+// Observador (admin): fica na sala do Socket.IO e recebe tudo o que a mesa recebe,
+// mas não é jogador — ninguém vê que ele está lá e nenhuma ação é aceita.
+const EVENTOS_OBSERVADOR = new Set(['observarJogo', 'entrarJogo', 'criarJogo', 'sairDaSala', 'pedirLog']);
+
 io.on('connection', (socket) => {
   const eu = () => usuarioDo(socket);
+  socket.use(([evento, ...args], next) => {
+    if (!socket.data.observando || EVENTOS_OBSERVADOR.has(evento)) return next();
+    const cb = args[args.length - 1];
+    if (typeof cb === 'function') cb({ ok: false, erro: 'Você está só observando esta mesa.' });
+  });
   const codigoAtual = (p) => String((p && p.codigo) || socket.data.codigo || '').toUpperCase();
 
   function estadoInicial(room, jogador) {
@@ -291,7 +305,17 @@ io.on('connection', (socket) => {
     return estadoInicial(room, jogador);
   }));
 
+  // Admin observando uma mesa (mesmo privada), sem entrar como jogador.
+  socket.on('observarJogo', handler(({ codigo }) => {
+    if (!auth.ehAdmin(eu())) throw new Error('Só administradores podem observar mesas.');
+    const room = gameManager.getRoom(codigo);
+    if (!room) throw new Error('Jogo não encontrado.');
+    vincularSala(socket, room.codigo, { observando: true });
+    return { state: gameManager.roomPublicState(room, { comLog: true }), meuId: null, observando: true };
+  }));
+
   socket.on('sairDaSala', handler(() => {
+    socket.data.observando = false;
     if (socket.data.codigo) {
       socket.leave(socket.data.codigo);
       gameManager.disconnectSocket(socket.id, socket.data.codigo);
@@ -301,7 +325,8 @@ io.on('connection', (socket) => {
 
   socket.on('pedirLog', handler((p) => {
     const room = gameManager.getRoom(codigoAtual(p));
-    if (!room || !gameManager.jogadorDoUsuario(room, socket.data.userId)) throw new Error('Jogo não encontrado.');
+    const observa = socket.data.observando && socket.data.codigo === (room && room.codigo);
+    if (!room || !(observa || gameManager.jogadorDoUsuario(room, socket.data.userId))) throw new Error('Jogo não encontrado.');
     return { state: gameManager.roomPublicState(room, { comLog: true }) };
   }));
 

@@ -2220,6 +2220,23 @@ function listarJogosAbertos() {
     .map(resumoSala);
 }
 
+// Admin: todas as mesas em andamento (públicas e privadas), com gente online primeiro.
+function listarPartidasRodando() {
+  const humanosOnline = (r) => r.personagens.filter((p) => p.conectado && !p.bot).length;
+  return [...rooms.values()]
+    .filter((r) => r.status !== 'encerrada')
+    .sort((a, b) => (humanosOnline(b) > 0) - (humanosOnline(a) > 0) || b.atualizadoEm - a.atualizadoEm)
+    .slice(0, 100)
+    .map((r) => ({
+      ...resumoSala(r),
+      publica: !!r.publica,
+      humanosOnline: humanosOnline(r),
+      bots: r.personagens.filter((p) => p.bot).length,
+      rodada: r.rodada || 1,
+      personagens: r.personagens.filter((p) => p.personagem).map((p) => p.personagem.nome),
+    }));
+}
+
 function listarMinhasPartidas(userId) {
   return [...rooms.values()]
     .filter((r) => r.personagens.some((p) => p.userId === userId))
@@ -2273,6 +2290,7 @@ setInterval(() => {
 carregarDoDisco();
 
 module.exports = {
+  listarPartidasRodando,
   mudarCor,
   _botAgir: (codigo) => botAgir(codigo),
   _limparTema: limparTema,
