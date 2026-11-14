@@ -2377,6 +2377,10 @@ function carregarDoDisco() {
       p.socketId = null;
       normalizarPersonagem(p.personagem, room.ambiente); // fichas antigas: inventário em texto vira itens
     }
+    // Fichas criadas antes dos retratos: ganham um retrato livre da classe (bots, do gênero deles).
+    for (const p of room.personagens) {
+      if (p.personagem && !p.personagem.morto) escolherRetrato(room, p, p.bot ? p.botGenero : null);
+    }
     rooms.set(room.codigo, room);
   }
   console.log(`[salas] ${rooms.size} sala(s) restaurada(s) do disco.`);

@@ -28,6 +28,9 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 - **Ilustrações com gpt-image:** `response_format` só é enviado para modelos que o aceitam. Os `gpt-image-2.6-flare` e `gpt-image-2.6-sunburst` recusavam o pedido (HTTP 400), então, se o monitor ativasse um deles, todas as ilustrações falhariam.
 - Testes: `tools/teste_ia_stream.js` (leitor de SSE/JSON e regra do response_format, 8 verificações); o Mestre simulado responde em SSE quando recebe `stream: true` e recusa `response_format` nos gpt-image, como o gateway real; a bateria confere que o Mestre chamou a IA em streaming.
 
+## v0.21.1 — 2026-11-14
+- Personagens criados antes dos retratos (inclusive bots) recebem um retrato livre da classe quando o servidor carrega as mesas; os bots, do gênero deles.
+
 ## v0.21.0 — 2026-11-14
 - **Retratos ilustrados dos personagens** (ambiente fantasia: Corvile, Thalveira, Farol, Piratas): 6 por classe, 3 masculinos e 3 femininos, 24 no total, em `public/img/retratos/fantasia/`. Na criação do personagem, depois da classe, aparece a escolha do retrato com filtro Todos / Masculino / Feminino; os já escolhidos por outros na mesa ficam apagados. Quem não escolhe e os bots recebem um retrato livre da classe (bots, do gênero que a IA definiu). Nos outros ambientes, continua o ícone da classe.
 - **Destaque da vez:** quando a vez muda, o retrato de quem vai agir entra no canto inferior direito da narração ("Sua vez!", "é a vez de", "rolando o dado") e, depois de 4 segundos, vira um selo pequeno. Clicar alterna o tamanho.
