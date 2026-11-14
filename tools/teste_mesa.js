@@ -27,6 +27,30 @@ const emit = (s, ev, p) => new Promise((res) => s.timeout(20000).emit(ev, p, (e,
 const personagem = (nome, classeId, extra = {}) => ({ nome, classeId, atributos: { forca: 14, agilidade: 10, mente: 10, espirito: 12 }, historia: 'x', ...extra });
 
 let tokenAdmin = null;
+let bibliotecaCorvile = null;
+const imagensGeradasMock = async () => (await (await fetch(URL_BASE.replace(':3095', ':3096') + '__imagens')).json()).geradas;
+
+// Outra partida da mesma aventura reaproveita as ilustrações da biblioteca.
+async function reusoDeImagens() {
+  const r = await post('api/registrar', { nome: 'Edu', email: 'edu@teste.dev' });
+  const E = await conectar(r.json.token);
+  const antes = await imagensGeradasMock();
+  const c = (await emit(E, 'criarJogo', { aventuraId: 'sombras-de-corvile' })).state.codigo;
+  await emit(E, 'escolherPersonagem', { codigo: c, personagem: personagem('Edu', 'guerreiro') });
+  await emit(E, 'iniciarAventura', { codigo: c });
+  await sleep(800);
+  const log1 = (await emit(E, 'pedirLog', { codigo: c })).state.log.filter((m) => m.tipo === 'imagem');
+  ok(log1.length === 1 && log1[0].imagem === bibliotecaCorvile.abertura && await imagensGeradasMock() === antes, `nova partida de Corvile reaproveita a abertura sem gerar (${log1[0]?.imagem})`);
+  await emit(E, 'acaoJogador', { codigo: c, texto: 'Eu ataco a criatura' });
+  await sleep(800);
+  const log2 = (await emit(E, 'pedirLog', { codigo: c })).state.log.filter((m) => m.tipo === 'imagem');
+  ok(log2.length === 2 && log2[1].imagem === bibliotecaCorvile.criatura && await imagensGeradasMock() === antes, 'mesma descrição pedida pelo Mestre reaproveita a imagem da biblioteca');
+  const img = await fetch(URL_BASE + log2[1].imagem);
+  ok(img.status === 200 && /max-age=2592000/.test(img.headers.get('cache-control')), 'imagem da biblioteca servida com cache longo');
+  ok((await fetch(URL_BASE + 'imagens/biblioteca/fantasia/..%2F..%2Frooms')).status === 404, 'caminho malicioso na biblioteca dá 404');
+  E.disconnect();
+}
+
 
 // Admin encerra e apaga mesas (fora do relógio da mesa principal).
 async function adminEncerraApaga() {
@@ -212,6 +236,8 @@ async function fase1() {
   await sleep(1500);
   const imgs2 = (await emit(A, 'pedirLog', { codigo })).state.log.filter((m) => m.tipo === 'imagem');
   ok(imgs2.length === 2 && imgs2[1].texto === 'uma criatura de névoa ergue as garras', 'Mestre pediu uma ilustração com [IMAGEM: ...]');
+  ok(/^imagens\/biblioteca\/fantasia\/as-sombras-de-corvile--[a-z0-9-]+\.jpg$/.test(imgs2[1]?.imagem || '') && imgs2[1].imagem !== imgs2[0].imagem, `ilustração nova vai para a biblioteca com nome legível (${imgs2[1]?.imagem})`);
+  bibliotecaCorvile = { abertura: imgs2[0].imagem, criatura: imgs2[1].imagem };
   const rolaOutro = await emit(B, 'rolarDado', { codigo });
   ok(!rolaOutro.ok, `outro jogador não pode rolar o teste de Thalrik: ${rolaOutro.erro}`);
   const rola = await emit(A, 'rolarDado', { codigo, atributo: 'espirito' });
@@ -595,6 +621,7 @@ async function fase1() {
   ok(!(await get('api/jogos-abertos', r1.json.token)).json.jogos.some((j) => j.codigo === solo.state.codigo), 'mesa privada não aparece em Jogos Abertos');
   A2.disconnect(); B.disconnect();
   await adminEncerraApaga();
+  await reusoDeImagens();
 }
 
 async function fase2() {

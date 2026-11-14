@@ -1216,22 +1216,43 @@ function detectarImagem(room, texto) {
   if (!imagens.disponivel() || cfg(room).imagens === false) return; // desligado nas configurações da mesa
   const m = texto.match(RE_IMAGEM);
   let descricao = m ? sanitizar(m[1], 400) : '';
-  if (!descricao && !room.imagensGeradas && room.cena) {
-    descricao = `${room.cena.local}: ${room.cena.descricao}`; // abertura sem pedido do Mestre
-  }
+  const abertura = !descricao && !room.imagensGeradas && !room.imagensReusadas && !!room.cena;
+  if (abertura) descricao = `${room.cena.local}: ${room.cena.descricao}`; // abertura sem pedido do Mestre
   if (!descricao) return;
+  const local = room.cena ? room.cena.local : '';
+  // 1º a biblioteca: imagem já gerada em outra partida (mesmo lugar ou descrição parecida).
+  const pedido = descricao.match(/^usar\s*:?\s*(.+)$/i);
+  const achada = imagens.procurarNaBiblioteca({
+    ambiente: room.ambiente || 'fantasia', aventura: room.aventuraTitulo, local,
+    descricao: pedido ? '' : descricao, nome: pedido ? pedido[1] : null, abertura,
+  });
+  if (achada) {
+    const url = imagens.urlBiblioteca(achada);
+    if (room.cena && room.cena.imagem === url) return; // já é a imagem da cena
+    imagens.registrarUso(achada);
+    room.imagensReusadas = (room.imagensReusadas || 0) + 1;
+    room.logPublico.push({ autor: 'Mestre', tipo: 'imagem', texto: pedido ? achada.local || achada.nome : sanitizar(m ? m[1] : local, 200), imagem: url, ts: Date.now() });
+    if (room.cena) room.cena.imagem = url;
+    return; // quem chamou já vai salvar/transmitir a mesa
+  }
+  if (pedido) return; // pediu uma da biblioteca que não existe: não gera às cegas
   const n = room.imagensGeradas || 0;
   if (n >= MAX_IMAGENS_POR_SALA || gerandoImagem.has(room.codigo)) return;
   if (room.ultimaImagemEm && Date.now() - room.ultimaImagemEm < INTERVALO_IMAGENS_MS) return;
   room.imagensGeradas = n + 1;
   room.ultimaImagemEm = Date.now();
   gerandoImagem.add(room.codigo);
-  const local = room.cena ? room.cena.local : '';
   // Em segundo plano: o jogo não espera a imagem ficar pronta.
   imagens
     .gerar(room.codigo, getAmbiente(room.ambiente).estiloImagem, `${descricao}${room.tema ? ` (Setting: ${room.tema.slice(0, 300)})` : ''}`)
     .then((arquivo) => {
-      const url = `imagens/${room.codigo}/${arquivo}`;
+      let url = `imagens/${room.codigo}/${arquivo}`;
+      try {
+        const e = imagens.guardarNaBiblioteca({ codigo: room.codigo, arquivo, ambiente: room.ambiente || 'fantasia', aventura: room.aventuraTitulo, local, descricao: m ? sanitizar(m[1], 300) : descricao, abertura });
+        url = imagens.urlBiblioteca(e);
+      } catch (e) {
+        console.error(`[imagem] ${room.codigo}: não foi para a biblioteca —`, e.message);
+      }
       room.logPublico.push({ autor: 'Mestre', tipo: 'imagem', texto: m ? sanitizar(m[1], 200) : local, imagem: url, ts: Date.now() });
       if (room.cena && (!local || room.cena.local === local)) room.cena.imagem = url;
       tocar(room);

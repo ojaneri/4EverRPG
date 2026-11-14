@@ -6,6 +6,7 @@
 // ---------------------------------------------------------------------------
 
 const { socksPostJson } = require('./socksFetch');
+const imagens = require('./imagens');
 const { getAmbiente } = require('./ambientes');
 const { ITENS } = require('./characterSystem');
 
@@ -111,6 +112,15 @@ function blocoRitmo(room, missao, prox) {
   return txt + '\n';
 }
 
+// Ilustrações já prontas de outras partidas (mesmo ambiente; da mesma aventura primeiro).
+function blocoImagensProntas(room) {
+  const lista = imagens.bibliotecaPara({ ambiente: room.ambiente, aventura: room.aventuraTitulo }).slice(0, 25);
+  if (!lista.length) return '';
+  const itens = lista.map((e) => `${e.nome} (${(e.local || e.descricao).slice(0, 60)})`).join('; ');
+  return `\n   ANTES de pedir uma ilustração nova, veja se uma destas JÁ PRONTAS serve para a cena: ${itens}.` +
+    '\n   Se servir, escreva [IMAGEM: usar <nome exato>] (sai na hora e não custa nada). Só descreva uma nova se nenhuma servir.';
+}
+
 function buildSystemPrompt(room) {
   const { tema, personagens, resumo, missao } = room;
   const fichaDosPersonagens = personagens.map(linhaFicha).join('\n');
@@ -202,7 +212,7 @@ REGRAS DE CONDUÇÃO:
 15. ILUSTRAÇÕES: quando o grupo chegar a um lugar marcante ou viver um momento visual importante
    (uma criatura revelada, uma paisagem grandiosa), inclua de vez em quando — no máximo uma a cada
    várias cenas — uma linha [IMAGEM: <descrição visual curta do que se vê, em português, sem nomes
-   de pessoas reais e sem texto escrito na cena>]. O sistema gera a ilustração para a mesa.
+   de pessoas reais e sem texto escrito na cena>]. O sistema gera a ilustração para a mesa.${blocoImagensProntas(room)}
 16. As tags (TESTE, ESTADO, CENA, SUGESTOES, FIM, BUSCAVEL, MISSAO, ETAPA, MUSICA, IMAGEM) são sinalização para o sistema do jogo:
    ficam invisíveis para os jogadores — nunca as explique nem as mencione.`;
 }

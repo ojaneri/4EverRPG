@@ -137,6 +137,12 @@ function paginaSimples(titulo, corpo) {
 
 // Ilustrações de cena (geradas uma vez, guardadas em data/imagens).
 const imagens = require('./src/imagens');
+app.get('/imagens/biblioteca/:ambiente/:arquivo', (req, res) => {
+  const caminho = imagens.caminhoBiblioteca(String(req.params.ambiente), String(req.params.arquivo));
+  if (!caminho) return res.status(404).end();
+  res.set('Cache-Control', 'public, max-age=2592000, immutable');
+  res.sendFile(caminho);
+});
 app.get('/imagens/:codigo/:arquivo', (req, res) => {
   const caminho = imagens.caminhoArquivo(String(req.params.codigo).toUpperCase(), String(req.params.arquivo));
   if (!caminho) return res.status(404).end();

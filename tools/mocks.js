@@ -22,7 +22,12 @@ http.createServer((req, res) => {
       res.setHeader('content-type', 'audio/mpeg');
       return res.end(Buffer.from('ID3fake-mp3-do-mock'));
     }
+    if (req.url.startsWith('/__imagens')) {
+      res.setHeader('content-type', 'application/json');
+      return res.end(JSON.stringify({ geradas: global.imagensGeradas || 0 }));
+    }
     if (req.url.includes('/images/generations')) {
+      global.imagensGeradas = (global.imagensGeradas || 0) + 1;
       // Gerador de imagens simulado: devolve um PNG mínimo.
       res.setHeader('content-type', 'application/json');
       return res.end(JSON.stringify({ data: [{ b64_json: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' }] }));

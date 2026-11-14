@@ -7,6 +7,14 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+
+## v0.17.0 — 2026-11-13
+- **Biblioteca de ilustrações compartilhada entre partidas:** toda imagem gerada vai para `data/imagens/biblioteca/<ambiente>/` com nome fácil de lembrar (ex.: `as-sombras-de-corvile--vila-de-corvile.jpg`, `as-sombras-de-corvile--uma-criatura-de-nevoa-ergue-as-garras.jpg`) e entra no índice com aventura, lugar e descrição.
+- **Antes de gerar, o jogo procura na biblioteca:** a abertura automática reaproveita a imagem da mesma aventura e do mesmo lugar; um pedido do Mestre reaproveita uma imagem de descrição parecida (limiar em `RPG_IMG_LIMIAR_REUSO`, padrão 0,5). Reaproveitar não gasta nada e não conta no limite de imagens da mesa.
+- **O Mestre vê a lista das imagens prontas** do ambiente (as da mesma aventura primeiro) e pode pedir uma direto com `[IMAGEM: usar <nome>]`. Só descreve uma nova se nenhuma servir.
+- Apagar uma mesa não apaga as imagens da biblioteca.
+- `tools/migrar_imagens.js` copia para a biblioteca as imagens geradas antes (os originais ficam).
+- Testes: 5 verificações novas (nome legível, reuso da abertura e da descrição sem gerar, cache longo, caminho malicioso).
 ## v0.16.0 — 2026-11-13
 - **Cutucada:** clicar no cartão de outro jogador (painel do grupo) cutuca a pessoa. Quem cutucou vê o cartão do outro balançando com 👉 por 5 s; quem foi cutucado vê o cartão de quem cutucou balançando, recebe o aviso "Fulano cutucou você!" e o celular vibra.
 - Limite: cada jogador cutuca uma pessoa por rodada completa. Não dá para cutucar a si mesmo, bots ou quem está offline.

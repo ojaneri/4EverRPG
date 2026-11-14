@@ -106,6 +106,120 @@ async function gerar(codigo, estilo, descricao, modelo) {
   return salvar(codigo, id, buffer);
 }
 
+// ---------------------------------------------------------------------------
+// Biblioteca compartilhada: toda imagem gerada também vira uma entrada com nome
+// legível (ex.: fantasia/as-sombras-de-corvile--vila-de-corvile.jpg) e descrição,
+// para outras partidas reaproveitarem em vez de gerar de novo.
+// ---------------------------------------------------------------------------
+const PASTA_BIB = path.join(PASTA, 'biblioteca');
+const ARQ_INDICE = path.join(PASTA_BIB, 'indice.json');
+fs.mkdirSync(PASTA_BIB, { recursive: true });
+let indice = null;
+function lerIndice() {
+  if (!indice) {
+    try {
+      indice = JSON.parse(fs.readFileSync(ARQ_INDICE, 'utf8'));
+    } catch {
+      indice = [];
+    }
+  }
+  return indice;
+}
+function gravarIndice() {
+  const tmp = `${ARQ_INDICE}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(indice, null, 1));
+  fs.renameSync(tmp, ARQ_INDICE);
+}
+
+const semAcento = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+function slug(t, max = 40) {
+  const s = semAcento(t).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  if (s.length <= max) return s || 'cena';
+  const corte = s.lastIndexOf('-', max); // termina numa palavra inteira
+  return s.slice(0, corte > 10 ? corte : max).replace(/-+$/, '');
+}
+const PARADAS = new Set('de da do das dos com uma um que para por sob sobre entre ate pela pelo pelas pelos nas nos num numa ao aos the and with uma seu sua seus suas onde muito mais menos como esta este essa esse isso aquele aquela ela ele eles elas ha tem cena'.split(' '));
+const palavras = (t) => new Set(semAcento(t).split(/[^a-z0-9]+/).filter((p) => p.length >= 3 && !PARADAS.has(p)));
+function parecido(a, b) {
+  if (!a.size || !b.size) return 0;
+  let comum = 0;
+  for (const p of a) if (b.has(p)) comum++;
+  return comum / (a.size + b.size - comum);
+}
+
+// Entradas da biblioteca para um ambiente (as da mesma aventura primeiro).
+function bibliotecaPara({ ambiente, aventura }) {
+  const amb = ambiente || 'fantasia';
+  const av = aventura ? slug(aventura) : null;
+  return lerIndice()
+    .filter((e) => e.ambiente === amb)
+    .sort((x, y) => (y.aventura === av) - (x.aventura === av) || (y.usos || 0) - (x.usos || 0));
+}
+
+// Procura uma imagem já pronta:
+// - `nome`: pedido explícito do Mestre ([IMAGEM: usar <nome>]);
+// - `abertura`: ilustração automática da 1ª cena → mesma aventura e mesmo lugar;
+// - senão, a descrição pedida precisa ser parecida com a de uma imagem guardada.
+const LIMIAR_PARECIDA = Number(process.env.RPG_IMG_LIMIAR_REUSO) || 0.5;
+function procurarNaBiblioteca({ ambiente, aventura, local, descricao, nome, abertura = false }) {
+  const lista = bibliotecaPara({ ambiente, aventura });
+  if (nome) {
+    const n = slug(nome, 120);
+    const e = lista.find((x) => x.nome === n || x.nome.endsWith(`--${n}`) || slug(x.local || '') === n);
+    if (e) return e;
+  }
+  if (nome) return null;
+  const av = aventura ? slug(aventura) : null;
+  if (abertura) {
+    const lugar = slug(local || '');
+    return av && lista.find((e) => e.abertura && e.aventura === av && slug(e.local || '') === lugar) || null;
+  }
+  const pal = palavras(descricao);
+  let melhor = null;
+  let nota = 0;
+  for (const e of lista) {
+    let n = parecido(pal, palavras(e.descricao));
+    if (n > 0 && av && e.aventura === av) n += 0.15;
+    if (n > nota) {
+      nota = n;
+      melhor = e;
+    }
+  }
+  return nota >= LIMIAR_PARECIDA ? melhor : null;
+}
+
+function registrarUso(entrada) {
+  entrada.usos = (entrada.usos || 0) + 1;
+  entrada.usadoEm = Date.now();
+  try { gravarIndice(); } catch (e) { console.error('[imagem] índice:', e.message); }
+}
+
+// Copia uma imagem recém-gerada para a biblioteca, com nome legível.
+function guardarNaBiblioteca({ codigo, arquivo, ambiente, aventura, local, descricao, copiar = false, origem, abertura = false }) {
+  const fonte = path.join(pastaSala(codigo), arquivo);
+  const amb = slug(ambiente || 'fantasia');
+  // Abertura: nome do lugar; pedido do Mestre: o que aparece na cena.
+  const base = `${aventura ? slug(aventura) : 'personalizada'}--${slug(abertura ? local || descricao : descricao || local, 50)}`;
+  lerIndice();
+  let nome = base;
+  for (let i = 2; indice.some((e) => e.ambiente === amb && e.nome === nome); i++) nome = `${base}-${i}`;
+  const ext = path.extname(arquivo);
+  fs.mkdirSync(path.join(PASTA_BIB, amb), { recursive: true });
+  // Sai da pasta da sala (vale para todas as partidas); `copiar` mantém o original (migração).
+  (copiar ? fs.copyFileSync : fs.renameSync)(fonte, path.join(PASTA_BIB, amb, `${nome}${ext}`));
+  const entrada = { nome, arquivo: `${nome}${ext}`, ambiente: amb, aventura: aventura ? slug(aventura) : null, local: local || '', descricao: String(descricao || '').slice(0, 300), criadoEm: Date.now(), usos: 1, ...(origem ? { origem } : {}), ...(abertura ? { abertura: true } : {}) };
+  indice.push(entrada);
+  gravarIndice();
+  return entrada;
+}
+
+const urlBiblioteca = (e) => `imagens/biblioteca/${e.ambiente}/${e.arquivo}`;
+function caminhoBiblioteca(ambiente, arquivo) {
+  if (!/^[a-z0-9-]+$/.test(ambiente) || !/^[a-z0-9-]+\.(jpg|png)$/.test(arquivo)) return null;
+  const p = path.join(PASTA_BIB, ambiente, arquivo);
+  return fs.existsSync(p) ? p : null;
+}
+
 function caminhoArquivo(codigo, arquivo) {
   if (!/^[a-f0-9]{12}\.(jpg|png)$/.test(arquivo)) return null;
   const p = path.join(pastaSala(codigo), arquivo);
@@ -116,4 +230,7 @@ function apagarSala(codigo) {
   fs.rm(pastaSala(codigo), { recursive: true, force: true }, () => {});
 }
 
-module.exports = { disponivel, gerar, caminhoArquivo, apagarSala, ARQ_ATIVACAO };
+module.exports = {
+  disponivel, gerar, caminhoArquivo, apagarSala, ARQ_ATIVACAO,
+  bibliotecaPara, procurarNaBiblioteca, guardarNaBiblioteca, registrarUso, urlBiblioteca, caminhoBiblioteca, slug,
+};
