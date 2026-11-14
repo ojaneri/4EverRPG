@@ -48,7 +48,32 @@ async function reusoDeImagens() {
   const img = await fetch(URL_BASE + log2[1].imagem);
   ok(img.status === 200 && /max-age=2592000/.test(img.headers.get('cache-control')), 'imagem da biblioteca servida com cache longo');
   ok((await fetch(URL_BASE + 'imagens/biblioteca/fantasia/..%2F..%2Frooms')).status === 404, 'caminho malicioso na biblioteca dá 404');
+
+  // Lugar novo sem [IMAGEM] do Mestre: o jogo ilustra sozinho (RPG_IMG_AUTO_MS=0 nos testes).
+  if (E.estado?.pendingTest) {
+    await emit(E, 'rolarDado', { codigo: c });
+    await sleep(300);
+    await emit(E, 'fecharDado', { codigo: c });
+  }
+  await sleep(300);
+  const g0 = await imagensGeradasMock();
+  const via = await emit(E, 'acaoJogador', { codigo: c, texto: 'Eu viajo para a mina' });
+  await sleep(900);
+  const log3 = (await emit(E, 'pedirLog', { codigo: c })).state.log.filter((m) => m.tipo === 'imagem');
+  ok(via.ok && log3.length === 3 && /as-sombras-de-corvile--boca-da-mina\.jpg$/.test(log3[2].imagem) && await imagensGeradasMock() === g0 + 1, `lugar novo sem pedido do Mestre ganha ilustração automática (${log3[2]?.imagem})`);
   E.disconnect();
+
+  // Outra partida chegando ao mesmo lugar reaproveita a imagem do lugar, sem gerar.
+  const F = await conectar((await post('api/registrar', { nome: 'Fia', email: 'fia@teste.dev' })).json.token);
+  const cf = (await emit(F, 'criarJogo', { aventuraId: 'sombras-de-corvile' })).state.codigo;
+  await emit(F, 'escolherPersonagem', { codigo: cf, personagem: personagem('Fia', 'batedor') });
+  await emit(F, 'iniciarAventura', { codigo: cf });
+  await sleep(500);
+  await emit(F, 'acaoJogador', { codigo: cf, texto: 'Eu viajo para a mina' });
+  await sleep(900);
+  const logF = (await emit(F, 'pedirLog', { codigo: cf })).state.log.filter((m) => m.tipo === 'imagem');
+  ok(logF.length === 2 && logF[1].imagem === log3[2]?.imagem && await imagensGeradasMock() === g0 + 1, 'outra partida no mesmo lugar reaproveita a ilustração do lugar');
+  F.disconnect();
 }
 
 

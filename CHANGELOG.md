@@ -14,6 +14,11 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+
+## v0.18.0 — 2026-11-13
+- **Ilustração automática a cada lugar novo:** quando a cena muda de local e o Mestre não pediu imagem, o jogo ilustra o lugar sozinho, desde que a última ilustração tenha mais de 4 minutos (`RPG_IMG_AUTO_MS`). Antes procura na biblioteca uma imagem do mesmo lugar da mesma aventura (sai na hora, sem custo). Continuam valendo o limite de 12 imagens por mesa e o intervalo de 3 minutos entre gerações.
+- **Instrução do Mestre:** em vez de "de vez em quando, no máximo uma a cada várias cenas", pede ilustração sempre que o grupo chegar a um lugar novo, começar um combate ou viver um momento visual marcante. A lista de imagens prontas não desencoraja mais pedir uma nova quando nenhuma serve.
+- Testes: 2 verificações novas (lugar novo ilustrado sozinho; outra partida reaproveita a imagem do lugar).
 ## v0.17.6 — 2026-11-13
 - **Falas do jogador também na narração:** quando o Mestre repete a fala que o jogador escreveu na ação, ela aparece em destaque na cor desse personagem. A comparação ignora acentos, pontuação, maiúsculas e letras esticadas ("frenteeeee"). Falas dos personagens do Mestre continuam em itálico normal.
 - Falas com itálico ou negrito dentro ou fora das aspas (`"*fala*"` e `*"fala"*`) também são reconhecidas.

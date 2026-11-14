@@ -57,6 +57,7 @@ http.createServer((req, res) => {
     }
     if (/cronista/.test(sys)) t = '- O grupo explorou a vila.\n- Thalrik achou uma chave.';
     else if (/Inicie a aventura/.test(ultima) && /defina a missão/.test(ultima)) t = '[MISSAO: Salvar o vilarejo da névoa | Achar a pista do culpado | Vencer o vilão]\nUma névoa estranha cobre tudo.\n[CENA: Vila | névoa densa | noite]';
+    else if (/viajo para a mina/i.test(ultima)) t = 'O grupo chega à boca da mina abandonada.\n[CENA: Boca da Mina | entrada escura entre pedras | noite]';
     else if (/vitoria/i.test(ultima.split('\n').pop())) t = 'O vilão cai e a névoa se dissipa. Fim glorioso!\n[MISSAO_CUMPRIDA]';
     else if (/concluo etapa (\d)/i.test(ultima)) t = `Muito bem, isso avança a missão.\n[ETAPA: ${ultima.match(/concluo etapa (\d)/i)[1]}]`;
     else if (/Inicie a aventura/.test(ultima)) t = 'A névoa cobre a vila. Thalrik, o que você faz?\n[CENA: Vila de Corvile | ruas vazias sob névoa | noite]\n[MUSICA: taverna]\n[BUSCAVEL: Baú velho | trancado | agilidade | facil]\n[BUSCAVEL: Gaveta da escrivaninha | livre]\n[SUGESTOES: Bater na porta | Examinar o poço | Seguir as pegadas]';

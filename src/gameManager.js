@@ -1210,21 +1210,28 @@ function detectarMusica(room, texto, climaAntes) {
 const numeroEnv = (nome, padrao) => (process.env[nome] !== undefined && process.env[nome] !== '' && Number.isFinite(Number(process.env[nome])) ? Number(process.env[nome]) : padrao);
 const MAX_IMAGENS_POR_SALA = numeroEnv('RPG_IMG_MAX_POR_SALA', 12);
 const INTERVALO_IMAGENS_MS = numeroEnv('RPG_IMG_INTERVALO_MS', 3 * 60 * 1000);
+// Lugar novo sem pedido do Mestre: ilustra sozinho se a última imagem for mais antiga que isso.
+const INTERVALO_AUTO_MS = numeroEnv('RPG_IMG_AUTO_MS', 4 * 60 * 1000);
 const gerandoImagem = new Set();
 
 function detectarImagem(room, texto) {
   if (!imagens.disponivel() || cfg(room).imagens === false) return; // desligado nas configurações da mesa
   const m = texto.match(RE_IMAGEM);
   let descricao = m ? sanitizar(m[1], 400) : '';
-  const abertura = !descricao && !room.imagensGeradas && !room.imagensReusadas && !!room.cena;
-  if (abertura) descricao = `${room.cena.local}: ${room.cena.descricao}`; // abertura sem pedido do Mestre
-  if (!descricao) return;
   const local = room.cena ? room.cena.local : '';
+  // Sem pedido do Mestre, o jogo ilustra sozinho: a 1ª cena e cada lugar novo
+  // (se a última ilustração tiver mais de alguns minutos).
+  const abertura = !descricao && !room.imagensGeradas && !room.imagensReusadas && !!room.cena;
+  const lugarNovo = !!local && semAcento(local) !== semAcento(room.imagemLocal || '');
+  const recente = room.ultimaIlustracaoEm && Date.now() - room.ultimaIlustracaoEm < INTERVALO_AUTO_MS;
+  const doLugar = abertura || (!descricao && lugarNovo && !recente);
+  if (doLugar) descricao = `${local}: ${room.cena.descricao}`;
+  if (!descricao) return;
   // 1º a biblioteca: imagem já gerada em outra partida (mesmo lugar ou descrição parecida).
   const pedido = descricao.match(/^usar\s*:?\s*(.+)$/i);
   const achada = imagens.procurarNaBiblioteca({
     ambiente: room.ambiente || 'fantasia', aventura: room.aventuraTitulo, local,
-    descricao: pedido ? '' : descricao, nome: pedido ? pedido[1] : null, abertura,
+    descricao: pedido ? '' : descricao, nome: pedido ? pedido[1] : null, abertura: doLugar,
   });
   if (achada) {
     const url = imagens.urlBiblioteca(achada);
@@ -1233,6 +1240,8 @@ function detectarImagem(room, texto) {
     room.imagensReusadas = (room.imagensReusadas || 0) + 1;
     room.logPublico.push({ autor: 'Mestre', tipo: 'imagem', texto: pedido ? achada.local || achada.nome : sanitizar(m ? m[1] : local, 200), imagem: url, ts: Date.now() });
     if (room.cena) room.cena.imagem = url;
+    room.imagemLocal = local;
+    room.ultimaIlustracaoEm = Date.now();
     return; // quem chamou já vai salvar/transmitir a mesa
   }
   if (pedido) return; // pediu uma da biblioteca que não existe: não gera às cegas
@@ -1241,6 +1250,9 @@ function detectarImagem(room, texto) {
   if (room.ultimaImagemEm && Date.now() - room.ultimaImagemEm < INTERVALO_IMAGENS_MS) return;
   room.imagensGeradas = n + 1;
   room.ultimaImagemEm = Date.now();
+  const localAntes = room.imagemLocal;
+  room.imagemLocal = local; // evita pedir de novo o mesmo lugar enquanto gera
+  room.ultimaIlustracaoEm = Date.now();
   gerandoImagem.add(room.codigo);
   // Em segundo plano: o jogo não espera a imagem ficar pronta.
   imagens
@@ -1248,7 +1260,7 @@ function detectarImagem(room, texto) {
     .then((arquivo) => {
       let url = `imagens/${room.codigo}/${arquivo}`;
       try {
-        const e = imagens.guardarNaBiblioteca({ codigo: room.codigo, arquivo, ambiente: room.ambiente || 'fantasia', aventura: room.aventuraTitulo, local, descricao: m ? sanitizar(m[1], 300) : descricao, abertura });
+        const e = imagens.guardarNaBiblioteca({ codigo: room.codigo, arquivo, ambiente: room.ambiente || 'fantasia', aventura: room.aventuraTitulo, local, descricao: m ? sanitizar(m[1], 300) : descricao, abertura: doLugar });
         url = imagens.urlBiblioteca(e);
       } catch (e) {
         console.error(`[imagem] ${room.codigo}: não foi para a biblioteca —`, e.message);
@@ -1259,6 +1271,7 @@ function detectarImagem(room, texto) {
     })
     .catch((e) => {
       room.imagensGeradas = Math.max(0, (room.imagensGeradas || 1) - 1);
+      if (room.imagemLocal === local) room.imagemLocal = localAntes; // tenta de novo depois do intervalo
       console.error(`[imagem] ${room.codigo}: falhou —`, e.message);
     })
     .finally(() => gerandoImagem.delete(room.codigo));
