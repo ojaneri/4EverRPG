@@ -2140,7 +2140,7 @@ function renderLogNovo({ tocarNarracao }) {
       ${avatarHtml(avatarChave, cor)}
       <div class="conteudo">
         <div class="autor">${esc(msg.autor)}</div>
-        <div class="texto">${formatarTexto(msg.texto)}</div>
+        <div class="texto">${msg.tipo === 'jogador' ? marcarFalas(formatarTexto(msg.texto)) : formatarTexto(msg.texto)}</div>
       </div>`;
     if (msg.tipo === 'mestre') {
       const btn = document.createElement('button');
@@ -2758,6 +2758,12 @@ function escapeHtml(s) {
 
 // Markdown mínimo e seguro: escapa tudo primeiro, só depois converte **negrito**,
 // *itálico* e `código` em tags — nunca interpreta HTML vindo do texto original.
+// Falas entre aspas ("...", “...”, «...») nas ações dos jogadores viram destaque
+// na cor do personagem (as aspas curvas vêm do CSS). Recebe HTML já escapado.
+function marcarFalas(html) {
+  return html.replace(/(["“«])([^"“”«»\n<>]{1,300}?)(["”»])/g, (_m, _a, fala) => `<span class="fala">${fala}</span>`);
+}
+
 function formatarTexto(s) {
   let seguro = escapeHtml(s || '');
   seguro = seguro

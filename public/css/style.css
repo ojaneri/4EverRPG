@@ -1304,3 +1304,12 @@ body.tela-tremendo > .topo-site, body.tela-tremendo > #app { animation: tremer-t
 @media (prefers-reduced-motion: reduce) {
   body.tela-tremendo > .topo-site, body.tela-tremendo > #app { animation-duration: 1.2s; }
 }
+
+/* Falas entre aspas nas ações dos jogadores: estilo "diálogo de livro" na cor do personagem */
+.msg .texto .fala {
+  font-weight: 800; font-family: Georgia, 'Cinzel', serif; font-size: 1.08em; letter-spacing: .2px;
+  color: color-mix(in srgb, var(--cor-p, #b08cff) 75%, #fff);
+}
+.msg .texto .fala::before, .msg .texto .fala::after { color: var(--cor-p, #b08cff); font-size: 1.3em; line-height: 0; vertical-align: -.15em; opacity: .9; }
+.msg .texto .fala::before { content: '“'; }
+.msg .texto .fala::after { content: '”'; }
