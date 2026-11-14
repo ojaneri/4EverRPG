@@ -342,9 +342,18 @@ function conectarSocket() {
   socket.on('saqueAberto', receberSaque);
   socket.on('etapaConcluida', avisarEtapa);
   socket.on('avisoMesa', mostrarAvisoMesa);
+  socket.on('mesaApagada', ({ codigo }) => {
+    if (codigo !== estado.codigo) return;
+    const observando = estado.observando;
+    sairDaMesaAtual();
+    if (observando) return (location.hash = '#/observar');
+    location.hash = '#/';
+    setTimeout(() => ($('erro-inicio').textContent = 'Esta mesa foi apagada pela administração do 4Ever.'), 50);
+  });
   socket.on('chatMensagem', (msg) => {
     estado.chatMensagens.push(msg);
     renderChatLateral();
+    renderChatEspera();
   });
 }
 
@@ -388,13 +397,37 @@ async function carregarObservar() {
     const { jogos } = await api('api/observar');
     lista.innerHTML = jogos.length
       ? jogos.map((j) => cartaoJogo(j,
-        `<p class="meu-personagem">${j.publica ? '🌐 pública' : '🔒 privada'} · rodada ${j.rodada} · ${j.humanosOnline} pessoa(s) online${j.bots ? ` · 🤖 ${j.bots} bot(s)` : ''}${j.personagens.length ? ` · ${j.personagens.map(esc).join(', ')}` : ''}</p>`
+        `<p class="meu-personagem">${j.publica ? '🌐 pública' : '🔒 privada'} · rodada ${j.rodada} · ${j.humanosOnline} pessoa(s) online${j.bots ? ` · 🤖 ${j.bots} bot(s)` : ''}${j.personagens.length ? ` · ${j.personagens.map(esc).join(', ')}` : ''}</p>
+        <div class="acoes-admin"><button type="button" class="botao-mini" data-admin="encerrar" data-codigo="${esc(j.codigo)}">🏁 Encerrar</button><button type="button" class="botao-mini botao-perigo" data-admin="apagar" data-codigo="${esc(j.codigo)}">🗑️ Apagar</button></div>`
       ).replace(`href="#/sala/${esc(j.codigo)}"`, `href="#/observar/${esc(j.codigo)}"`)).join('')
       : '<p class="vazio">Nenhuma partida em andamento agora.</p>';
   } catch (e) {
     lista.innerHTML = `<p class="erro">${esc(e.message)}</p>`;
   }
 }
+
+// Admin: encerrar (o Mestre narra um epílogo) ou apagar a mesa de vez.
+document.addEventListener('click', async (ev) => {
+  const btn = ev.target.closest('[data-admin]');
+  if (!btn) return;
+  ev.preventDefault();
+  ev.stopPropagation();
+  const codigo = btn.dataset.codigo || estado.codigo;
+  const apagar = btn.dataset.admin === 'apagar';
+  const pergunta = apagar
+    ? `Apagar a mesa ${codigo} de vez? Os jogadores saem da mesa e o histórico some. Não dá para desfazer.`
+    : `Encerrar a mesa ${codigo}? Se a aventura estiver rolando, o Mestre narra um epílogo e a mesa fica encerrada para todos.`;
+  if (!confirm(pergunta)) return;
+  btn.disabled = true;
+  try {
+    await emitir(apagar ? 'adminApagar' : 'adminEncerrar', { codigo }, 120000);
+    if (!estado.codigo) carregarObservar();
+  } catch (e) {
+    alert(e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}, true);
 
 async function carregarMinhasPartidas() {
   const lista = $('lista-minhas');
@@ -867,10 +900,48 @@ function sonsDaMesa(rs) {
   somMesa = { codigo: rs.codigo, ids, status: rs.status };
 }
 
+// Chat da sala de espera: as mesmas mensagens do chat geral (o servidor guarda as
+// últimas 200, então quem chega depois vê a conversa).
+function renderChatEspera() {
+  const lista = $('chat-espera-lista');
+  if (!lista) return;
+  const msgs = estado.chatMensagens.filter((m) => m.tipo === 'texto' || m.tipo === 'audio');
+  const chave = `${estado.codigo}:${msgs.length}`;
+  if (lista.dataset.chave === chave) return; // nada novo: não redesenha (nem repete a animação)
+  lista.dataset.chave = chave;
+  const pertoDoFim = lista.scrollHeight - lista.scrollTop - lista.clientHeight < 60;
+  const meuNome = meuNomeExibicao();
+  lista.innerHTML = msgs.length
+    ? msgs.map((m) => {
+      const privado = m.escopo === 'privado';
+      const corpo = m.tipo === 'audio' ? '<em>🎙️ mensagem de voz (ouça na aba Chat da mesa)</em>' : formatarTexto(m.texto);
+      const hora = new Date(m.ts || Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      return `<div class="fala-espera${m.autor === meuNome ? ' minha' : ''}${privado ? ' privado' : ''}">
+        <span class="autor-chat" data-pers="${slugPers(m.autor)}">${m.bot ? '🤖 ' : ''}${esc(m.autor)}${privado ? ` <span class="tag-privado">(privado${m.autor === meuNome ? ` → ${esc(m.para)}` : ''})</span>` : ''}</span>
+        <span class="hora-chat">${hora}</span><div>${corpo}</div></div>`;
+    }).join('')
+    : '<p class="vazio">Ninguém falou ainda. Que tal dar um oi?</p>';
+  if (pertoDoFim || msgs.length && msgs[msgs.length - 1].autor === meuNome) lista.scrollTop = lista.scrollHeight;
+}
+$('form-chat-espera').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const campo = $('chat-espera-texto');
+  const texto = campo.value.trim();
+  if (!texto) return;
+  campo.value = '';
+  try {
+    await emitir('chatTexto', { texto }, 15000);
+  } catch (e) {
+    campo.value = texto;
+    $('erro-personagem').textContent = e.message;
+  }
+});
+
 const jaVistosLobby = new Set();
 function renderSalaEspera(rs) {
   eraMinhaVez = false; // no lobby ninguém tem a vez: a primeira vez da aventura toca o som
   renderVitrine(rs);
+  renderChatEspera();
   const lista = $('lista-grupo');
   lista.innerHTML = '';
   rs.personagens.forEach((p) => {

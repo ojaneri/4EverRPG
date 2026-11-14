@@ -4,6 +4,13 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+
+## v0.15.0 — 2026-11-13
+- **Admin encerra ou apaga mesas:** botões "🏁 Encerrar" e "🗑️ Apagar" em cada mesa da lista "Observar partidas" e na faixa do modo observador, sempre com confirmação.
+  - Encerrar: se a aventura está rolando, o Mestre narra um epílogo curto e a mesa fica encerrada para todos, com o aviso "A administração do 4Ever encerrou esta mesa". No lobby, encerra na hora.
+  - Apagar: tira a mesa do servidor e do disco (com as ilustrações). Quem estava nela volta ao início com o aviso de que a mesa foi apagada.
+- **Chat de texto na sala de espera:** conversa do grupo enquanto todos montam os personagens. Quem chega depois vê as mensagens antigas (o servidor guarda as últimas 200), e a conversa continua na aba Chat durante a aventura.
+- Uma narração que termina depois de a mesa ser apagada não recria mais o arquivo da mesa.
 ## v0.14.0 — 2026-11-13
 - **Sala de espera viva:** vitrine da história no topo, com a ilustração do livreto em movimento lento, partículas do ambiente (brasas, vaga-lumes, chuva de dados, poeira, estrelas), o gancho digitado letra por letra, a apresentação e o clima da aventura. Sem segredos do roteiro (mesmos textos do livreto).
 - **Música na sala de espera:** cada ambiente tem sua trilha enquanto o grupo se monta (ex.: Viola ao Luar no folclore, Clube no cyber). No celular, o volume aparece no topo da sala de espera.

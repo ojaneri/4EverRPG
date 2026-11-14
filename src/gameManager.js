@@ -85,6 +85,7 @@ function sanitizar(s, max) {
 }
 
 function tocar(room) {
+  if (rooms.get(room.codigo) !== room) return; // mesa apagada (ex.: narração que terminou depois)
   room.atualizadoEm = Date.now();
   if (room.logPublico.length > MAX_LOG) room.logPublico.splice(0, room.logPublico.length - MAX_LOG);
   storage.salvarSala(room);
@@ -2142,6 +2143,39 @@ async function encerrarAventura({ codigo, userId }) {
   tocar(room);
 }
 
+// Admin: encerra a mesa. Em andamento, o Mestre narra um epílogo curto antes.
+async function encerrarPeloAdmin(codigo) {
+  const room = exigirSala(codigo);
+  if (room.status === 'encerrada') throw new Error('Esta mesa já está encerrada.');
+  if (room.processando) throw new Error('O Mestre está narrando agora. Tente de novo em alguns segundos.');
+  logSistema(room, '🏁 A administração do 4Ever encerrou esta mesa.');
+  if (room.status === 'em_jogo') {
+    room.pendingTest = null;
+    try {
+      await rodadaDoMestre(room, {
+        conteudo: montarMensagem(room, '[Sistema: a sessão precisa terminar aqui, sem concluir a missão. Narre agora um epílogo curto e marcante, amarrando o que aconteceu e o destino de cada personagem, e inclua a tag [FIM].]'),
+      });
+    } catch (e) {
+      console.error(`[admin ${room.codigo}] epílogo falhou:`, e.message);
+    }
+  }
+  if (room.status !== 'encerrada') finalizar(room, 'interrompida');
+  tocar(room);
+}
+
+// Admin: apaga a mesa de vez (memória, disco e ilustrações).
+function apagarSalaPeloAdmin(codigo) {
+  const room = exigirSala(codigo);
+  pararTimer(room);
+  const bt = botTimers.get(room.codigo);
+  if (bt) clearTimeout(bt.t);
+  botTimers.delete(room.codigo);
+  rooms.delete(room.codigo);
+  storage.apagarSala(room.codigo);
+  imagens.apagarSala(room.codigo);
+  return room.codigo;
+}
+
 // ---------------------------------------------------------------------------
 // Estado público e listagens
 // ---------------------------------------------------------------------------
@@ -2295,6 +2329,8 @@ carregarDoDisco();
 
 module.exports = {
   listarPartidasRodando,
+  encerrarPeloAdmin,
+  apagarSalaPeloAdmin,
   mudarCor,
   _botAgir: (codigo) => botAgir(codigo),
   _limparTema: limparTema,

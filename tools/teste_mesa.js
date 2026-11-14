@@ -26,6 +26,48 @@ function conectar(token) {
 const emit = (s, ev, p) => new Promise((res) => s.timeout(20000).emit(ev, p, (e, r) => res(e ? { ok: false, erro: 'timeout' } : r)));
 const personagem = (nome, classeId, extra = {}) => ({ nome, classeId, atributos: { forca: 14, agilidade: 10, mente: 10, espirito: 12 }, historia: 'x', ...extra });
 
+let tokenAdmin = null;
+
+// Admin encerra e apaga mesas (fora do relógio da mesa principal).
+async function adminEncerraApaga() {
+  const tAdm = tokenAdmin;
+  {
+    // Admin encerra e apaga mesas (uma terceira pessoa joga sozinha numa mesa nova).
+    const rC = await post('api/registrar', { nome: 'Cida', email: 'cida@teste.dev' });
+    const C = await conectar(rC.json.token);
+    C.apagada = null;
+    C.on('mesaApagada', (m) => (C.apagada = m.codigo));
+    const mc = (await emit(C, 'criarJogo', { aventuraId: 'sombras-de-corvile' })).state.codigo;
+    await emit(C, 'chatTexto', { codigo: mc, texto: 'oi, alguém aí?' });
+    const D = await conectar((await post('api/registrar', { nome: 'Davi', email: 'davi@teste.dev' })).json.token);
+    const jd = await emit(D, 'entrarJogo', { codigo: mc });
+    ok(jd.ok && jd.state.chatGeral.some((m) => m.texto === 'oi, alguém aí?'), 'quem entra na sala de espera recebe as mensagens antigas do chat');
+    await emit(D, 'sairDaSala', {});
+    D.disconnect();
+    await emit(C, 'escolherPersonagem', { codigo: mc, personagem: personagem('Cida', 'batedor') });
+    await emit(C, 'iniciarAventura', { codigo: mc });
+    ok(!(await emit(C, 'adminEncerrar', { codigo: mc })).ok && !(await emit(C, 'adminApagar', { codigo: mc })).ok, 'jogador comum não encerra nem apaga mesa pelo admin');
+    const O2 = await conectar(tAdm);
+    await emit(O2, 'observarJogo', { codigo: mc });
+    const enc = await emit(O2, 'adminEncerrar', { codigo: mc });
+    await sleep(200);
+    const logC = (await emit(C, 'pedirLog', { codigo: mc })).state.log;
+    ok(enc.ok && C.estado.status === 'encerrada' && logC.some((m) => /administração/.test(m.texto)), `admin encerra a mesa em andamento (status ${C.estado.status})`);
+    ok(!(await emit(O2, 'adminEncerrar', { codigo: mc })).ok, 'encerrar de novo é recusado');
+    const arq = require('path').join(process.argv[5], 'rooms', `${mc}.json`);
+    await sleep(600); // o disco é gravado com um pequeno atraso
+    const existiaArq = fs.existsSync(arq);
+    ok((await emit(O2, 'adminApagar', { codigo: mc })).ok, 'admin apaga a mesa');
+    await sleep(200);
+    ok(C.apagada === mc, 'jogadores da mesa são avisados que ela foi apagada');
+    ok(!(await emit(C, 'entrarJogo', { codigo: mc })).ok && !(await get('api/observar', tAdm)).json.jogos.some((j) => j.codigo === mc), 'mesa apagada some do servidor e da lista');
+    await sleep(600);
+    ok(existiaArq && !fs.existsSync(arq), `arquivo da mesa apagado do disco (existia antes: ${existiaArq})`);
+    O2.disconnect();
+    C.disconnect();
+  }
+}
+
 async function fase1() {
   // --- Contas ---
   const r1 = await post('api/registrar', { nome: 'Ana <img src=x onerror=alert(1)>', email: 'ana@teste.dev' });
@@ -138,6 +180,8 @@ async function fase1() {
     await sleep(150);
     ok(O.chats.some((m) => m.texto === 'mensagem para a mesa'), 'observador recebe o bate-papo geral em tempo real');
     ok(A.estado.status === 'em_jogo' && A.estado.turnoAtual === 'Thalrik' && B.estado.personagens.length === antesB, 'mesa segue igual depois do observador');
+
+    tokenAdmin = tAdm;
     O.disconnect();
   }
 
@@ -529,6 +573,7 @@ async function fase1() {
   fs.writeFileSync(ARQ_EMAILS + '.codigos', JSON.stringify({ codigo, solo: solo.state.codigo, tokenA: r1.json.token }));
   ok(!(await get('api/jogos-abertos', r1.json.token)).json.jogos.some((j) => j.codigo === solo.state.codigo), 'mesa privada não aparece em Jogos Abertos');
   A2.disconnect(); B.disconnect();
+  await adminEncerraApaga();
 }
 
 async function fase2() {

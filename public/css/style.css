@@ -1233,3 +1233,22 @@ body.observando #modal-dado-pausa { display: none !important; }
   .vitrine-arte, .vitrine-particulas i, #btn-iniciar-aventura { animation: none !important; }
   .vitrine-particulas { display: none; }
 }
+.acoes-admin { display: inline-flex; gap: 6px; margin-left: 8px; flex-wrap: wrap; }
+.cartao-jogo .acoes-admin { margin: 6px 0 2px; }
+
+/* Chat da sala de espera */
+.chat-espera h3 { margin-top: 0; }
+.chat-espera-lista {
+  max-height: 260px; min-height: 90px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+  background: #0e0d19; border: 1px solid var(--borda); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
+  overscroll-behavior: contain;
+}
+.chat-espera-lista .vazio { margin: auto; color: var(--texto-fraco); font-size: .88rem; }
+.fala-espera { font-size: .9rem; line-height: 1.4; }
+.fala-espera:last-child { animation: subir-fade .35s ease-out both; }
+.fala-espera .autor-chat { font-weight: 700; color: var(--cor-p, var(--acento)); }
+.fala-espera .hora-chat { color: var(--texto-fraco); font-size: .72rem; margin-left: 6px; }
+.fala-espera.privado { opacity: .85; font-style: italic; }
+.form-chat-espera { display: flex; gap: 8px; }
+.form-chat-espera input { flex: 1; min-width: 0; margin: 0; }
+.form-chat-espera button { padding: 8px 14px; }

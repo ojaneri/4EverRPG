@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>4Ever — Aventuras de RPG com Mestre de IA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎲%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/style.css?v=1794614920" />
+<link rel="stylesheet" href="css/style.css?v=1794615161" />
 </head>
 <body>
   <header class="topo-site">
@@ -234,6 +234,16 @@
         <p id="msg-espera" class="msg-espera"></p>
         <p id="dica-espera" class="dica-espera"></p>
       </div>
+
+      <div class="sala-espera chat-espera">
+        <h3>💬 Conversa do grupo</h3>
+        <div id="chat-espera-lista" class="chat-espera-lista" aria-live="polite"></div>
+        <form id="form-chat-espera" class="form-chat-espera">
+          <input type="text" id="chat-espera-texto" placeholder="Diga oi, combine o grupo..." maxlength="500" autocomplete="off" />
+          <button type="submit" aria-label="Enviar mensagem">➤</button>
+        </form>
+        <p class="ajuda-rodape">Quem chegar depois também vê a conversa. Ela continua na aba Chat durante a aventura.</p>
+      </div>
       <p class="erro" id="erro-personagem"></p>
     </section>
 
@@ -304,7 +314,8 @@
         </header>
 
         <div id="faixa-morto" class="faixa-encerrada faixa-morto escondido">☠️ Seu personagem morreu. <button type="button" id="btn-novo-personagem">Criar novo personagem</button></div>
-        <div id="faixa-observando" class="faixa-encerrada faixa-observando escondido">👁 Modo observador: ninguém na mesa vê você e você não pode agir. <a href="#/observar">Voltar à lista</a></div>
+        <div id="faixa-observando" class="faixa-encerrada faixa-observando escondido">👁 Modo observador: ninguém na mesa vê você e você não pode agir. <a href="#/observar">Voltar à lista</a>
+          <span class="acoes-admin"><button type="button" class="botao-mini" data-admin="encerrar">🏁 Encerrar mesa</button><button type="button" class="botao-mini botao-perigo" data-admin="apagar">🗑️ Apagar mesa</button></span></div>
         <div id="faixa-encerrada" class="faixa-encerrada escondido">🏁 Esta aventura foi encerrada. Exporte o diário para guardar a história.</div>
 
         <div id="painel-cena" class="painel-cena escondido">
@@ -469,6 +480,6 @@
 
   <script src="socket.io/socket.io.js"></script>
   <script src="js/musica.js?v=1794588062"></script>
-  <script src="js/app.js?v=1794614920"></script>
+  <script src="js/app.js?v=1794615161"></script>
 </body>
 </html>

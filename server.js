@@ -264,7 +264,7 @@ function handler(fn) {
 
 // Observador (admin): fica na sala do Socket.IO e recebe tudo o que a mesa recebe,
 // mas não é jogador — ninguém vê que ele está lá e nenhuma ação é aceita.
-const EVENTOS_OBSERVADOR = new Set(['observarJogo', 'entrarJogo', 'criarJogo', 'sairDaSala', 'pedirLog']);
+const EVENTOS_OBSERVADOR = new Set(['observarJogo', 'entrarJogo', 'criarJogo', 'sairDaSala', 'pedirLog', 'adminEncerrar', 'adminApagar']);
 
 io.on('connection', (socket) => {
   const eu = () => usuarioDo(socket);
@@ -312,6 +312,19 @@ io.on('connection', (socket) => {
     if (!room) throw new Error('Jogo não encontrado.');
     vincularSala(socket, room.codigo, { observando: true });
     return { state: gameManager.roomPublicState(room, { comLog: true }), meuId: null, observando: true };
+  }));
+
+  // Admin: encerrar (com epílogo do Mestre) ou apagar de vez qualquer mesa.
+  socket.on('adminEncerrar', handler(async ({ codigo }) => {
+    if (!auth.ehAdmin(eu())) throw new Error('Só administradores.');
+    await gameManager.encerrarPeloAdmin(codigo);
+  }));
+  socket.on('adminApagar', handler(({ codigo }) => {
+    if (!auth.ehAdmin(eu())) throw new Error('Só administradores.');
+    const cod = gameManager.apagarSalaPeloAdmin(codigo);
+    io.to(cod).emit('mesaApagada', { codigo: cod });
+    io.in(cod).socketsLeave(cod);
+    logEnviado.delete(cod);
   }));
 
   socket.on('sairDaSala', handler(() => {
