@@ -5,6 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 node tools/teste_tts.js
 node tools/teste_ia_stream.js
+node tools/teste_monitor.js
 TMP=$(mktemp -d)
 trap 'kill $(jobs -p) 2>/dev/null || true; rm -rf "$TMP"' EXIT
 touch "$TMP/emails.txt"

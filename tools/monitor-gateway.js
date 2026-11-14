@@ -67,8 +67,28 @@ function situacao(r) {
   if (r.status === 0) return 'sem conexão';
   if (/não está disponível|nao esta disponivel|not available/i.test(r.texto)) return 'indisponível';
   if (/Endereço não disponível/i.test(r.texto)) return 'rota inexistente';
-  if (r.status === 503) return 'instável (503)';
+  if (r.status === 429) return 'ocupado (429)';
+  if ([502, 503, 504].includes(r.status)) return `instável (${r.status})`;
   return `LIBERADO? (HTTP ${r.status})`;
+}
+
+// Gateway ocupado (429), fora do ar (502/503/504) ou sem conexão: diz nada sobre
+// o modelo estar liberado, então não conta como mudança.
+const passageiro = (v) => /^(ocupado|instável|sem conexão)/.test(v || '');
+
+// Sonda que caiu numa instabilidade herda a última situação firme, para não
+// gerar alerta agora nem "mudança de volta" na hora seguinte, e para não
+// desligar o modelo de imagem ativo por causa de um 429. A leitura real fica
+// em `passageiras`.
+function manterSituacaoFirme(antes, agora) {
+  if (!antes || !antes.sondas) return;
+  for (const [k, v] of Object.entries(agora.sondas)) {
+    const a = antes.sondas[k];
+    if (passageiro(v) && a && !passageiro(a)) {
+      agora.sondas[k] = a;
+      (agora.passageiras = agora.passageiras || {})[k] = v;
+    }
+  }
 }
 
 async function ler() {
@@ -96,11 +116,9 @@ function diferencas(antes, agora) {
   if (novos.length) linhas.push(`➕ Modelos novos: ${novos.join(', ')}`);
   if (saiu.length) linhas.push(`➖ Modelos removidos: ${saiu.join(', ')}`);
   for (const [k, v] of Object.entries(agora.rotas)) if (antes.rotas[k] !== v) linhas.push(`🔀 Rota ${k}: ${antes.rotas[k] || '?'} → ${v}`);
-  // Instabilidade passageira (503/sem conexão) não gera alerta.
-  const passageiro = (v) => v === 'instável (503)' || v === 'sem conexão';
   for (const [k, v] of Object.entries(agora.sondas)) {
     const a = antes.sondas[k];
-    if (a !== v && !passageiro(v) && !passageiro(a || '')) linhas.push(`🔀 ${k}: ${a || '?'} → ${v}`);
+    if (a !== v && !passageiro(v) && !passageiro(a)) linhas.push(`🔀 ${k}: ${a || '?'} → ${v}`);
   }
   return linhas;
 }
@@ -138,7 +156,7 @@ async function tentarAtivarImagens(agora, antes) {
   return { ok: false, falhas, repetida };
 }
 
-(async () => {
+async function main() {
   if (!BASE || !CHAVE) throw new Error('RPG_AI_BASE_URL/RPG_AI_API_KEY ausentes no .env');
   let antes = null;
   try {
@@ -149,6 +167,7 @@ async function tentarAtivarImagens(agora, antes) {
     console.log(`${agora.quando} gateway não respondeu a lista de modelos (${agora.erroModelos}); mantendo a leitura anterior.`);
     return;
   }
+  manterSituacaoFirme(antes, agora);
   const mudou = diferencas(antes, agora);
   const ativacao = await tentarAtivarImagens(agora, antes);
   if (ativacao && ativacao.ok) {
@@ -161,6 +180,7 @@ async function tentarAtivarImagens(agora, antes) {
   const resumo = `modelos: ${agora.modelos.join(', ') || '(nenhum)'}`;
   console.log(`${agora.quando} ${antes ? (mudou.length ? 'MUDOU' : 'sem mudanças') : 'linha de base'} — ${resumo}`);
   mudou.forEach((l) => console.log('   ', l));
+  if (agora.passageiras) console.log('    (instável agora, ignorado:', Object.entries(agora.passageiras).map(([k, v]) => `${k} ${v}`).join(', ') + ')');
 
   const forcar = process.argv.includes('--forcar-email');
   if ((mudou.length || forcar) && DESTINO) {
@@ -186,7 +206,13 @@ async function tentarAtivarImagens(agora, antes) {
     });
     console.log(`   email enviado para ${DESTINO.replace(/(^.).*(@.*$)/, '$1***$2')}`);
   }
-})().catch((e) => {
-  console.error(new Date().toISOString(), 'ERRO', e.message);
-  process.exit(1);
-});
+}
+
+if (require.main === module) {
+  main().catch((e) => {
+    console.error(new Date().toISOString(), 'ERRO', e.message);
+    process.exit(1);
+  });
+}
+
+module.exports = { situacao, passageiro, manterSituacaoFirme, diferencas };

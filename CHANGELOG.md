@@ -15,6 +15,12 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+## v0.19.2 — 2026-11-14
+- **Monitor do gateway sem alarme falso:** uma sonda que responde 429 (gateway ocupado), 502/503/504 ou fica sem conexão não conta mais como mudança. Ela mantém a última situação firme, então não sai e-mail nem na hora do 429 nem na volta para o normal. Na madrugada de 14/11 foram 3 e-mails de "o gateway mudou" só por causa disso.
+- Pelo mesmo motivo, um 429 no modelo de imagem ativo não faz mais o monitor tentar trocar de modelo.
+- Modelos que entram ou saem da lista e sondas que mudam de verdade (ex.: indisponível → liberado) continuam avisando.
+- Testes: `tools/teste_monitor.js` (6 verificações), incluído na bateria.
+
 ## v0.19.1 — 2026-11-14
 - **Mestre em streaming:** as chamadas à IA agora usam `stream: true` (SSE). O gateway sixtysix corta respostas sem streaming que passam de ~30s (HTTP 504), o que acontecia nos dias de gateway lento. A resposta continua sendo montada inteira antes de ir para a mesa; se o gateway ignorar o stream, o JSON comum segue funcionando. `RPG_AI_STREAM=0` desliga.
 - Tempo máximo de espera pela IA passou de 60s para 120s (`RPG_AI_TIMEOUT_MS`), porque com streaming a resposta não é mais cortada pelo gateway.
