@@ -10,6 +10,9 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+
+## v0.17.3 — 2026-11-13
+- Cutucada mais forte para quem recebe: a tela toda treme por 3 s (com vibração mais longa no celular) e, logo a seguir, o cartão de quem cutucou balança com 👉 por 5 s. Quem cutucou continua vendo só o cartão do outro balançando.
 ## v0.17.2 — 2026-11-13
 - Balão "⬇ N novas": quando a conexão volta (queda de internet ou reinício do servidor) e o log é redesenhado, quem estava lendo lá em cima continua no mesmo ponto, e o balão mostra as mensagens que chegaram. Antes pulava para o fim.
 ## v0.17.1 — 2026-11-13

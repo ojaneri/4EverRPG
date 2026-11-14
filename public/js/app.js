@@ -342,10 +342,20 @@ function conectarSocket() {
   socket.on('saqueAberto', receberSaque);
   socket.on('etapaConcluida', avisarEtapa);
   socket.on('avisoMesa', mostrarAvisoMesa);
+  // Quem é cutucado: a tela toda treme por 3 s e, logo a seguir, o cartão de quem
+  // cutucou balança com 👉 por 5 s.
   socket.on('cutucada', ({ deId, deNome }) => {
-    marcarCutucada(deId);
     mostrarAvisoMesa({ icone: '👉', texto: `${deNome} cutucou você!` });
-    try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch { /* sem vibração */ }
+    try { navigator.vibrate && navigator.vibrate([200, 80, 200, 80, 200]); } catch { /* sem vibração */ }
+    const corpo = document.body;
+    corpo.classList.remove('tela-tremendo');
+    void corpo.offsetWidth; // reinicia a animação se vier outra cutucada
+    corpo.classList.add('tela-tremendo');
+    clearTimeout(tremorTimer);
+    tremorTimer = setTimeout(() => {
+      corpo.classList.remove('tela-tremendo');
+      marcarCutucada(deId);
+    }, TREMOR_MS);
   });
   socket.on('mesaApagada', ({ codigo }) => {
     if (codigo !== estado.codigo) return;
@@ -992,6 +1002,8 @@ function renderSalaEspera(rs) {
 // Cutucadas: o cartão do outro balança com um dedo apontando por 5 s
 // (para quem cutucou e para quem foi cutucado).
 const CUTUCADA_MS = 5000;
+const TREMOR_MS = 3000; // quem foi cutucado: a tela toda treme antes
+let tremorTimer = null;
 const cutucadas = new Map(); // jogadorId -> até quando o cartão balança
 function marcarCutucada(jogadorId) {
   cutucadas.set(jogadorId, Date.now() + CUTUCADA_MS);
