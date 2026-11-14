@@ -1204,6 +1204,14 @@ $('rotulo-sala').addEventListener('click', () => {
   ajustar();
 })();
 
+function imagemDaCena(cena) {
+  if (cena.imagem) return cena.imagem;
+  const local = String(cena.local || '').toLowerCase();
+  if (!local) return null;
+  const m = [...estado.log].reverse().find((x) => x.tipo === 'imagem' && x.imagem && String(x.texto || '').toLowerCase().includes(local));
+  return m ? m.imagem : null;
+}
+
 function renderPainelCena(rs) {
   const painel = $('painel-cena');
   if (!rs.cena) {
@@ -1226,6 +1234,12 @@ function renderPainelCena(rs) {
   }
   $('cena-local').textContent = rs.cena.local;
   $('cena-descricao').textContent = rs.cena.descricao;
+  // Clicar no nome do local abre a ilustração da cena (ou a última feita desse lugar).
+  const img = imagemDaCena(rs.cena);
+  const texto = painel.querySelector('.cena-texto');
+  texto.classList.toggle('com-imagem', !!img);
+  texto.title = img ? 'Ver a ilustração deste lugar' : '';
+  texto.onclick = img ? () => ampliarImagem(BASE + img, rs.cena.local) : null;
   $('cena-fichas').innerHTML = rs.personagens
     .filter((p) => p.personagem && p.conectado && !p.afastado)
     .map((p) => `<div class="ficha-token">${avatarHtml(p.personagem.avatar, p.personagem.cor || p.personagem.corTema, retratoDe(p.personagem, rs))}<span>${esc(p.personagem.nome)}</span></div>`)

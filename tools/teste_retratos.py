@@ -74,6 +74,13 @@ try:
         ana.screenshot(path=f"{OUT}/retrato-destaque-grande.png")
         ana.wait_for_timeout(4300)
         checa("compacto" in ana.get_attribute("#destaque-vez", "class"), "depois de 4 s vira selo compacto")
+        # Nome do local abre a ilustração da cena.
+        ana.wait_for_selector("#cena-icone img", timeout=10000)
+        checa("com-imagem" in ana.get_attribute("#painel-cena .cena-texto", "class"), "local com ilustração fica clicável")
+        ana.click("#cena-local")
+        ana.wait_for_selector("#caixa-imagem:not(.escondido) img", timeout=5000)
+        checa(ana.get_attribute("#caixa-imagem img", "src").endswith(ana.get_attribute("#cena-icone img", "src").split("/")[-1]), "clicar no nome do local abre a imagem da cena")
+        ana.click("#caixa-imagem")
         def quem_joga():
             return ana if ana.text_content("#destaque-vez strong") == "Ana" else beto
         def agir(pg, texto):
