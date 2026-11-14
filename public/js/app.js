@@ -126,10 +126,26 @@ const AVATARES = {
   mestre: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#1b1430"/><path d="M50 10 C26 10 14 34 14 56 C14 78 30 92 50 92 C70 92 86 78 86 56 C86 34 74 10 50 10 Z" fill="#2c2150" stroke="#9b7bd1" stroke-width="2"/><ellipse cx="50" cy="52" rx="14" ry="9" fill="#f2d675"/><ellipse cx="50" cy="52" rx="5" ry="9" fill="#1b1430"/></svg>`,
   sistema: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="#444"/><text x="50" y="62" font-size="46" text-anchor="middle" fill="#ccc">!</text></svg>`,
 };
-function avatarHtml(chave, cor) {
-  const svg = AVATARES[chave] || AVATARES.sistema;
+function avatarHtml(chave, cor, retrato = null) {
   const estilo = cor ? ` style="color:${cor}"` : '';
+  if (retrato) return `<div class="avatar com-retrato"${estilo}><img src="${retrato}" alt="" loading="lazy"></div>`;
+  const svg = AVATARES[chave] || AVATARES.sistema;
   return `<div class="avatar"${estilo}>${svg}</div>`;
+}
+// Retrato ilustrado escolhido na criação (só existe em alguns ambientes).
+function ambienteDaMesa(rs = estado.roomState) {
+  return (rs && rs.ambiente) || 'fantasia';
+}
+function urlRetrato(id, rs = estado.roomState) {
+  return id ? `img/retratos/${ambienteDaMesa(rs)}/${id}.jpg` : null;
+}
+const retratoDe = (c, rs) => (c ? urlRetrato(c.retrato, rs) : null);
+function retratosDaClasse(classeId, rs = estado.roomState) {
+  return ((estado.config.RETRATOS || {})[ambienteDaMesa(rs)] || {})[classeId] || [];
+}
+function personagemPorNome(nome) {
+  const p = estado.roomState?.personagens.find((x) => x.personagem && x.personagem.nome.toLowerCase() === String(nome || '').toLowerCase());
+  return p ? p.personagem : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -528,6 +544,8 @@ function selecionarClasse(classeId) {
   estado.classeEscolhida = classeId;
   estado.corEscolhida = null; // sugere a cor padrão da classe (se estiver livre)
   renderSeletorCor();
+  estado.retratoEscolhido = null; // sugere um retrato livre da classe
+  renderSeletorRetrato();
   document.querySelectorAll('.cartao-classe').forEach((el) => el.classList.toggle('selecionado', el.dataset.classeId === classeId));
   estado.atributos = {};
   estado.config.ATTRIBUTES.forEach((a) => (estado.atributos[a] = estado.config.POINT_BUY.base));
@@ -741,6 +759,7 @@ $('btn-confirmar-personagem').addEventListener('click', async () => {
         atributos: estado.atributos,
         historia: $('personagem-historia').value.trim(),
         avatarVariant: 1,
+        retrato: estado.retratoEscolhido || null,
         cor: estado.corEscolhida || null,
       },
     }, 15000);
@@ -806,7 +825,10 @@ function renderEstado(rs) {
     ml.classList.toggle('escondido', !rs.missao);
     if (rs.missao) ml.innerHTML = `<strong>📜 Missão:</strong> ${esc(rs.missao.objetivo)}`;
     atualizarCoresCss(rs);
-    if (!$('ficha-personagem').classList.contains('escondido')) renderSeletorCor(); // outro jogador pode ter pego a cor
+    if (!$('ficha-personagem').classList.contains('escondido')) {
+      renderSeletorCor(); // outro jogador pode ter pego a cor
+      renderSeletorRetrato(); // ...ou o retrato
+    }
     renderSalaEspera(rs);
     return;
   }
@@ -828,6 +850,7 @@ function renderEstado(rs) {
   talvezMostrarFim(rs);
   atualizarCoresCss(rs);
   renderAreaTeste(rs);
+  renderDestaqueVez(rs);
   sincronizarModalDadoObservador(rs);
   renderInventario();
   atualizarSeletoresDestino();
@@ -975,7 +998,10 @@ function renderSalaEspera(rs) {
     else status = `<span class="status-pendente">${p.bot ? 'a IA está criando o personagem...' : 'escolhendo...'}</span>`;
     const coroa = p.id === rs.hostId ? ' 👑' : '';
     const tracos = p.bot && p.tracos && p.tracos.length ? `<br><small class="tracos-bot">🎭 ${p.tracos.map((t) => esc(t)).join(' · ')}</small>` : '';
-    div.innerHTML = `<strong>${p.bot ? '🤖 ' : ''}${esc(p.nome)}${coroa}</strong><br>${p.personagem ? `<span class="nome-colorido" data-pers="${slugPers(p.personagem.nome)}">● ${esc(p.personagem.nome)}</span> — ${esc(p.personagem.classeNome)}` : ''}${tracos}<br>${status}`;
+    const rt = p.personagem ? retratoDe(p.personagem, rs) : null;
+    if (rt) div.classList.add('com-retrato');
+    const info = `<strong>${p.bot ? '🤖 ' : ''}${esc(p.nome)}${coroa}</strong><br>${p.personagem ? `<span class="nome-colorido" data-pers="${slugPers(p.personagem.nome)}">● ${esc(p.personagem.nome)}</span> — ${esc(p.personagem.classeNome)}` : ''}${tracos}<br>${status}`;
+    div.innerHTML = rt ? `<div class="carta-retrato" data-pers="${slugPers(p.personagem.nome)}"><img src="${rt}" alt=""></div><div class="info-grupo">${info}</div>` : info;
     lista.appendChild(div);
   });
 
@@ -1048,13 +1074,14 @@ function renderPainelGrupo(rs) {
     const div = document.createElement('div');
     const cutucado = (cutucadas.get(p.id) || 0) > Date.now();
     const outro = p.id !== estado.meuId && !p.bot && meuJogador()?.personagem && rs.status === 'em_jogo';
-    div.className = `cartao-personagem-mini${vez ? ' na-vez' : ''}${p.afastado || !p.conectado ? ' inativo' : ''}${c.morto ? ' morto' : ''}${cutucado ? ' cutucado' : ''}${outro ? ' cutucavel' : ''}`;
+    const ferido = !c.morto && !c.caido && c.hp.atual <= c.hp.max * 0.3;
+    div.className = `cartao-personagem-mini${vez ? ' na-vez' : ''}${p.afastado || !p.conectado ? ' inativo' : ''}${c.morto ? ' morto' : ''}${c.caido && !c.morto ? ' caido' : ''}${ferido ? ' ferido' : ''}${cutucado ? ' cutucado' : ''}${outro ? ' cutucavel' : ''}`;
     div.dataset.id = p.id;
     if (outro) div.title = `Clique para cutucar ${c.nome} (1 vez por rodada)`;
     div.style.setProperty('--cor-classe', c.cor || c.corTema);
     div.innerHTML = `
       <div class="topo">
-        ${avatarHtml(c.avatar, c.cor || c.corTema)}
+        ${avatarHtml(c.avatar, c.cor || c.corTema, retratoDe(c, rs))}
         <div>
           <div class="nome">${esc(c.nome)}${p.id === estado.meuId ? ' (você)' : ''}</div>
           <div class="classe">${esc(c.classeNome)} · Nv ${c.nivel} · ${esc(p.nome)}</div>
@@ -1201,7 +1228,7 @@ function renderPainelCena(rs) {
   $('cena-descricao').textContent = rs.cena.descricao;
   $('cena-fichas').innerHTML = rs.personagens
     .filter((p) => p.personagem && p.conectado && !p.afastado)
-    .map((p) => `<div class="ficha-token">${avatarHtml(p.personagem.avatar, p.personagem.corTema)}<span>${esc(p.personagem.nome)}</span></div>`)
+    .map((p) => `<div class="ficha-token">${avatarHtml(p.personagem.avatar, p.personagem.cor || p.personagem.corTema, retratoDe(p.personagem, rs))}<span>${esc(p.personagem.nome)}</span></div>`)
     .join('');
 }
 
@@ -1294,6 +1321,48 @@ function atualizarControleTurno() {
   $('btn-descansar').title = rs.descansoDisponivel
     ? 'Uma vez por cena: o grupo recupera metade de PV e recurso (gasta a vez)'
     : 'O grupo já descansou nesta cena';
+}
+
+// Destaque da vez: quando a vez muda, o retrato de quem vai agir entra no canto
+// inferior direito da narração por alguns segundos e depois vira um selo pequeno.
+const DESTAQUE_GRANDE_MS = 4000;
+let destaqueAtual = null;
+let destaqueTimer = null;
+function renderDestaqueVez(rs) {
+  let el = $('destaque-vez');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'destaque-vez';
+    el.className = 'destaque-vez escondido';
+    el.setAttribute('aria-live', 'polite');
+    seguidorLog(); // garante o envoltório da narração
+    $('chat-log').parentNode.appendChild(el);
+    el.addEventListener('click', () => el.classList.toggle('compacto'));
+  }
+  const nome = rs.status === 'em_jogo' ? (rs.pendingTest ? rs.pendingTest.nomePersonagem : rs.turnoAtual) : null;
+  const c = nome ? personagemPorNome(nome) : null;
+  el.parentNode.classList.toggle('com-destaque', !!c);
+  if (!c) {
+    el.classList.add('escondido');
+    destaqueAtual = null;
+    return;
+  }
+  const chave = `${c.nome}|${rs.pendingTest ? 'dado' : 'vez'}|${rs.rodada || 0}`;
+  const minha = meuJogador()?.personagem?.nome === c.nome;
+  const rotulo = rs.pendingTest ? (minha ? '🎲 Role o dado!' : '🎲 rolando o dado') : minha ? '🎯 Sua vez!' : 'é a vez de';
+  el.dataset.pers = slugPers(c.nome);
+  el.innerHTML = `${avatarHtml(c.avatar, c.cor || c.corTema, retratoDe(c, rs))}<div class="destaque-texto"><small>${rotulo}</small><strong>${esc(c.nome)}</strong></div>`;
+  el.classList.remove('escondido');
+  el.classList.toggle('minha', minha);
+  if (chave !== destaqueAtual) {
+    destaqueAtual = chave;
+    el.classList.remove('compacto');
+    el.classList.remove('entrando');
+    void el.offsetWidth; // reinicia a animação
+    el.classList.add('entrando');
+    clearTimeout(destaqueTimer);
+    destaqueTimer = setTimeout(() => el.classList.add('compacto'), DESTAQUE_GRANDE_MS);
+  }
 }
 
 // Relógio da vez: atualiza a contagem regressiva sem esperar o servidor.
@@ -2049,13 +2118,31 @@ function mostrarFim(rs) {
     ['🪙', 'Moedas', st.moedas || 0],
   ];
   $('stats-fim').innerHTML = itens.map(([i, n, v]) => `<div class="stat"><span>${i} ${n}</span><strong>${esc(String(v))}</strong></div>`).join('');
-  $('xp-fim').innerHTML = rs.personagens
-    .filter((p) => p.personagem)
-    .map((p) => `<div class="xp-linha">${avatarHtml(p.personagem.avatar, p.personagem.corTema)}<span>${esc(p.personagem.nome)}</span><span>Nv ${p.personagem.nivel} · +${p.personagem.xpTotal || 0} XP</span></div>`)
-    .join('');
+  $('xp-fim').innerHTML = htmlRankingFim(rs);
   $('modal-fim').classList.remove('escondido');
   if (r === 'cumprida') Musica.efeito('vitoria');
   else if (r === 'falhou') Musica.efeito('derrota');
+}
+
+// Quem mais se destacou: os vivos por XP ganho (maior primeiro) e, por último, os mortos.
+function rankingFim(rs) {
+  const xp = (c) => c.xpTotal || 0;
+  const todos = rs.personagens.filter((p) => p.personagem).map((p) => ({ p, c: p.personagem }));
+  const vivos = todos.filter((x) => !x.c.morto).sort((a, b) => xp(b.c) - xp(a.c) || b.c.nivel - a.c.nivel);
+  const mortos = todos.filter((x) => x.c.morto).sort((a, b) => xp(b.c) - xp(a.c));
+  return { vivos, mortos };
+}
+function htmlRankingFim(rs) {
+  const { vivos, mortos } = rankingFim(rs);
+  const MEDALHAS = ['🥇', '🥈', '🥉'];
+  const linha = ({ p, c }, i, morto) => `
+    <div class="rank-linha${morto ? ' rank-morto' : ''}${!morto && i === 0 ? ' rank-destaque' : ''}" data-pers="${slugPers(c.nome)}">
+      <span class="rank-pos">${morto ? '☠️' : MEDALHAS[i] || `${i + 1}º`}</span>
+      ${avatarHtml(c.avatar, c.cor || c.corTema, retratoDe(c, rs))}
+      <span class="rank-nome"><strong>${esc(c.nome)}</strong><small>${esc(c.classeNome)} · ${esc(p.nome)}${!morto && i === 0 && vivos.length > 1 ? ' · destaque da aventura' : ''}${morto ? ' · caiu na aventura' : ''}</small></span>
+      <span class="rank-xp">Nv ${c.nivel} · +${c.xpTotal || 0} XP</span>
+    </div>`;
+  return `<div class="rank-titulo">Quem mais se destacou</div>${vivos.map((x, i) => linha(x, i, false)).join('')}${mortos.length ? `<div class="rank-titulo rank-titulo-mortos">Tombados</div>${mortos.map((x, i) => linha(x, i, true)).join('')}` : ''}`;
 }
 
 $('btn-fechar-fim').addEventListener('click', () => $('modal-fim').classList.add('escondido'));
@@ -2136,8 +2223,9 @@ function renderLogNovo({ tocarNarracao }) {
     if (dono) div.dataset.pers = slugPers(dono);
     const avatarChave = msg.tipo === 'mestre' ? 'mestre' : msg.tipo === 'sistema' || msg.tipo === 'missao' ? 'sistema' : personagemAvatarPorAutor(msg.autor);
     const cor = msg.tipo === 'jogador' ? corPorAutor(msg.autor) : null;
+    const retratoMsg = msg.tipo === 'jogador' ? retratoDe(personagemPorNome(msg.autor)) : null;
     div.innerHTML = `
-      ${avatarHtml(avatarChave, cor)}
+      ${avatarHtml(avatarChave, cor, retratoMsg)}
       <div class="conteudo">
         <div class="autor">${esc(msg.autor)}</div>
         <div class="texto">${textoDaMensagem(msg, i)}</div>
@@ -2336,6 +2424,43 @@ function bolinhasCor(container, atual, aoEscolher) {
     container.appendChild(b);
   });
 }
+// Retrato: os 6 da classe (3 masculinos e 3 femininos), com filtro por gênero.
+// Os já usados por outros personagens da mesa aparecem apagados.
+let filtroRetrato = 'todos';
+function renderSeletorRetrato() {
+  const campo = $('campo-retrato');
+  if (!campo) return;
+  const lista = retratosDaClasse(estado.classeEscolhida);
+  campo.classList.toggle('escondido', !lista.length);
+  if (!lista.length) return (estado.retratoEscolhido = null);
+  const eu = meuJogador();
+  const usados = new Set((estado.roomState?.personagens || []).filter((p) => p !== eu && p.personagem && !p.personagem.morto).map((p) => p.personagem.retrato));
+  if (!estado.retratoEscolhido || !lista.some((r) => r.id === estado.retratoEscolhido) || usados.has(estado.retratoEscolhido)) {
+    const livres = lista.filter((r) => !usados.has(r.id));
+    estado.retratoEscolhido = (livres[Math.floor(Math.random() * livres.length)] || lista[0]).id;
+  }
+  document.querySelectorAll('#filtro-retrato button').forEach((b) => b.classList.toggle('ativo', b.dataset.genero === filtroRetrato));
+  const caixa = $('seletor-retrato');
+  caixa.innerHTML = lista
+    .filter((r) => filtroRetrato === 'todos' || r.genero === filtroRetrato)
+    .map((r) => `<button type="button" class="opcao-retrato${r.id === estado.retratoEscolhido ? ' escolhido' : ''}${usados.has(r.id) ? ' usado' : ''}" data-id="${r.id}" title="${usados.has(r.id) ? 'Já escolhido por outro personagem' : r.genero === 'feminino' ? 'Feminino' : 'Masculino'}"${usados.has(r.id) ? ' disabled' : ''}><img src="${urlRetrato(r.id)}" alt=""></button>`)
+    .join('');
+  const escolhido = lista.find((r) => r.id === estado.retratoEscolhido);
+  $('retrato-escolhido').innerHTML = escolhido ? `<img src="${urlRetrato(escolhido.id)}" alt="">` : '';
+}
+$('seletor-retrato').addEventListener('click', (ev) => {
+  const b = ev.target.closest('.opcao-retrato');
+  if (!b || b.disabled) return;
+  estado.retratoEscolhido = b.dataset.id;
+  renderSeletorRetrato();
+});
+$('filtro-retrato').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-genero]');
+  if (!b) return;
+  filtroRetrato = b.dataset.genero;
+  renderSeletorRetrato();
+});
+
 function renderSeletorCor() {
   const caixa = $('seletor-cor');
   if (!caixa) return;
@@ -2400,6 +2525,10 @@ function renderAreaTeste(rs) {
   const bonus = eu?.personagem?.bonusProximoTeste;
 
   area.classList.remove('escondido');
+  const rtTeste = retratoDe(personagemPorNome(teste.nomePersonagem));
+  const fotoTeste = $('retrato-teste');
+  fotoTeste.classList.toggle('escondido', !rtTeste);
+  if (rtTeste && fotoTeste.dataset.src !== rtTeste) { fotoTeste.dataset.src = rtTeste; fotoTeste.innerHTML = `<img src="${rtTeste}" alt="">`; }
   $('texto-teste').textContent = ehCelular()
     ? `🎲 ${teste.nomePersonagem} · ${label} · ${nomeDif} (${dc}+)${souEu && bonus ? ` · +${bonus}` : ''}`
     : `Teste: ${teste.nomePersonagem} rola ${label} — dificuldade ${nomeDif} (precisa ${dc}+)` +
@@ -2440,8 +2569,13 @@ $('btn-desistir-teste').addEventListener('click', async () => {
 const modalDado = { aberto: false, souEu: false, rolagem: null, revelado: false, inicio: 0, giro: null, mestre: null, viuPausa: false, fecharAoRevelar: false, dono: '' };
 const GIRO_MINIMO_MS = 1600;
 
-function abrirModalDado({ titulo, sub, souEu }) {
+function abrirModalDado({ titulo, sub, souEu, personagem }) {
   clearTimeout(modalDado.giro);
+  const rt = retratoDe(personagemPorNome(personagem));
+  const fotoDado = $('modal-dado-retrato');
+  fotoDado.classList.toggle('escondido', !rt);
+  fotoDado.className = `modal-dado-retrato${rt ? '' : ' escondido'}`;
+  if (rt) fotoDado.innerHTML = `<img src="${rt}" alt="">`;
   Object.assign(modalDado, { aberto: true, souEu, rolagem: null, revelado: false, inicio: Date.now(), mestre: null, viuPausa: false, fecharAoRevelar: false });
   $('modal-dado-titulo').textContent = titulo;
   $('modal-dado-sub').textContent = sub;
@@ -2497,6 +2631,8 @@ function mostrarVeredito(r) {
   modalDado.revelado = true;
   const d20 = $('d20');
   d20.className = `d20 parou ${r.resultado}`;
+  const fotoDado = $('modal-dado-retrato');
+  if (!fotoDado.classList.contains('escondido')) fotoDado.className = `modal-dado-retrato ${r.resultado}${r.sucesso ? ' sucesso' : ' falha'}`;
   if (r.resultado === 'critico_sucesso') Musica.efeito('critico');
   else if (r.resultado === 'critico_falha') Musica.efeito('derrota');
   if (r.dano) setTimeout(() => Musica.efeito('ataque'), 250);
@@ -2577,7 +2713,7 @@ $('btn-fechar-dado').addEventListener('click', fecharModalDado);
 function receberRolagem(r) {
   const souEu = r.jogadorId === estado.meuId;
   if (!(modalDado.aberto && modalDado.souEu && souEu && !modalDado.rolagem)) {
-    abrirModalDado({ titulo: `Teste de ${r.atributo}`, sub: `${r.personagem} — dificuldade ${r.dificuldade} (precisa ${r.dc}+)`, souEu });
+    abrirModalDado({ titulo: `Teste de ${r.atributo}`, sub: `${r.personagem} — dificuldade ${r.dificuldade} (precisa ${r.dc}+)`, souEu, personagem: r.personagem });
   }
   revelarDado(r);
 }
@@ -2592,7 +2728,7 @@ async function rolarDado() {
   const label = estado.config.ATTRIBUTE_LABELS[teste.atributo] || teste.atributo;
   const dc = { facil: 10, medio: 13, dificil: 16, muito_dificil: 19 }[teste.dificuldade];
   const nomeDif = { facil: 'fácil', medio: 'médio', dificil: 'difícil', muito_dificil: 'muito difícil' }[teste.dificuldade];
-  abrirModalDado({ titulo: `Teste de ${label}`, sub: `${teste.nomePersonagem} — dificuldade ${nomeDif} (precisa ${dc}+)`, souEu: true });
+  abrirModalDado({ titulo: `Teste de ${label}`, sub: `${teste.nomePersonagem} — dificuldade ${nomeDif} (precisa ${dc}+)`, souEu: true, personagem: teste.nomePersonagem });
   try {
     await emitir('rolarDado'); // responde depois da narração; o resultado chega antes via 'dadoRolado'
   } catch (e) {

@@ -7,7 +7,7 @@ const express = require('express');
 const { Server } = require('socket.io');
 
 const gameManager = require('./src/gameManager');
-const { CLASSES, ATTRIBUTES, ATTRIBUTE_LABELS, POINT_BUY, HABILIDADES, ITENS, RARIDADES, MAX_EQUIPADOS, CORES_PERSONAGEM, COR_PADRAO_CLASSE } = require('./src/characterSystem');
+const { CLASSES, ATTRIBUTES, ATTRIBUTE_LABELS, POINT_BUY, HABILIDADES, ITENS, RARIDADES, MAX_EQUIPADOS, CORES_PERSONAGEM, COR_PADRAO_CLASSE, RETRATOS } = require('./src/characterSystem');
 const { ADVENTURES, getAdventureById } = require('./src/adventures');
 const tts = require('./src/tts');
 const auth = require('./src/auth');
@@ -78,6 +78,7 @@ app.get('/api/config', (req, res) => {
     CREDITOS_SFX,
     AMBIENTES,
     maxPulos: gameManager.MAX_PULOS,
+    RETRATOS,
   });
 });
 

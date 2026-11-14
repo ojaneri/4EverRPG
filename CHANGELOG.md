@@ -28,6 +28,16 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 - **Ilustrações com gpt-image:** `response_format` só é enviado para modelos que o aceitam. Os `gpt-image-2.6-flare` e `gpt-image-2.6-sunburst` recusavam o pedido (HTTP 400), então, se o monitor ativasse um deles, todas as ilustrações falhariam.
 - Testes: `tools/teste_ia_stream.js` (leitor de SSE/JSON e regra do response_format, 8 verificações); o Mestre simulado responde em SSE quando recebe `stream: true` e recusa `response_format` nos gpt-image, como o gateway real; a bateria confere que o Mestre chamou a IA em streaming.
 
+## v0.21.0 — 2026-11-14
+- **Retratos ilustrados dos personagens** (ambiente fantasia: Corvile, Thalveira, Farol, Piratas): 6 por classe, 3 masculinos e 3 femininos, 24 no total, em `public/img/retratos/fantasia/`. Na criação do personagem, depois da classe, aparece a escolha do retrato com filtro Todos / Masculino / Feminino; os já escolhidos por outros na mesa ficam apagados. Quem não escolhe e os bots recebem um retrato livre da classe (bots, do gênero que a IA definiu). Nos outros ambientes, continua o ícone da classe.
+- **Destaque da vez:** quando a vez muda, o retrato de quem vai agir entra no canto inferior direito da narração ("Sua vez!", "é a vez de", "rolando o dado") e, depois de 4 segundos, vira um selo pequeno. Clicar alterna o tamanho.
+- **Cartões do grupo** com o retrato: brilha na vez, fica avermelhado com PV baixo, pisca vermelho quando está morrendo e fica em preto e branco quando morre.
+- **Chat:** a ação de cada jogador aparece com o retrato dele.
+- **Hora do dado:** o retrato aparece na área do teste e no modal do dado; brilha dourado no 20 natural, treme no 1 natural, ganha borda verde no sucesso e vermelha na falha.
+- **Sala de espera:** cada jogador vira uma carta com o retrato, que entra girando.
+- **Tela final:** ranking "Quem mais se destacou" com os vivos por XP ganho (medalhas e o 1º em destaque) e, por último, os mortos, na seção "Tombados".
+- Teste novo no navegador: `tools/teste_retratos.py`. O teste da sala de espera foi atualizado para o gancho novo do Boitatá.
+
 ## v0.20.0 — 2026-11-14
 - **Reserva de imagem pelo 9router:** se o modelo de ilustração principal falhar (fora do ar, recusa, tempo esgotado), o jogo tenta de novo com `ss/gpt-image-2.6-flare` pelo 9router local, em vez de a mesa ficar sem imagem. Quando o principal é negado (401/403/404) e entra em pausa de 30 minutos, as ilustrações vão direto para a reserva. Configuração: `RPG_9ROUTER_KEY`, `RPG_IMG_RESERVA_MODEL` (vazio desliga) e `RPG_IMG_RESERVA_URL`.
 - O teste de modelos do monitor do gateway continua sem usar a reserva.

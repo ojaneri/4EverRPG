@@ -1313,3 +1313,104 @@ body.tela-tremendo > .topo-site, body.tela-tremendo > #app { animation: tremer-t
 .msg .texto .fala::before, .msg .texto .fala::after { color: var(--cor-p, #b08cff); font-size: 1.3em; line-height: 0; vertical-align: -.15em; opacity: .9; }
 .msg .texto .fala::before { content: '“'; }
 .msg .texto .fala::after { content: '”'; }
+
+/* ---------------------------------------------------------------------------
+   Retratos ilustrados dos personagens
+   --------------------------------------------------------------------------- */
+.avatar.com-retrato { border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 2px currentColor; background: #0e0d19; }
+.avatar.com-retrato img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cartao-personagem-mini .avatar.com-retrato { width: 46px; height: 46px; transition: filter .4s, box-shadow .4s; }
+.cartao-personagem-mini.na-vez .avatar.com-retrato { box-shadow: 0 0 0 2px currentColor, 0 0 14px 2px currentColor; animation: pulso-retrato 1.6s ease-in-out infinite; }
+@keyframes pulso-retrato { 50% { box-shadow: 0 0 0 3px currentColor, 0 0 22px 6px currentColor; } }
+.cartao-personagem-mini.ferido .avatar.com-retrato img { filter: sepia(.5) saturate(1.6) hue-rotate(-30deg) brightness(.85); }
+.cartao-personagem-mini.ferido .avatar.com-retrato { box-shadow: 0 0 0 2px #e05252; }
+.cartao-personagem-mini.caido .avatar.com-retrato img { filter: grayscale(1) brightness(.7); }
+.cartao-personagem-mini.caido .avatar.com-retrato { box-shadow: 0 0 0 2px #e05252; animation: pulso-caido 1s ease-in-out infinite; }
+@keyframes pulso-caido { 50% { box-shadow: 0 0 0 3px #e05252, 0 0 14px 2px #e05252; } }
+.cartao-personagem-mini.morto .avatar.com-retrato img { filter: grayscale(1) brightness(.55); }
+.msg .avatar.com-retrato { width: 40px; height: 40px; }
+@media (max-width: 1000px) { .msg .avatar.com-retrato { width: 32px; height: 32px; } }
+
+/* Escolha do retrato na criação */
+.campo-retrato { margin: 10px 0 14px; }
+.retrato-cabecalho { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.filtro-retrato { display: inline-flex; border: 1px solid var(--borda); border-radius: 99px; overflow: hidden; }
+.filtro-retrato button { background: transparent; color: var(--texto-fraco); border: none; border-radius: 0; padding: 4px 12px; font-size: .8rem; margin: 0; }
+.filtro-retrato button.ativo { background: var(--acento); color: #fff; }
+.retrato-corpo { display: flex; gap: 12px; align-items: flex-start; }
+.retrato-escolhido { flex: 0 0 120px; height: 120px; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 2px var(--cor-classe, var(--acento)), 0 8px 24px rgba(0,0,0,.5); background: #0e0d19; }
+.retrato-escolhido img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.seletor-retrato { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; flex: 1; }
+.opcao-retrato { padding: 0; margin: 0; border: 2px solid transparent; border-radius: 10px; overflow: hidden; aspect-ratio: 1; background: #0e0d19; cursor: pointer; transition: transform .15s, border-color .15s; }
+.opcao-retrato img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.opcao-retrato:hover:not(:disabled) { transform: translateY(-2px); }
+.opcao-retrato.escolhido { border-color: var(--acento); box-shadow: 0 0 12px -2px var(--acento); }
+.opcao-retrato.usado { opacity: .3; filter: grayscale(1); cursor: not-allowed; }
+@media (max-width: 600px) { .retrato-escolhido { flex-basis: 84px; height: 84px; } .seletor-retrato { grid-template-columns: repeat(3, 1fr); } }
+
+/* Destaque da vez: canto inferior direito da narração */
+.destaque-vez {
+  position: absolute; right: 14px; bottom: 14px; z-index: 6; display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px 8px 8px; border-radius: 16px; cursor: pointer; color: var(--cor-p, var(--acento));
+  background: rgba(14, 13, 25, .92); border: 1px solid var(--cor-p, var(--acento));
+  box-shadow: 0 10px 30px rgba(0,0,0,.55), 0 0 18px -4px var(--cor-p, var(--acento));
+  transition: padding .35s, border-radius .35s, opacity .35s;
+}
+.destaque-vez .avatar { width: 96px; height: 96px; margin: 0; transition: width .35s, height .35s; }
+.destaque-vez .avatar.com-retrato { border-radius: 12px; box-shadow: 0 0 0 2px currentColor; }
+.destaque-vez .destaque-texto { display: grid; line-height: 1.2; transition: font-size .35s; }
+.destaque-vez small { color: var(--texto-fraco); font-size: .78rem; }
+.destaque-vez strong { font-size: 1.15rem; color: var(--cor-p, #fff); }
+.destaque-vez.minha small { color: var(--cor-p, var(--acento)); font-weight: 700; }
+.destaque-vez.entrando { animation: destaque-entra .5s cubic-bezier(.2,.9,.3,1.3); }
+@keyframes destaque-entra { from { opacity: 0; transform: translateX(40px) scale(.9); } to { opacity: 1; transform: none; } }
+.destaque-vez.compacto { padding: 4px 10px 4px 4px; border-radius: 99px; opacity: .9; }
+.destaque-vez.compacto .avatar { width: 36px; height: 36px; }
+.destaque-vez.compacto .avatar.com-retrato { border-radius: 50%; }
+.destaque-vez.compacto strong { font-size: .9rem; }
+.destaque-vez.compacto small { font-size: .7rem; }
+.destaque-vez.minha.compacto .avatar.com-retrato { animation: pulso-retrato 1.6s ease-in-out infinite; }
+@media (max-width: 1000px) {
+  .destaque-vez { right: 8px; bottom: 8px; }
+  .destaque-vez .avatar { width: 64px; height: 64px; }
+  .destaque-vez strong { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) { .destaque-vez.entrando, .destaque-vez .avatar.com-retrato { animation: none !important; } }
+
+/* Com o destaque na tela, a narração ganha folga embaixo para ele não cobrir a última mensagem. */
+.envoltorio-rolagem.com-destaque > .chat-log { padding-bottom: 70px; }
+@media (max-width: 1000px) { .envoltorio-rolagem.com-destaque > .chat-log { padding-bottom: 86px; } }
+
+/* Hora do dado */
+.retrato-teste { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 0 0 2px var(--acento); }
+.retrato-teste img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.modal-dado-retrato { width: 88px; height: 88px; margin: 4px auto 0; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 3px var(--acento), 0 6px 20px rgba(0,0,0,.5); transition: box-shadow .4s, filter .4s; }
+.modal-dado-retrato img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.modal-dado-retrato.sucesso { box-shadow: 0 0 0 3px #4caf7a, 0 0 22px 2px #4caf7a; }
+.modal-dado-retrato.falha { box-shadow: 0 0 0 3px #e05252; filter: saturate(.6); }
+.modal-dado-retrato.critico_sucesso { box-shadow: 0 0 0 4px #f2c14e, 0 0 36px 10px #f2c14e; animation: brilho-critico 1s ease-in-out 3; }
+@keyframes brilho-critico { 50% { transform: scale(1.08); box-shadow: 0 0 0 5px #fff6d8, 0 0 50px 16px #f2c14e; } }
+.modal-dado-retrato.critico_falha { box-shadow: 0 0 0 4px #e05252, 0 0 30px 6px #e05252; filter: grayscale(.6); animation: tremer-retrato .12s linear 10; }
+@keyframes tremer-retrato { 25% { transform: translate(-4px, 2px) rotate(-3deg); } 75% { transform: translate(4px, -2px) rotate(3deg); } }
+
+/* Sala de espera: cada jogador vira uma carta com o retrato */
+.item-grupo.com-retrato { display: flex; gap: 10px; align-items: center; }
+.item-grupo.com-retrato .carta-retrato { flex-shrink: 0; width: 64px; height: 84px; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 2px var(--cor-p, var(--acento)); }
+.item-grupo.com-retrato .carta-retrato img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.item-grupo.com-retrato.chegou .carta-retrato { animation: carta-vira .6s ease-out; }
+@keyframes carta-vira { from { transform: rotateY(90deg); } to { transform: none; } }
+
+/* Tela final: ranking */
+.rank-titulo { font-size: .78rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--texto-fraco); margin: 4px 0 2px; text-align: left; }
+.rank-titulo-mortos { margin-top: 10px; }
+.rank-linha { display: grid; grid-template-columns: 34px 48px 1fr auto; align-items: center; gap: 10px; background: #0e0d19; border: 1px solid var(--borda); border-radius: 10px; padding: 6px 10px; text-align: left; color: var(--cor-p, var(--acento)); }
+.rank-linha .avatar { width: 48px; height: 48px; margin: 0; }
+.rank-pos { font-size: 1.3rem; text-align: center; }
+.rank-nome { display: grid; color: var(--texto); }
+.rank-nome small { color: var(--texto-fraco); font-size: .75rem; }
+.rank-xp { font-size: .85rem; font-weight: 700; white-space: nowrap; color: var(--texto); }
+.rank-destaque { border-color: #f2c14e; box-shadow: 0 0 16px -4px #f2c14e; }
+.rank-destaque .avatar { width: 60px; height: 60px; }
+.rank-linha.rank-destaque { grid-template-columns: 34px 60px 1fr auto; }
+.rank-morto { opacity: .7; }
+.rank-morto .avatar img, .rank-morto .avatar svg { filter: grayscale(1) brightness(.6); }

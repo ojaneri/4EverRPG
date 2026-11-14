@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>4Ever — Aventuras de RPG com Mestre de IA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎲%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/style.css?v=1794618565" />
+<link rel="stylesheet" href="css/style.css?v=1794688093" />
 </head>
 <body>
   <header class="topo-site">
@@ -209,6 +209,18 @@
           <label>Nome do personagem
             <input type="text" id="personagem-nome" maxlength="30" placeholder="Ex: Thalrik" />
           </label>
+          <div id="campo-retrato" class="campo-retrato escondido">
+            <div class="retrato-cabecalho">
+              <span>Retrato <small class="dica">(aparece no seu cartão, no chat e quando for a sua vez)</small></span>
+              <div id="filtro-retrato" class="filtro-retrato" role="group" aria-label="Filtrar retratos">
+                <button type="button" data-genero="todos" class="ativo">Todos</button><button type="button" data-genero="masculino">Masculino</button><button type="button" data-genero="feminino">Feminino</button>
+              </div>
+            </div>
+            <div class="retrato-corpo">
+              <div id="retrato-escolhido" class="retrato-escolhido"></div>
+              <div id="seletor-retrato" class="seletor-retrato"></div>
+            </div>
+          </div>
           <div class="campo-cor">
             <span>Cor do personagem <small class="dica">(suas falas e seu cartão ficam nessa cor)</small></span>
             <div id="seletor-cor" class="seletor-cor" role="radiogroup" aria-label="Cor do personagem"></div>
@@ -331,6 +343,7 @@
         <div id="mestre-digitando" class="mestre-digitando escondido">O Mestre está narrando...</div>
 
         <div id="area-teste" class="area-teste escondido">
+          <div id="retrato-teste" class="retrato-teste escondido"></div>
           <p id="texto-teste"></p>
           <p id="relogio-dado" class="relogio-dado"></p>
           <div class="dado-visual" id="dado-visual">?</div>
@@ -394,6 +407,7 @@
         <div class="cartao-acao modal-dado">
           <h2 id="modal-dado-titulo">Teste</h2>
           <p id="modal-dado-sub" class="modal-dado-sub"></p>
+          <div id="modal-dado-retrato" class="modal-dado-retrato escondido"></div>
           <div id="d20" class="d20">
             <svg viewBox="0 0 100 100" aria-hidden="true">
               <polygon class="d20-face" points="50,4 91,27 91,73 50,96 9,73 9,27" />
@@ -480,6 +494,6 @@
 
   <script src="socket.io/socket.io.js"></script>
   <script src="js/musica.js?v=1794588062"></script>
-  <script src="js/app.js?v=1794619043"></script>
+  <script src="js/app.js?v=1794688063"></script>
 </body>
 </html>

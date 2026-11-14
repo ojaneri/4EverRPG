@@ -11,6 +11,7 @@ const EventEmitter = require('events');
 const { customAlphabet } = require('nanoid');
 const {
   createCharacter,
+  retratosDe,
   rollCheck,
   getHabilidade,
   aplicarXp,
@@ -468,6 +469,7 @@ async function criarPersonagensBots(room) {
     bot.botGenero = /^f/i.test(String((dados && dados.genero) || '')) ? 'feminino' : /^m/i.test(String((dados && dados.genero) || '')) ? 'masculino' : '';
     const deOutros = new Set(room.personagens.filter((p) => p !== bot).flatMap((p) => p.botTracos || []));
     bot.botTracos = tracosValidos(dados && dados.tracos).filter((t) => !deOutros.has(t)); // nada repetido entre bots
+    escolherRetrato(room, bot, bot.botGenero);
     garantirTracos(room, bot); // personalidade fixa: escolhida agora e mantida o jogo todo
     vozDoBot(room, bot); // a voz fica fixa: o mesmo bot sempre fala com a mesma voz
     vozReservaDoBot(room, bot);
@@ -693,6 +695,20 @@ function coresEmUso(room, exceto) {
 }
 
 // Primeira cor livre, começando pela pedida (ou pela cor padrão da classe).
+// Retrato ilustrado: se o personagem não escolheu (ou é bot), sorteia um da classe
+// ainda livre na mesa, do gênero pedido quando houver.
+function escolherRetrato(room, jogador, genero) {
+  const p = jogador.personagem;
+  if (!p || p.retrato) return;
+  const lista = retratosDe(room.ambiente, p.classeId);
+  if (!lista.length) return;
+  const usados = new Set(room.personagens.filter((o) => o !== jogador && o.personagem).map((o) => o.personagem.retrato));
+  let opcoes = lista.filter((r) => !usados.has(r.id));
+  if (genero) opcoes = opcoes.filter((r) => r.genero === genero).length ? opcoes.filter((r) => r.genero === genero) : opcoes;
+  if (!opcoes.length) opcoes = lista;
+  p.retrato = opcoes[Math.floor(Math.random() * opcoes.length)].id;
+}
+
 function escolherCor(room, jogador, pedida) {
   const usadas = coresEmUso(room, jogador);
   const desejada = corValida(pedida);
@@ -736,6 +752,7 @@ function setCharacter({ codigo, userId, dados }) {
   }
   jogador.personagem = personagem;
   personagem.cor = escolherCor(room, jogador, dados && dados.cor);
+  escolherRetrato(room, jogador, null);
   if (room.status === 'em_jogo') {
     logSistema(room, `${personagem.nome} (${personagem.classeNome}) entrou na aventura!`);
     eventos.emit('aviso', room, { icone: '🆕', texto: `${personagem.nome} entrou na aventura` });

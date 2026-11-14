@@ -86,7 +86,23 @@ function validateAttributes(attrs) {
   return spent <= POINT_BUY.extraPoints && spent >= 0;
 }
 
-function createCharacter({ nome, classeId, atributos, historia, avatarVariant }, ambiente) {
+// Retratos ilustrados por ambiente e classe: 3 masculinos (m1–m3) e 3 femininos (f1–f3).
+// Arquivos em public/img/retratos/<ambiente>/<classe>-<m|f><n>.jpg.
+const RETRATOS = {};
+for (const amb of ['fantasia']) {
+  RETRATOS[amb] = {};
+  for (const classeId of ['guerreiro', 'batedor', 'arcanista', 'guardiao']) {
+    RETRATOS[amb][classeId] = ['m1', 'm2', 'm3', 'f1', 'f2', 'f3'].map((v) => ({ id: `${classeId}-${v}`, genero: v[0] === 'f' ? 'feminino' : 'masculino' }));
+  }
+}
+function retratosDe(ambiente, classeId) {
+  return ((RETRATOS[getAmbiente(ambiente).id] || {})[classeId]) || [];
+}
+function retratoValido(ambiente, classeId, id) {
+  return retratosDe(ambiente, classeId).some((r) => r.id === id) ? id : null;
+}
+
+function createCharacter({ nome, classeId, atributos, historia, avatarVariant, retrato }, ambiente) {
   const classe = CLASSES[classeId];
   const vestes = (getAmbiente(ambiente).classes || {})[classeId] || {};
   if (!classe) throw new Error('Classe inválida: ' + classeId);
@@ -115,6 +131,7 @@ function createCharacter({ nome, classeId, atributos, historia, avatarVariant },
     historia: String(historia || '').slice(0, 500),
     avatar: classe.avatar,
     avatarVariant: avatarVariant || 1,
+    retrato: retratoValido(ambiente, classeId, retrato),
     corTema: classe.corTema,
   };
 }
@@ -454,6 +471,8 @@ module.exports = {
   attributeModifier,
   validateAttributes,
   createCharacter,
+  RETRATOS,
+  retratosDe,
   rollDie,
   rollD20,
   rollCheck,
