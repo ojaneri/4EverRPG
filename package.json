@@ -1,6 +1,6 @@
 {
   "name": "4everrpg",
-  "version": "0.15.1",
+  "version": "0.16.0",
   "description": "RPG online multiplayer com IA como Mestre de Jogo (Game Master)",
   "main": "server.js",
   "engines": {

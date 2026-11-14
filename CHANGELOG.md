@@ -6,6 +6,11 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 
 
 
+
+## v0.16.0 — 2026-11-13
+- **Cutucada:** clicar no cartão de outro jogador (painel do grupo) cutuca a pessoa. Quem cutucou vê o cartão do outro balançando com 👉 por 5 s; quem foi cutucado vê o cartão de quem cutucou balançando, recebe o aviso "Fulano cutucou você!" e o celular vibra.
+- Limite: cada jogador cutuca uma pessoa por rodada completa. Não dá para cutucar a si mesmo, bots ou quem está offline.
+- Testes: 6 verificações novas no servidor e `tools/teste_cutucada.py` no navegador.
 ## v0.15.1 — 2026-11-13
 - Avisos curtos do sistema em sequência (XP, moedas, itens...) aparecem lado a lado numa faixa, quebrando linha só quando não cabem, em vez de um embaixo do outro. Um só ícone "!" por faixa; avisos longos e os que vêm depois de uma narração continuam separados.
 - Teste de navegador `tools/teste_avisos_inline.py`.

@@ -2143,6 +2143,25 @@ async function encerrarAventura({ codigo, userId }) {
   tocar(room);
 }
 
+// Cutucada: um jogador chama a atenção de outro clicando no cartão dele.
+// Cada jogador pode cutucar uma pessoa por rodada completa.
+function cutucar({ codigo, userId, alvoId }) {
+  const room = exigirSala(codigo);
+  if (room.status !== 'em_jogo') throw new Error('Só dá para cutucar durante a aventura.');
+  const eu = exigirJogador(room, userId);
+  const alvo = room.personagens.find((p) => p.id === alvoId);
+  if (!eu.personagem) throw new Error('Crie seu personagem primeiro.');
+  if (!alvo || !alvo.personagem) throw new Error('Jogador não encontrado.');
+  if (alvo === eu) throw new Error('Não dá para cutucar a si mesmo.');
+  if (alvo.bot) throw new Error(`${nomeExibicao(alvo)} é um bot e não sente cutucadas.`);
+  if (!alvo.conectado || !alvo.socketId) throw new Error(`${nomeExibicao(alvo)} está offline.`);
+  const rodada = room.rodada || 1;
+  if (eu.cutucouNaRodada === rodada) throw new Error('Você já cutucou alguém nesta rodada. Espere a próxima.');
+  eu.cutucouNaRodada = rodada;
+  storage.salvarSala(room);
+  return { de: eu, alvo };
+}
+
 // Admin: encerra a mesa. Em andamento, o Mestre narra um epílogo curto antes.
 async function encerrarPeloAdmin(codigo) {
   const room = exigirSala(codigo);
@@ -2330,6 +2349,7 @@ carregarDoDisco();
 module.exports = {
   listarPartidasRodando,
   encerrarPeloAdmin,
+  cutucar,
   apagarSalaPeloAdmin,
   mudarCor,
   _botAgir: (codigo) => botAgir(codigo),

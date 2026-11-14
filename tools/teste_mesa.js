@@ -185,6 +185,22 @@ async function fase1() {
     O.disconnect();
   }
 
+  // --- Cutucada (1 por rodada completa) ---
+  {
+    B.cutucadas = [];
+    B.on('cutucada', (c) => B.cutucadas.push(c));
+    const idB = B.estado.personagens.find((p) => p.personagem?.nome === 'Miriel').id;
+    const idA = B.estado.personagens.find((p) => p.personagem?.nome === 'Thalrik').id;
+    const c1 = await emit(A, 'cutucar', { codigo, alvoId: idB });
+    await sleep(100);
+    ok(c1.ok && c1.alvoId === idB && B.cutucadas.length === 1 && B.cutucadas[0].deId === idA && B.cutucadas[0].deNome === 'Thalrik', 'Thalrik cutuca Miriel e ela recebe quem cutucou');
+    const c2 = await emit(A, 'cutucar', { codigo, alvoId: idB });
+    ok(!c2.ok && /rodada/.test(c2.erro), `segunda cutucada na mesma rodada é recusada: ${c2.erro}`);
+    ok(!(await emit(B, 'cutucar', { codigo, alvoId: idB })).ok, 'não dá para cutucar a si mesmo');
+    ok((await emit(B, 'cutucar', { codigo, alvoId: idA })).ok, 'Miriel também pode cutucar (o limite é de cada um)');
+    ok(!JSON.stringify(B.estado).includes('cutucouNaRodada'), 'controle da cutucada não vaza no estado público');
+  }
+
   // --- Dado: validações ---
   const rolaSemTeste = await emit(A, 'rolarDado', { codigo });
   ok(!rolaSemTeste.ok, `rolar sem teste pendente é recusado: ${rolaSemTeste.erro}`);
@@ -264,6 +280,11 @@ async function fase1() {
   ok(rolouBau.ok && (rolouBau.rollResult.sucesso ? bauDepois.aberto : !bauDepois.aberto), `resultado do teste decide o baú (${rolouBau.rollResult.sucesso ? 'abriu' : 'continua trancado'})`);
   const logRodada = (await emit(A, 'pedirLog', { codigo })).state.log.map((m) => m.texto).join('\n');
   ok(B.estado.rodada === 3, `cada volta completa na mesa é uma nova rodada (rodada ${B.estado.rodada}; só registra no log quando alguém recupera algo)`);
+  {
+    const idB = A.estado.personagens.find((p) => p.personagem?.nome === 'Miriel').id;
+    const c3 = await emit(A, 'cutucar', { codigo, alvoId: idB });
+    ok(c3.ok, `em rodada nova dá para cutucar de novo${c3.ok ? '' : `: ${c3.erro}`}`);
+  }
   void logRodada;
   ok(A.estado.turnoAtual === 'Thalrik', 'vez voltou para Thalrik');
   const pocao = A.estado.personagens.find((p) => p.id === c.meuId).personagem.inventario.find((i) => i.id === 'pocao_vida');

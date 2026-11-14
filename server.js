@@ -383,6 +383,11 @@ io.on('connection', (socket) => {
   socket.on('procurar', handler((p) => gameManager.procurar({ codigo: codigoAtual(p), userId: socket.data.userId, buscavelId: p.buscavelId })));
   socket.on('darItem', handler((p) => gameManager.darItem({ codigo: codigoAtual(p), userId: socket.data.userId, uid: p.uid, alvoId: p.alvoId })));
   socket.on('descartarItem', handler((p) => gameManager.descartarItem({ codigo: codigoAtual(p), userId: socket.data.userId, uid: p.uid })));
+  socket.on('cutucar', handler((p) => {
+    const { de, alvo } = gameManager.cutucar({ codigo: codigoAtual(p), userId: socket.data.userId, alvoId: p.alvoId });
+    io.to(alvo.socketId).emit('cutucada', { deId: de.id, deNome: de.personagem.nome });
+    return { alvoId: alvo.id };
+  }));
   socket.on('mudarCor', handler((p) => gameManager.mudarCor({ codigo: codigoAtual(p), userId: socket.data.userId, cor: p.cor })));
 
   socket.on('equiparItem', handler((p) => gameManager.equiparItem({ codigo: codigoAtual(p), userId: socket.data.userId, uid: p.uid })));

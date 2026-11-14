@@ -342,6 +342,11 @@ function conectarSocket() {
   socket.on('saqueAberto', receberSaque);
   socket.on('etapaConcluida', avisarEtapa);
   socket.on('avisoMesa', mostrarAvisoMesa);
+  socket.on('cutucada', ({ deId, deNome }) => {
+    marcarCutucada(deId);
+    mostrarAvisoMesa({ icone: '👉', texto: `${deNome} cutucou você!` });
+    try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch { /* sem vibração */ }
+  });
   socket.on('mesaApagada', ({ codigo }) => {
     if (codigo !== estado.codigo) return;
     const observando = estado.observando;
@@ -979,6 +984,30 @@ function renderSalaEspera(rs) {
   if (esperando) msg.textContent = msg.textContent.slice(0, -3);
 }
 
+// Cutucadas: o cartão do outro balança com um dedo apontando por 5 s
+// (para quem cutucou e para quem foi cutucado).
+const CUTUCADA_MS = 5000;
+const cutucadas = new Map(); // jogadorId -> até quando o cartão balança
+function marcarCutucada(jogadorId) {
+  cutucadas.set(jogadorId, Date.now() + CUTUCADA_MS);
+  if (estado.roomState) renderPainelGrupo(estado.roomState);
+  setTimeout(() => {
+    if ((cutucadas.get(jogadorId) || 0) <= Date.now()) {
+      cutucadas.delete(jogadorId);
+      if (estado.roomState) renderPainelGrupo(estado.roomState);
+    }
+  }, CUTUCADA_MS + 50);
+}
+async function cutucarJogador(id, nome) {
+  try {
+    await emitir('cutucar', { alvoId: id }, 10000);
+    marcarCutucada(id);
+    mostrarAvisoMesa({ icone: '👉', texto: `Você cutucou ${nome}.` });
+  } catch (e) {
+    mostrarAvisoMesa({ icone: '✋', texto: e.message });
+  }
+}
+
 let corAberta = false; // o seletor de cor do cartão continua aberto entre atualizações
 function renderPainelGrupo(rs) {
   const painel = $('painel-grupo');
@@ -1000,7 +1029,11 @@ function renderPainelGrupo(rs) {
     const vez = rs.status === 'em_jogo' && (rs.pendingTest ? rs.pendingTest.nomePersonagem === c.nome : rs.turnoAtual === c.nome);
 
     const div = document.createElement('div');
-    div.className = `cartao-personagem-mini${vez ? ' na-vez' : ''}${p.afastado || !p.conectado ? ' inativo' : ''}${c.morto ? ' morto' : ''}`;
+    const cutucado = (cutucadas.get(p.id) || 0) > Date.now();
+    const outro = p.id !== estado.meuId && !p.bot && meuJogador()?.personagem && rs.status === 'em_jogo';
+    div.className = `cartao-personagem-mini${vez ? ' na-vez' : ''}${p.afastado || !p.conectado ? ' inativo' : ''}${c.morto ? ' morto' : ''}${cutucado ? ' cutucado' : ''}${outro ? ' cutucavel' : ''}`;
+    div.dataset.id = p.id;
+    if (outro) div.title = `Clique para cutucar ${c.nome} (1 vez por rodada)`;
     div.style.setProperty('--cor-classe', c.cor || c.corTema);
     div.innerHTML = `
       <div class="topo">
@@ -1020,12 +1053,19 @@ function renderPainelGrupo(rs) {
       ${(() => { const a = c.inventario.find((i) => i.tipo === 'arma' && i.equipado); return a ? `<div class="arma-card">${itemHtml({ ...a, equipado: false })}</div>` : ''; })()}
       <div class="moedas">🪙 ${c.moedas || 0}</div>
       <details class="inventario"><summary>Inventário (${c.inventario.length})</summary><ul>${c.inventario.map((i) => `<li>${itemHtml(i)}</li>`).join('')}</ul></details>
+      ${cutucado ? '<span class="dedo-cutucada" aria-hidden="true">👉</span>' : ''}
       ${p.id === estado.meuId && !c.morto ? '<details class="trocar-cor"><summary>🎨 Cor</summary><div class="seletor-cor"></div></details>' : ''}`;
     const trocar = div.querySelector('.trocar-cor');
     if (trocar) {
       if (corAberta) trocar.open = true;
       trocar.addEventListener('toggle', () => (corAberta = trocar.open));
       bolinhasCor(trocar.querySelector('.seletor-cor'), c.cor, (hex) => emitir('mudarCor', { cor: hex }).catch((e) => alert(e.message)));
+    }
+    if (outro) {
+      div.addEventListener('click', (ev) => {
+        if (ev.target.closest('details, summary, button, a, input')) return; // inventário, cor etc.
+        cutucarJogador(p.id, c.nome);
+      });
     }
     painel.appendChild(div);
     if (p.id === estado.meuId) {
