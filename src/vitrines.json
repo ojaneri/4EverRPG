@@ -142,5 +142,65 @@
       "Corrida contra o tempo"
     ],
     "imagem": "img/aventuras/sinal-perdido-na-serra.jpg"
+  },
+  "estalagem-do-ultimo-inverno": {
+    "genero": "Fantasia · Mistério de casa fechada",
+    "cor": "#a9d8ff",
+    "gancho": "A nevasca fechou a estrada. Lá dentro, sete estranhos. De manhã, o estalajadeiro estava congelado de pé, sorrindo.",
+    "texto": "Uma estalagem de pedra no alto da montanha, lenha para três noites e ninguém pode sair. Todos têm um segredo, alguém não é quem diz ser, e o vento lá fora parece chamar nomes. Desconfie, pergunte, proteja quem merece e descubra o que a neve veio cobrar.",
+    "clima": [
+      "Dedução",
+      "Desconfiança",
+      "Terror frio"
+    ],
+    "imagem": "img/aventuras/estalagem-do-ultimo-inverno.jpg"
+  },
+  "torneio-das-sete-bandeiras": {
+    "genero": "Fantasia · Torneio e conspiração",
+    "cor": "#ffb347",
+    "gancho": "Sete bandeiras, quatro provas e um campeão. E alguém vai morrer na cerimônia, a menos que vocês cheguem lá primeiro.",
+    "texto": "A capital está em festa para o maior torneio do reino: duelos na arena, um labirinto cheio de armadilhas, uma torre de enigmas e um juramento diante da corte. Cada prova é a chance de uma classe brilhar. Vença os rivais, desconfie dos sorrisos e descubra quem está mexendo as peças por trás do trono.",
+    "clima": [
+      "Competição",
+      "Conspiração",
+      "Humor"
+    ],
+    "imagem": "img/aventuras/torneio-das-sete-bandeiras.jpg"
+  },
+  "ultima-colonia-de-tetis": {
+    "genero": "Ficção científica · Defesa",
+    "cor": "#7ee0a1",
+    "gancho": "Trezentos colonos, nenhuma arma e 72 horas até a frota chegar. Eles juntaram tudo o que tinham para contratar vocês.",
+    "texto": "Estufas verdes sob o céu de Saturno, túneis de gelo, um canhão de mineração desmontado e uma milícia que nunca segurou um rifle. Prepare a defesa, treine os colonos e arme as armadilhas, porque cada escolha conta na hora do ataque. Mas talvez o inimigo de verdade não esteja na frota.",
+    "clima": [
+      "Estratégia",
+      "Comunidade",
+      "Batalha"
+    ],
+    "imagem": "img/aventuras/ultima-colonia-de-tetis.jpg"
+  },
+  "expresso-nova-aurora": {
+    "genero": "Cyber · Sequestro em movimento",
+    "cor": "#ff4fd8",
+    "gancho": "Seiscentos quilômetros por hora, quatrocentos passageiros e hackers mascarados no comando. Eles têm razão. E não sabem do pior.",
+    "texto": "Um trem-bala que não para, vagão a vagão: restaurante, executiva, carga, servidores e o teto, com túneis passando a centímetros. Os sequestradores querem a verdade sobre uma megacorporação, os passageiros querem descer, e a voz gentil do trem diz que esta é uma viagem sem paradas. Escolha um lado antes da ponte.",
+    "clima": [
+      "Ação",
+      "Corrida contra o tempo",
+      "Escolha de lados"
+    ],
+    "imagem": "img/aventuras/expresso-nova-aurora.jpg"
+  },
+  "doze-horas-que-ninguem-lembra": {
+    "genero": "Perícia · Suspense",
+    "cor": "#ffd166",
+    "gancho": "Vocês acordam num hotel em Santos sem lembrar das últimas 12 horas. Há 23 ligações perdidas, e todas vêm do seu próprio número.",
+    "texto": "Um copo virado, setas desenhadas no espelho, um notebook formatado e um áudio cortado no meio de uma frase. Às 18h, um empresário pode sair livre se a prova não aparecer. Reconstrua a própria noite com câmeras, dados de localização e testemunhas, e descubra o que vocês mesmos esconderam antes de esquecer.",
+    "clima": [
+      "Investigação",
+      "Linha do tempo",
+      "Corrida contra o tempo"
+    ],
+    "imagem": "img/aventuras/doze-horas-que-ninguem-lembra.jpg"
   }
 }

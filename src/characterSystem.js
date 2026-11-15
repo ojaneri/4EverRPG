@@ -89,7 +89,7 @@ function validateAttributes(attrs) {
 // Retratos ilustrados por ambiente e classe: 3 masculinos (m1–m3) e 3 femininos (f1–f3).
 // Arquivos em public/img/retratos/<ambiente>/<classe>-<m|f><n>.jpg.
 const RETRATOS = {};
-for (const amb of ['fantasia']) {
+for (const amb of ['fantasia', 'espacial', 'cyber', 'pericia']) {
   RETRATOS[amb] = {};
   for (const classeId of ['guerreiro', 'batedor', 'arcanista', 'guardiao']) {
     RETRATOS[amb][classeId] = ['m1', 'm2', 'm3', 'f1', 'f2', 'f3'].map((v) => ({ id: `${classeId}-${v}`, genero: v[0] === 'f' ? 'feminino' : 'masculino' }));

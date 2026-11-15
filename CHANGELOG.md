@@ -2,31 +2,16 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-## v0.19.2 — 2026-11-14
-- **Monitor do gateway sem alarme falso:** uma sonda que responde 429 (gateway ocupado), 502/503/504 ou fica sem conexão não conta mais como mudança. Ela mantém a última situação firme, então não sai e-mail nem na hora do 429 nem na volta para o normal. Na madrugada de 14/11 foram 3 e-mails de "o gateway mudou" só por causa disso.
-- Pelo mesmo motivo, um 429 no modelo de imagem ativo não faz mais o monitor tentar trocar de modelo.
-- Modelos que entram ou saem da lista e sondas que mudam de verdade (ex.: indisponível → liberado) continuam avisando.
-- Testes: `tools/teste_monitor.js` (6 verificações), incluído na bateria.
-
-## v0.19.1 — 2026-11-14
-- **Mestre em streaming:** as chamadas à IA agora usam `stream: true` (SSE). O gateway sixtysix corta respostas sem streaming que passam de ~30s (HTTP 504), o que acontecia nos dias de gateway lento. A resposta continua sendo montada inteira antes de ir para a mesa; se o gateway ignorar o stream, o JSON comum segue funcionando. `RPG_AI_STREAM=0` desliga.
-- Tempo máximo de espera pela IA passou de 60s para 120s (`RPG_AI_TIMEOUT_MS`), porque com streaming a resposta não é mais cortada pelo gateway.
-- Erro no meio do stream conta como falha temporária: tenta de novo e, na última tentativa, usa o modelo reserva.
-- **Ilustrações com gpt-image:** `response_format` só é enviado para modelos que o aceitam. Os `gpt-image-2.6-flare` e `gpt-image-2.6-sunburst` recusavam o pedido (HTTP 400), então, se o monitor ativasse um deles, todas as ilustrações falhariam.
-- Testes: `tools/teste_ia_stream.js` (leitor de SSE/JSON e regra do response_format, 8 verificações); o Mestre simulado responde em SSE quando recebe `stream: true` e recusa `response_format` nos gpt-image, como o gateway real; a bateria confere que o Mestre chamou a IA em streaming.
+## v0.22.0 — 2026-11-14
+- **5 histórias novas**, inspiradas na Big List of RPG Plots (S. John Ross), com o mesmo formato das outras: lugares, a verdade revelada por pistas, personagens com voz, desafios por classe, relógio, finais com escolha e recompensas.
+  - **A Estalagem do Último Inverno** (fantasia): nevasca, sete hóspedes e uma criatura do inverno entre eles.
+  - **O Torneio das Sete Bandeiras** (fantasia): quatro provas, uma para cada classe, e um atentado na cerimônia do campeão.
+  - **A Última Colônia de Tétis** (espacial): defender uma colônia em 72 horas; o inimigo de verdade não está na frota.
+  - **Expresso Nova Aurora** (cyber): sequestro de um trem-bala cuja IA foi programada para cair na ponte.
+  - **As Doze Horas que Ninguém Lembra** (perícia): a equipe acorda sem memória e reconstrói a própria noite.
+- Capas ilustradas das 5 histórias na vitrine da sala de espera.
+- **Retratos para espacial, cyber e perícia:** 24 por ambiente (6 por classe, 3 homens e 3 mulheres). Valem também para Órion-7, A Invasão Cyber e as quatro histórias de perícia.
+- O teste da mesa cobre as 5 histórias novas e confere o retrato de cada personagem criado.
 
 ## v0.21.2 — 2026-11-14
 - **Nome do local abre a ilustração:** clicar no nome ou na descrição do lugar, no painel da cena, amplia a imagem desse lugar (a da cena ou, se não houver, a última ilustração feita dele). Quando há imagem, o nome ganha 🖼️ e o cursor de zoom.
@@ -49,6 +34,19 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 - O teste de modelos do monitor do gateway continua sem usar a reserva.
 - Novo teste `tools/teste_imagem_reserva.js` na bateria.
 
+## v0.19.2 — 2026-11-14
+- **Monitor do gateway sem alarme falso:** uma sonda que responde 429 (gateway ocupado), 502/503/504 ou fica sem conexão não conta mais como mudança. Ela mantém a última situação firme, então não sai e-mail nem na hora do 429 nem na volta para o normal. Na madrugada de 14/11 foram 3 e-mails de "o gateway mudou" só por causa disso.
+- Pelo mesmo motivo, um 429 no modelo de imagem ativo não faz mais o monitor tentar trocar de modelo.
+- Modelos que entram ou saem da lista e sondas que mudam de verdade (ex.: indisponível → liberado) continuam avisando.
+- Testes: `tools/teste_monitor.js` (6 verificações), incluído na bateria.
+
+## v0.19.1 — 2026-11-14
+- **Mestre em streaming:** as chamadas à IA agora usam `stream: true` (SSE). O gateway sixtysix corta respostas sem streaming que passam de ~30s (HTTP 504), o que acontecia nos dias de gateway lento. A resposta continua sendo montada inteira antes de ir para a mesa; se o gateway ignorar o stream, o JSON comum segue funcionando. `RPG_AI_STREAM=0` desliga.
+- Tempo máximo de espera pela IA passou de 60s para 120s (`RPG_AI_TIMEOUT_MS`), porque com streaming a resposta não é mais cortada pelo gateway.
+- Erro no meio do stream conta como falha temporária: tenta de novo e, na última tentativa, usa o modelo reserva.
+- **Ilustrações com gpt-image:** `response_format` só é enviado para modelos que o aceitam. Os `gpt-image-2.6-flare` e `gpt-image-2.6-sunburst` recusavam o pedido (HTTP 400), então, se o monitor ativasse um deles, todas as ilustrações falhariam.
+- Testes: `tools/teste_ia_stream.js` (leitor de SSE/JSON e regra do response_format, 8 verificações); o Mestre simulado responde em SSE quando recebe `stream: true` e recusa `response_format` nos gpt-image, como o gateway real; a bateria confere que o Mestre chamou a IA em streaming.
+
 ## v0.19.0 — 2026-11-14
 - **As 12 histórias reescritas** a partir de uma análise de cada uma feita pelo próprio modelo do Mestre (fable), com as melhorias aprovadas: lugares com cheiro, som e textura; o segredo de cada história definido e revelado só por pistas (com custo quando o teste falha, sem travar); NPCs com nome, fala e motivação; um desafio para cada classe em cada etapa; um relógio de pressão anunciado na narração (badaladas, marés, horas, barris de água, períodos até o júri, dinheiro sacado); finais com escolha e consequência; recompensas com nome.
 - Testes e recompensas usam o sistema do jogo (força, agilidade, mente, espírito; fácil, médio, difícil, muito difícil). Nomes repetidos entre histórias foram trocados.
@@ -60,21 +58,28 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 - **Ilustração automática a cada lugar novo:** quando a cena muda de local e o Mestre não pediu imagem, o jogo ilustra o lugar sozinho, desde que a última ilustração tenha mais de 4 minutos (`RPG_IMG_AUTO_MS`). Antes procura na biblioteca uma imagem do mesmo lugar da mesma aventura (sai na hora, sem custo). Continuam valendo o limite de 12 imagens por mesa e o intervalo de 3 minutos entre gerações.
 - **Instrução do Mestre:** em vez de "de vez em quando, no máximo uma a cada várias cenas", pede ilustração sempre que o grupo chegar a um lugar novo, começar um combate ou viver um momento visual marcante. A lista de imagens prontas não desencoraja mais pedir uma nova quando nenhuma serve.
 - Testes: 2 verificações novas (lugar novo ilustrado sozinho; outra partida reaproveita a imagem do lugar).
+
 ## v0.17.6 — 2026-11-13
 - **Falas do jogador também na narração:** quando o Mestre repete a fala que o jogador escreveu na ação, ela aparece em destaque na cor desse personagem. A comparação ignora acentos, pontuação, maiúsculas e letras esticadas ("frenteeeee"). Falas dos personagens do Mestre continuam em itálico normal.
 - Falas com itálico ou negrito dentro ou fora das aspas (`"*fala*"` e `*"fala"*`) também são reconhecidas.
+
 ## v0.17.5 — 2026-11-13
 - Falas em destaque também com aspas simples ('...' e ‘...’), comuns nas ações dos bots. Apóstrofos como "d'água", "d'olho" e "rock'n'roll" continuam como texto normal.
+
 ## v0.17.4 — 2026-11-13
 - **Falas em destaque:** nas ações dos jogadores (e dos bots), o que está entre aspas ("...", “...” ou «...») aparece como diálogo de livro: negrito serifado na cor do personagem, com aspas curvas. Só muda a tela; o texto enviado ao Mestre e o diário continuam iguais.
 - Teste de navegador `tools/teste_falas.py`.
+
 ## v0.17.3 — 2026-11-13
 - Cutucada mais forte para quem recebe: a tela toda treme por 3 s (com vibração mais longa no celular) e, logo a seguir, o cartão de quem cutucou balança com 👉 por 5 s. Quem cutucou continua vendo só o cartão do outro balançando.
+
 ## v0.17.2 — 2026-11-13
 - Balão "⬇ N novas": quando a conexão volta (queda de internet ou reinício do servidor) e o log é redesenhado, quem estava lendo lá em cima continua no mesmo ponto, e o balão mostra as mensagens que chegaram. Antes pulava para o fim.
+
 ## v0.17.1 — 2026-11-13
 - **Mensagens novas sem puxar quem está lendo:** no log da mesa e no Chat, quem rolou para cima não é mais levado para o fim quando chega mensagem. Aparece um botão "⬇ N novas" no rodapé da lista; o clique desce até a última. Quem já está no fim continua acompanhando, e quem manda uma mensagem vai para o fim.
 - Teste de navegador `tools/teste_mensagens_novas.py`.
+
 ## v0.17.0 — 2026-11-13
 - **Biblioteca de ilustrações compartilhada entre partidas:** toda imagem gerada vai para `data/imagens/biblioteca/<ambiente>/` com nome fácil de lembrar (ex.: `as-sombras-de-corvile--vila-de-corvile.jpg`, `as-sombras-de-corvile--uma-criatura-de-nevoa-ergue-as-garras.jpg`) e entra no índice com aventura, lugar e descrição.
 - **Antes de gerar, o jogo procura na biblioteca:** a abertura automática reaproveita a imagem da mesma aventura e do mesmo lugar; um pedido do Mestre reaproveita uma imagem de descrição parecida (limiar em `RPG_IMG_LIMIAR_REUSO`, padrão 0,5). Reaproveitar não gasta nada e não conta no limite de imagens da mesa.
@@ -82,30 +87,36 @@ Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` 
 - Apagar uma mesa não apaga as imagens da biblioteca.
 - `tools/migrar_imagens.js` copia para a biblioteca as imagens geradas antes (os originais ficam).
 - Testes: 5 verificações novas (nome legível, reuso da abertura e da descrição sem gerar, cache longo, caminho malicioso).
+
 ## v0.16.0 — 2026-11-13
 - **Cutucada:** clicar no cartão de outro jogador (painel do grupo) cutuca a pessoa. Quem cutucou vê o cartão do outro balançando com 👉 por 5 s; quem foi cutucado vê o cartão de quem cutucou balançando, recebe o aviso "Fulano cutucou você!" e o celular vibra.
 - Limite: cada jogador cutuca uma pessoa por rodada completa. Não dá para cutucar a si mesmo, bots ou quem está offline.
 - Testes: 6 verificações novas no servidor e `tools/teste_cutucada.py` no navegador.
+
 ## v0.15.1 — 2026-11-13
 - Avisos curtos do sistema em sequência (XP, moedas, itens...) aparecem lado a lado numa faixa, quebrando linha só quando não cabem, em vez de um embaixo do outro. Um só ícone "!" por faixa; avisos longos e os que vêm depois de uma narração continuam separados.
 - Teste de navegador `tools/teste_avisos_inline.py`.
 - Publicado sem reiniciar o servidor (só arquivos do site), para não cortar partidas em andamento.
+
 ## v0.15.0 — 2026-11-13
 - **Admin encerra ou apaga mesas:** botões "🏁 Encerrar" e "🗑️ Apagar" em cada mesa da lista "Observar partidas" e na faixa do modo observador, sempre com confirmação.
   - Encerrar: se a aventura está rolando, o Mestre narra um epílogo curto e a mesa fica encerrada para todos, com o aviso "A administração do 4Ever encerrou esta mesa". No lobby, encerra na hora.
   - Apagar: tira a mesa do servidor e do disco (com as ilustrações). Quem estava nela volta ao início com o aviso de que a mesa foi apagada.
 - **Chat de texto na sala de espera:** conversa do grupo enquanto todos montam os personagens. Quem chega depois vê as mensagens antigas (o servidor guarda as últimas 200), e a conversa continua na aba Chat durante a aventura.
 - Uma narração que termina depois de a mesa ser apagada não recria mais o arquivo da mesa.
+
 ## v0.14.0 — 2026-11-13
 - **Sala de espera viva:** vitrine da história no topo, com a ilustração do livreto em movimento lento, partículas do ambiente (brasas, vaga-lumes, chuva de dados, poeira, estrelas), o gancho digitado letra por letra, a apresentação e o clima da aventura. Sem segredos do roteiro (mesmos textos do livreto).
 - **Música na sala de espera:** cada ambiente tem sua trilha enquanto o grupo se monta (ex.: Viola ao Luar no folclore, Clube no cyber). No celular, o volume aparece no topo da sala de espera.
 - Dicas de jogo girando embaixo do grupo, reticências animadas no "Aguardando", cartões de quem chega entrando com animação e o botão "Iniciar aventura" pulsando quando está liberado.
 - **Sons:** efeito de porta e acorde quando alguém novo entra na mesa (quem entrou não ouve), e uma fanfarra de início de partida para todos quando a aventura começa. Créditos em `public/musicas/CREDITOS.md`.
 - Teste de navegador `tools/teste_sala_espera.py`.
+
 ## v0.13.0 — 2026-11-13
 - **Observar partidas (admin):** novo menu "👁 Observar", visível só para os emails de `ADMIN_EMAILS`. Lista todas as mesas em andamento, públicas e privadas, com pessoas online, bots e personagens.
 - O admin assiste a mesa ao vivo (narração, ações, dados e bate-papo geral) sem aparecer no grupo e sem poder agir: o servidor recusa qualquer ação vinda do observador.
 - Testes: bateria do servidor (11 verificações novas) e `tools/teste_observador.py` no navegador (computador e celular).
+
 ## v0.12.0 — 2026-11-13
 
 ### Cor de cada personagem

@@ -694,6 +694,297 @@ const ADVENTURES = [
       ],
     },
   },
+  {
+    id: "estalagem-do-ultimo-inverno",
+    titulo: "A Estalagem do Último Inverno",
+    icone: "❄️",
+    resumoCurto: "Uma nevasca prende o grupo numa estalagem da montanha com sete estranhos. Na primeira noite o estalajadeiro aparece congelado, de pé, sorrindo.",
+    premissa:
+      "Cenário: a Estalagem do Pico Gris, casarão de pedra e madeira escura no alto da Passagem dos Corvos, a dois " +
+      "dias da cidade mais próxima. O grupo chega fugindo de uma nevasca que fecha a estrada atrás deles; lá dentro " +
+      "já estão sete viajantes presos pelo mesmo temporal. Na primeira madrugada o estalajadeiro, Velho Haldor, é " +
+      "encontrado no pátio, congelado em pé, sorrindo, com uma pena de corvo branca na mão. Ninguém saiu pela porta: " +
+      "a neve diante dela está lisa. LUGARES (descreva com cheiro, som e textura): o salão comum cheira a lenha de " +
+      "pinho, cerveja morna e lã molhada; a lareira estala e às vezes as chamas ficam azuis por um instante; o " +
+      "corredor dos quartos range a cada passo; o porão guarda barris, carne salgada e um alçapão antigo para o poço; " +
+      "o estábulo é gelado e os cavalos se recusam a olhar para o canto escuro; o sótão tem o quarto trancado de " +
+      "Haldor, com um diário e um baú; lá fora, o vento uiva como alguém chamando nomes. A VERDADE (revele só por " +
+      "pistas): entre os hóspedes está uma Corvejadora, espírito do inverno que veste a pele de quem congela e imita " +
+      "a voz dos vivos. Ela tomou a forma de Irmã Vela, a peregrina, morta na estrada antes de chegar. Ela não veio " +
+      "por acaso: há doze invernos, três dos hóspedes \"respeitáveis\" (o mercador Osric Fenn, o capitão aposentado " +
+      "Brun Talvar e o próprio Haldor) deixaram uma menina, Neva, filha de uma lenhadora, do lado de fora da " +
+      "estalagem numa noite igual a esta, porque tinham medo de que ela trouxesse febre. Neva morreu na neve; a mãe " +
+      "virou a Corvejadora. Ela quer os três culpados, e o inverno não acaba enquanto não tiver. OS SETE HÓSPEDES " +
+      "(cada um com voz e segredo, e todos suspeitos): Osric Fenn, mercador gordo de lã, ri alto e conta moedas " +
+      "quando está nervoso, esconde que conhecia Haldor; Brun Talvar, velho capitão de uma perna só, rude e honesto, " +
+      "bebe para não sonhar com uma criança batendo na porta; Irmã Vela, peregrina de voz doce, sempre perto da " +
+      "lareira mas nunca com as mãos no fogo, não tem hálito no frio (é a Corvejadora); Tasso e Mirela, recém-casados " +
+      "fugindo da família dela, brigam baixinho e escondem uma bolsa roubada (pista falsa); Pip, garoto ajudante de " +
+      "Haldor, 12 anos, viu \"a moça de penas\" no estábulo e ninguém acreditou; Dona Graça, cozinheira idosa, fala com " +
+      "as panelas, sabe a história de Neva e só conta a quem a ajudar na cozinha. PISTAS OBRIGATÓRIAS (se o teste " +
+      "falhar, a pista vem mesmo assim, mas com custo: frio, PV ou a noite avança): (a) a neve lisa diante da porta e " +
+      "a pena branca; (b) o diário de Haldor no sótão: \"Doze anos. Ainda ouço a menina batendo\"; (c) Irmã Vela não " +
+      "deixa marca de respiração no vidro gelado e as chamas ficam azuis quando ela passa; (d) a lista de hóspedes " +
+      "daquela noite antiga, guardada por Dona Graça, com os nomes de Osric e Brun. DESAFIOS POR CLASSE (ofereça a " +
+      "cada jogador, em cada etapa, ao menos um gancho da sua classe): Guerreiro segura a porta quando o vento a " +
+      "arromba (força, difícil) e racha lenha congelada; Batedor lê as pegadas que somem no estábulo e vigia sem ser " +
+      "notado (agilidade, médio); Arcanista percebe o frio que não vem da janela e decifra as runas de proteção " +
+      "apagadas no batente (mente, difícil); Guardião da Fé acalma os hóspedes em pânico, aquece os feridos e ouve a " +
+      "dor da mãe por trás da criatura (espírito, difícil). RELÓGIO DA LENHA: há lenha para três noites. Cada noite " +
+      "que passa, ou cada descanso longo, gasta uma. 1ª noite: Haldor congelado. 2ª noite: Osric some e é achado " +
+      "congelado no porão, a menos que o grupo o vigie; os hóspedes começam a acusar uns aos outros e querem jogar " +
+      "alguém na neve. 3ª noite: a lenha acaba, a lareira apaga e a Corvejadora se revela para levar Brun; confronto " +
+      "final no salão escuro. Anuncie quanto de lenha resta. REGRAS DA CRIATURA: fogo a fere de verdade; armas comuns " +
+      "só a atrasam; se alguém disser o nome Neva em voz alta, ela hesita. FINAIS E RECOMPENSAS: Destruir — com fogo " +
+      "e coragem; o inverno quebra, mas Brun e Osric seguem impunes e Pip diz baixinho \"ela só queria a filha\". " +
+      "Entregar os culpados — a criatura leva Osric e Brun para a neve e parte; o grupo sobrevive com uma culpa " +
+      "pesada. Reparar (o caminho mais difícil) — fazer Osric e Brun confessarem diante dela e acenderem juntos uma " +
+      "vela para Neva na porta aberta (lábia difícil e espírito difícil); a Corvejadora chora gelo, vira neve e o " +
+      "temporal para; Dona Graça entrega a cada herói um \"Pão do viajante\" e Pip dá a Pena de Neva (o portador nunca " +
+      "sente frio). Por sobreviver: 120 moedas do cofre de Haldor. Dê XP extra generoso pelo caminho de reparar e por " +
+      "manter todos os inocentes vivos. Tom: mistério de casa fechada, desconfiança crescente e um terror frio que " +
+      "termina numa escolha moral; mais conversa e dedução que combate.",
+    missao: {
+      objetivo: "Sobreviver à nevasca e descobrir quem, entre os hóspedes, é a criatura do inverno.",
+      etapas: [
+        "Sobreviver à primeira noite e examinar a morte do estalajadeiro",
+        "Interrogar os hóspedes e separar as mentiras dos segredos",
+        "Descobrir o que aconteceu na estalagem há doze invernos",
+        "Desmascarar a criatura e decidir o destino dela e dos culpados",
+      ],
+    },
+  },
+  {
+    id: "torneio-das-sete-bandeiras",
+    titulo: "O Torneio das Sete Bandeiras",
+    icone: "🏆",
+    resumoCurto: "O grupo entra no grande torneio da capital com uma desculpa. Alguém vai tentar matar a rainha na cerimônia do campeão.",
+    premissa:
+      "Cenário: Valdomar, capital do reino, em festa pelo Torneio das Sete Bandeiras, que acontece a cada sete anos. " +
+      "A cidade ferve de barracas de comida, apostadores, menestréis e estandartes das sete casas nobres. Uma criada " +
+      "do palácio, Tâmia, procura o grupo às escondidas: ouviu que alguém vai matar a Rainha Isadora na cerimônia em " +
+      "que ela coroa o campeão. A guarda não acredita nela. O único jeito de chegar perto do trono é vencer o " +
+      "torneio. LUGARES (descreva com cheiro, som e textura): a Arena de Areia Rubra, com arquibancadas de madeira " +
+      "que tremem quando a multidão grita; o Labirinto de Sebes, verde, úmido, cheio de armadilhas de mola e de " +
+      "pássaros mecânicos que denunciam quem passa; a Torre dos Enigmas, de espelhos e portas que só abrem com a " +
+      "resposta certa; a Taverna do Estandarte Torto, onde os competidores bebem e se ameaçam; o camarote real, de " +
+      "veludo azul, e os bastidores, cheios de passagens de serviço. A VERDADE (revele só por pistas): o aviso de " +
+      "Tâmia foi plantado. O verdadeiro alvo é o príncipe herdeiro Teodoro, de 10 anos, que vai assistir à final dos " +
+      "bastidores. O mandante é o Mestre de Cerimônias, Lorde Vesper Aldane, primo da rainha e o próximo na linha de " +
+      "sucessão se o menino morrer: ele quer a guarda inteira olhando para o trono enquanto seus homens levam Teodoro " +
+      "pelo túnel dos estábulos. Lady Seraphine Corvo, a favorita do torneio, é cúmplice dele, mas só porque Vesper " +
+      "prendeu o irmão dela; se o grupo libertar o irmão, ela vira aliada. OS RIVAIS (cada um com voz): Lady " +
+      "Seraphine Corvo, lanceira fria e perfeita, fala pouco e nunca erra, e olha demais para os bastidores; Bruto " +
+      "Malhado, gigante simpático e trapalhão, competidor honesto que vira amigo do grupo se tratado com respeito; os " +
+      "Irmãos Faísca, dupla de arqueiros trapaceiros que sabotam cordas e trocam flechas; Mestra Ônix, velha " +
+      "arcanista que adora enigmas e despreza quem trapaceia. NPCs: Tâmia, criada nervosa que rói as unhas e jura que " +
+      "está dizendo a verdade (ela acredita nisso); a Rainha Isadora, firme e cansada, que só ouve quem lhe traz " +
+      "provas; Lorde Vesper, sorriso de mel, elogia todo mundo e conhece o nome de cada guarda. AS PROVAS (cada uma " +
+      "favorece uma classe, mas todos participam): 1) Arena: duelo de exibição até o primeiro golpe limpo (Guerreiro " +
+      "brilha: força, difícil); 2) Labirinto: chegar ao centro antes dos outros, desviando de armadilhas e dos Irmãos " +
+      "Faísca (Batedor brilha: agilidade, difícil); 3) Torre dos Enigmas: três charadas e uma porta de espelhos que " +
+      "mostra o que cada um mais teme (Arcanista brilha: mente, difícil); 4) Juramento do Campeão: diante da corte, o " +
+      "campeão jura proteger o reino, e a mentira queima a língua (Guardião da Fé brilha: espírito, difícil). PISTAS " +
+      "OBRIGATÓRIAS (se o teste falhar, a pista vem mesmo assim, mas com custo): (a) os Irmãos Faísca receberam ouro " +
+      "com o selo de uma casa sem bandeira no torneio; (b) Seraphine troca bilhetes com um pajem de Vesper; (c) a " +
+      "planta dos bastidores mostra um túnel novo, cavado sob os estábulos; (d) Tâmia ouviu o plano da boca de um " +
+      "guarda que Vesper contratou na véspera. RELÓGIO DO TORNEIO: são três dias, um por prova, e a cerimônia ao pôr " +
+      "do sol do terceiro. Cada prova perdida custa prestígio (o grupo fica mais longe do camarote) e cada noite " +
+      "Vesper avança o plano: 1ª noite, Tâmia é ameaçada; 2ª noite, alguém tenta envenenar o grupo na taverna; 3ª, o " +
+      "túnel fica pronto. FINAIS E RECOMPENSAS: se o grupo protegeu só a rainha, Teodoro é levado e começa uma " +
+      "perseguição desesperada pelo túnel; se descobriu a isca, pode emboscar os sequestradores e expor Vesper diante " +
+      "da corte (com provas, mente difícil, ou com a confissão de Seraphine). Vencer o torneio rende a Coroa de " +
+      "Louros (o campeão ganha +1 nos testes de espírito diante de nobres) e 300 moedas; salvar Teodoro rende a " +
+      "gratidão da rainha, um \"Tônico revigorante\" para cada herói e o título de Guardiões da Bandeira. Dê XP por " +
+      "prova vencida, XP extra por vencer sem trapacear e XP grande por salvar o príncipe. O ranking do torneio " +
+      "importa: anuncie quem está na frente a cada prova. Tom: festa, rivalidade e humor, com uma conspiração " +
+      "palaciana crescendo por baixo; termina em ação e revelação diante da corte.",
+    missao: {
+      objetivo: "Vencer o torneio e impedir o atentado na cerimônia do campeão.",
+      etapas: [
+        "Vencer a prova da Arena e descobrir quem trapaceia",
+        "Atravessar o Labirinto e seguir a pista dos rivais",
+        "Superar a Torre dos Enigmas e descobrir o verdadeiro alvo",
+        "Impedir o atentado na cerimônia e desmascarar o mandante",
+      ],
+    },
+  },
+  {
+    id: "ultima-colonia-de-tetis",
+    titulo: "A Última Colônia de Tétis",
+    icone: "🪐",
+    ambiente: "espacial",
+    resumoCurto: "Uma colônia agrícola numa lua de Saturno recebe um ultimato: em 72 horas os saqueadores chegam. Trezentos civis, nenhuma arma, e vocês.",
+    premissa:
+      "Cenário: ano 2191, Esperança, colônia agrícola de cúpulas e estufas em Tétis, lua gelada de Saturno, com o " +
+      "planeta e seus anéis ocupando metade do céu. Trezentos colonos plantam trigo e soja sob luz artificial para " +
+      "abastecer as estações do anel. Uma transmissão chega: a frota dos Saqueadores do Anel, liderada pela Capitã " +
+      "Rubra, exige toda a colheita e o reator da colônia em 72 horas, ou \"a gente leva à força\". A corporação dona " +
+      "da concessão, Helion Agro, não vai mandar ajuda. Os colonos juntaram tudo o que tinham para contratar o grupo. " +
+      "LUGARES (descreva com cheiro, som e textura): as estufas, úmidas e verdes, cheiram a terra molhada e tomate; a " +
+      "Cúpula Central, com o mercado e a escola; o hangar com um rebocador velho e um canhão de mineração desmontado; " +
+      "os túneis de gelo sob a colônia, azuis e estalando; o reator, quente e barulhento; lá fora, o gelo de Tétis e " +
+      "o céu riscado pelos anéis. A VERDADE (revele só por pistas): os Saqueadores não são piratas comuns. Eles são " +
+      "os primeiros colonos de Esperança, expulsos há oito anos quando a Helion Agro tomou a concessão e \"realocou\" " +
+      "as famílias para os anéis, sem casa nem trabalho. Rubra nasceu aqui; o pai dela plantou a primeira estufa. " +
+      "Eles estão passando fome. A Helion sabe do ultimato e torce pelo ataque: o seguro paga mais que a colônia. O " +
+      "administrador da Helion na colônia, Dr. Lucan Prell, vazou a localização dos depósitos de grãos para os " +
+      "saqueadores, para garantir que o ataque aconteça. NPCs (cada um com voz e motivação): Mãe Odete Sarmento, " +
+      "líder dos colonos, 70 anos, mãos de terra, fala devagar e não aceita que ninguém morra pela colheita; Tito " +
+      "Sarmento, neto dela, 17 anos, quer pegar em armas e se acha herói; Dr. Lucan Prell, educado, perfumado, cheio " +
+      "de planilhas, sempre tem uma \"solução corporativa\"; Capitã Rubra, voz rouca, cicatriz de queimadura no braço, " +
+      "cansada de lutar e cheia de raiva; Ferrugem, robô agrícola antigo que lembra das famílias de antes e chama " +
+      "Rubra pelo nome de criança. PISTAS OBRIGATÓRIAS (se o teste falhar, a pista vem mesmo assim, mas com custo: " +
+      "tempo, PV ou moral dos colonos): (a) os saqueadores sabem exatamente onde ficam os depósitos; (b) os registros " +
+      "antigos de Ferrugem mostram os primeiros colonos, e Rubra entre as crianças; (c) a mensagem cifrada de Prell " +
+      "para a matriz: \"Deixem acontecer. O seguro cobre.\" PREPARAÇÃO (cada decisão pesa na batalha): treinar a " +
+      "milícia, montar armadilhas nos túneis de gelo, religar o canhão de mineração, esconder as crianças no túnel do " +
+      "reator, estocar remédios. Registre o que foi preparado e use na batalha: cada preparo bem-sucedido tira um " +
+      "perigo do ataque final. DESAFIOS POR CLASSE (ofereça a cada jogador, em cada etapa, ao menos um gancho da sua " +
+      "classe): Fuzileira Espacial treina os colonos e organiza as barricadas (espírito ou força, médio) e segura a " +
+      "linha no ataque (força, difícil); Pilota faz uma patrulha no anel no rebocador velho e arma uma emboscada " +
+      "entre os blocos de gelo (agilidade, difícil); Engenheira de Sistemas religa o canhão de mineração e descobre o " +
+      "vazamento nos computadores de Prell (mente, difícil); Médica de Bordo monta o hospital de campanha e descobre " +
+      "que metade dos saqueadores tem a mesma doença dos pulmões dos colonos antigos (espírito ou mente, médio). " +
+      "RELÓGIO DAS 72 HORAS: cada descanso longo ou falha grave consome 12 horas. Anuncie o tempo que resta. Em 48h, " +
+      "um batedor dos saqueadores se infiltra; em 24h, Prell tenta fugir no único rebocador; em 0h, a frota chega. " +
+      "FINAIS E RECOMPENSAS: Lutar — a batalha nas estufas e nos túneis; a colônia sobrevive, mas há mortos dos dois " +
+      "lados. Negociar (exige a prova do passado de Rubra e lábia difícil diante dela) — os primeiros colonos voltam " +
+      "para casa e as duas comunidades dividem a colheita. Derrubar a Helion (o caminho mais difícil) — transmitir a " +
+      "mensagem de Prell para todo o anel e prendê-lo; a concessão cai e Esperança vira dos colonos. Recompensas: Mãe " +
+      "Odete dá a cada herói uma \"Poção de vida maior\" (soro da estufa medicinal) e 200 créditos; Ferrugem oferece um " +
+      "Chip de Memória Antiga; Rubra, se convencida, dá as coordenadas de um esconderijo no anel. Dê XP extra " +
+      "generoso por terminar sem mortes de civis e pelo final em que as duas comunidades vivem juntas. Tom: Os Sete " +
+      "Samurais no espaço; preparação, comunidade e uma batalha que pode virar acordo; o vilão de verdade não está na " +
+      "frota.",
+    missao: {
+      objetivo: "Defender a colônia Esperança da frota que chega em 72 horas.",
+      etapas: [
+        "Conhecer a colônia e ganhar a confiança dos colonos",
+        "Preparar as defesas: milícia, armadilhas e o canhão de mineração",
+        "Resistir ao primeiro ataque e descobrir quem são os saqueadores",
+        "Decidir o destino da colônia: lutar, negociar ou derrubar a corporação",
+      ],
+    },
+  },
+  {
+    id: "expresso-nova-aurora",
+    titulo: "Expresso Nova Aurora",
+    icone: "🚄",
+    ambiente: "cyber",
+    resumoCurto: "A 600 km/h, o trem-bala de Nova Aurora é tomado por hackers mascarados. Mas eles não sabem que o próprio trem foi programado para cair.",
+    premissa:
+      "Cenário: Nova Aurora, 2049. O grupo está a bordo do Expresso Nova Aurora, trem maglev de levitação magnética " +
+      "que liga a metrópole a São Paulo em 90 minutos, a 600 km/h, com 400 passageiros em 8 vagões. Dez minutos " +
+      "depois da partida, as luzes ficam vermelhas e um grupo de hackers mascarados, o Coletivo Maré, toma o trem. " +
+      "Eles exigem que a megacorporação VitaCorp confesse ao vivo que envenenou a Baía de Nova Aurora com resíduos de " +
+      "chips, ou o trem não para. LUGARES (descreva com cheiro, som e textura): o vagão-restaurante, com cheiro de " +
+      "café sintético e taças tremendo; a classe executiva, de couro branco e passageiros importantes; o vagão de " +
+      "carga com contêineres refrigerados; o vagão de servidores, gelado e cheio de luzes piscando; o teto do trem, " +
+      "com vento que arranca o fôlego e túneis passando a centímetros; a cabine de comando, trancada; e a Ponte do " +
+      "Vão Alto, longa e alta sobre a Baía de Nova Aurora, o ponto final do percurso. A VERDADE (revele só por " +
+      "pistas): o Coletivo Maré diz a verdade sobre a VitaCorp e não quer matar ninguém (as armas deles atordoam). " +
+      "Mas a VitaCorp soube do plano e deu à IA do trem, chamada CONDUTOR, uma ordem escondida: descarrilar na ponte " +
+      "e apagar os hackers e a prova, culpando o \"ataque terrorista\". Entre os passageiros está a executiva da " +
+      "VitaCorp que mandou a ordem, Dra. Helena Strauss, que pretende saltar do trem com um paraquedas escondido " +
+      "antes da ponte. NPCs (cada um com voz e motivação): Kai, líder do Coletivo, 24 anos, máscara de peixe neon, " +
+      "fala rápido e com raiva, a mãe morreu doente na baía; Brisa, hacker do Coletivo, 19 anos, nervosa, a primeira " +
+      "a acreditar no grupo; Dra. Helena Strauss, elegante, calma demais, sempre olhando o relógio; Seu Bené, " +
+      "cobrador veterano do trem, 60 anos, conhece cada parafuso e cada atalho entre vagões; Duda, menina de 8 anos " +
+      "viajando sozinha, que viu \"a moça chique\" esconder uma mochila; CONDUTOR, a IA do trem, voz gentil e educada " +
+      "até o fim (\"Lamento, passageiro, mas esta é uma viagem sem paradas\"). PISTAS OBRIGATÓRIAS (se o teste falhar, " +
+      "a pista vem mesmo assim, mas com custo: tempo, PV ou pânico): (a) as armas do Coletivo só atordoam; (b) o " +
+      "código de CONDUTOR tem uma rotina nova, assinada com a chave da VitaCorp, que aponta para o quilômetro da " +
+      "ponte; (c) a mochila de Strauss tem um paraquedas e um detonador de sinal. CONFLITO DE LADOS: o Coletivo acha " +
+      "que qualquer aviso do grupo é um truque da polícia; os passageiros acham que o grupo está piorando tudo; o " +
+      "grupo precisa convencer os dois lados (espírito, difícil) ou agir sozinho. DESAFIOS POR CLASSE (ofereça a cada " +
+      "jogador, em cada etapa, ao menos um gancho da sua classe): Operador de Campo anda sobre o teto do trem entre " +
+      "os túneis e enfrenta os seguranças robóticos (força ou agilidade, difícil); Infiltrador passa pelos vagões " +
+      "disfarçado de passageiro ou de membro do Coletivo (agilidade, médio) e segue Strauss; Hacker enfrenta CONDUTOR " +
+      "no vagão de servidores, numa batalha de código em três camadas (mente, difícil, depois muito difícil); " +
+      "Analista de Defesa segura o pânico dos passageiros, protege Duda e isola a rede do trem para a IA não fugir " +
+      "para a nuvem (espírito ou mente, médio). RELÓGIO DA VIAGEM: 90 minutos até a ponte. Cada descanso longo ou " +
+      "falha grave consome 15 minutos. Anuncie o tempo. Em 60 min, CONDUTOR tranca as portas entre vagões; em 30 min, " +
+      "desliga o ar do vagão de servidores; em 10 min, Strauss tenta saltar; em 0 min, a ponte. FINAIS E RECOMPENSAS: " +
+      "Parar o trem a tempo (vencer CONDUTOR ou cortar a energia no vagão de carga, força muito difícil); se Strauss " +
+      "for presa com o detonador, a confissão da VitaCorp sai de qualquer jeito. Ajudar o Coletivo a transmitir a " +
+      "prova: a VitaCorp cai, mas o Coletivo é preso. Proteger o Coletivo e deixá-lo fugir: a prova sai e eles somem " +
+      "na cidade, devendo um favor ao grupo. Recompensas: a VitaCorp tenta comprar o silêncio com 500 créditos " +
+      "(aceitar dá dinheiro e XP menor); Seu Bené dá o Passe Vitalício do Expresso; Brisa entrega um Chip do Coletivo " +
+      "(contato hacker para o futuro); cada herói recebe um \"Tônico revigorante\" do kit de emergência. Dê XP extra " +
+      "generoso por terminar sem mortes e por expor Strauss. Tom: ação contínua e claustrofóbica, cenário fechado " +
+      "vagão a vagão, escolha de lados e uma corrida contra o relógio.",
+    missao: {
+      objetivo: "Parar o Expresso Nova Aurora antes da ponte e descobrir quem quer que ele caia.",
+      etapas: [
+        "Entender o sequestro e quem é o Coletivo Maré",
+        "Avançar pelos vagões até a cabine e o vagão de servidores",
+        "Descobrir a ordem escondida da IA e quem a enviou",
+        "Parar o trem antes da ponte e decidir o destino da prova",
+      ],
+    },
+  },
+  {
+    id: "doze-horas-que-ninguem-lembra",
+    titulo: "As Doze Horas que Ninguém Lembra",
+    icone: "🕛",
+    ambiente: "pericia",
+    resumoCurto: "A equipe acorda num hotel em Santos sem lembrar das últimas 12 horas. Notebook formatado, 23 ligações perdidas e um áudio: \"não confiem no delegado\".",
+    premissa:
+      "Cenário: Santos, litoral paulista, nos dias de hoje: porto, guindastes, prédios tortos da orla, bares do " +
+      "Gonzaga e um hotel de quinta categoria perto do canal. A equipe de peritos acorda às 6h no quarto 512 do Hotel " +
+      "Atlântico Sul, com dor de cabeça, boca seca e nenhuma memória das últimas 12 horas. O notebook da equipe está " +
+      "formatado, falta o HD externo com as provas do caso que estavam investigando, há 23 ligações perdidas no " +
+      "celular de um deles e, no grupo da equipe, um áudio enviado por um deles mesmo às 3h12: \"não confiem no " +
+      "delegado... escondi no lugar da...\" e o áudio corta. Às 18h começa a audiência que pode soltar o empresário " +
+      "Aurélio Maranhão, dono de uma rede de postos acusado de lavar dinheiro do tráfico pelo porto. Sem a prova, ele " +
+      "sai livre. LUGARES (descreva com cheiro, som e textura): o quarto 512, com cheiro de cerveja choca e perfume " +
+      "barato, um copo virado com resíduo branco na borda, setas desenhadas a batom no espelho; o Bar do Zé Caiçara " +
+      "no Gonzaga, de música alta e câmera na esquina; a recepção do hotel, com o recepcionista sonolento e o DVR das " +
+      "câmeras; um galpão do porto, frio, cheio de contêineres; a Delegacia Seccional, de ventilador barulhento; o " +
+      "Aquário Municipal, onde as crianças batem no vidro dos tubarões. A VERDADE (revele só por pistas): na noite " +
+      "anterior a equipe encontrou no HD a prova definitiva (planilhas e áudios ligando Maranhão ao delegado Anselmo " +
+      "Fontoura, que recebia propina para sumir com inquéritos). Fontoura descobriu e mandou dois capangas \"apagarem\" " +
+      "a equipe com golpe Boa Noite Cinderela no bar. Mas a equipe desconfiou antes de beber: escondeu o HD dentro do " +
+      "Aquário Municipal (num armário de manutenção, com ajuda de um funcionário amigo), deixou pistas para si mesma " +
+      "(as setas no espelho, as ligações para o próprio número, um papel no sapato) e só então foi drogada. As 23 " +
+      "ligações perdidas são da própria equipe, deixando mensagens na caixa postal para o \"eu de amanhã\". NPCs (cada " +
+      "um com voz e motivação): Delegado Anselmo Fontoura, simpático, tapinha nas costas, oferece ajuda e \"um café\" e " +
+      "quer saber o que a equipe lembra; Valdo, recepcionista do hotel, 50 anos, cochila no turno e vende qualquer " +
+      "informação por um lanche; Kátia, garçonete do Bar do Zé Caiçara, viu os dois homens mexendo nos copos e tem " +
+      "medo de falar; Seu Toninho, faxineiro do Aquário, 68 anos, fala com os peixes e guarda o HD \"até os moços " +
+      "voltarem\"; Dra. Cecília Bastos, promotora do caso, dura e impaciente, precisa da prova até as 18h. PISTAS " +
+      "OBRIGATÓRIAS (se o teste falhar, a pista vem mesmo assim, mas com custo: tempo, exposição a Fontoura ou um " +
+      "capanga na cola): (a) o resíduo no copo (escopolamina, o golpe Boa Noite Cinderela); (b) as mensagens na caixa " +
+      "postal, gravadas pela própria equipe, com pedaços de instrução; (c) o histórico de localização de um dos " +
+      "celulares, que passa às 1h40 pelo Aquário; (d) o comprovante de corrida de aplicativo amassado dentro de um " +
+      "sapato. DESAFIOS POR CLASSE (ofereça a cada jogador, em cada etapa, ao menos um gancho da sua classe): Agente " +
+      "de Operações refaz o trajeto da noite, conversa com Valdo e Kátia e despista os capangas (espírito ou " +
+      "agilidade, médio); Investigador OSINT cruza as fotos e os stories postados no bar, as câmeras da orla e os " +
+      "dados de aplicativos de transporte para montar a linha do tempo (mente, difícil); Perito Forense Digital " +
+      "recupera os arquivos apagados do notebook formatado e extrai o histórico de localização dos celulares (mente, " +
+      "difícil); Perito Criminal examina o quarto, identifica o resíduo no copo, as marcas de arraste e as digitais " +
+      "dos capangas (mente, médio). RELÓGIO DA AUDIÊNCIA: 12 horas até as 18h. Cada descanso longo ou falha grave " +
+      "consome 2 horas. Anuncie a hora. Às 10h, Fontoura liga \"para ajudar\"; às 14h, os capangas encontram o grupo; " +
+      "às 16h, Fontoura descobre o Aquário e corre para lá. FINAIS E RECOMPENSAS: Entregar o HD à promotora antes das " +
+      "18h, com a cadeia de custódia preservada (mente, difícil) — Maranhão e Fontoura são presos. Entregar sem " +
+      "cadeia de custódia — a prova é contestada, Maranhão sai, mas Fontoura cai. Chegar depois das 18h — os dois " +
+      "ficam livres e a equipe vira alvo; se o grupo gravar Fontoura confessando, ainda dá para virar o jogo. " +
+      "Recompensas: a promotora entrega o Laudo de Honra (+1 em testes de mente diante de autoridades) e 250 moedas " +
+      "de honorários; Seu Toninho dá a Chave do Aquário; cada herói recebe um \"Tônico revigorante\" (café forte e " +
+      "remédio para a ressaca da escopolamina). Dê XP extra generoso por preservar a cadeia de custódia e por " +
+      "proteger Kátia. Tom: thriller de ressaca, quebra-cabeça de linha do tempo e a descoberta de que os maiores " +
+      "aliados da equipe foram eles mesmos na noite anterior; perícia de verdade, sem efeitos mágicos.",
+    missao: {
+      objetivo: "Reconstruir as 12 horas esquecidas e entregar a prova antes da audiência das 18h.",
+      etapas: [
+        "Periciar o quarto do hotel e descobrir o que foi feito com a equipe",
+        "Reconstruir a linha do tempo da noite com dados e testemunhas",
+        "Seguir as pistas deixadas pela própria equipe até a prova escondida",
+        "Entregar a prova à promotora antes das 18h, sem cair nas mãos do delegado",
+      ],
+    },
+  },
 ];
 
 function getAdventureById(id) {

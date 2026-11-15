@@ -524,14 +524,19 @@ async function fase1() {
     'golpe-do-pix-fantasma': ['pericia', 'Agente de Operações'],
     'o-contrato-assinado-por-um-morto': ['pericia', 'Agente de Operações'],
     'sinal-perdido-na-serra': ['pericia', 'Agente de Operações'],
+    'estalagem-do-ultimo-inverno': ['fantasia', 'Guerreiro'],
+    'torneio-das-sete-bandeiras': ['fantasia', 'Guerreiro'],
+    'ultima-colonia-de-tetis': ['espacial', 'Fuzileira Espacial'],
+    'expresso-nova-aurora': ['cyber', 'Operador de Campo'],
+    'doze-horas-que-ninguem-lembra': ['pericia', 'Agente de Operações'],
   };
   for (const [id, [amb, classe]] of Object.entries(esperado)) {
     const r = await emit(B, 'criarJogo', { aventuraId: id });
     await emit(B, 'escolherPersonagem', { codigo: r.state.codigo, personagem: personagem('Teste', 'guerreiro') });
     await sleep(120);
     const ficha = B.estado.personagens[0].personagem;
-    ok(r.state.ambiente === amb && r.state.missao.etapas.length === 4 && ficha.classeNome === classe,
-      `${id}: ambiente ${r.state.ambiente}, missão com ${r.state.missao.etapas.length} etapas, classe "${ficha.classeNome}", arma "${ficha.inventario.find((i) => i.equipado)?.nome}"`);
+    ok(r.state.ambiente === amb && r.state.missao.etapas.length === 4 && ficha.classeNome === classe && (['folclore', 'sertao'].includes(amb) ? !ficha.retrato : /^guerreiro-[mf][123]$/.test(ficha.retrato || '')),
+      `${id}: retrato ${ficha.retrato}, ambiente ${r.state.ambiente}, missão com ${r.state.missao.etapas.length} etapas, classe "${ficha.classeNome}", arma "${ficha.inventario.find((i) => i.equipado)?.nome}"`);
   }
 
   // --- Morte: cair, morrer sem socorro, novo personagem, morte narrativa ---
