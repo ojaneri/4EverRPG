@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Navegador: quem assiste a rolagem de outro jogador (aqui, um bot) vê o modal fechar sozinho
-quando o dono do dado continua. Uso: python3 tools/teste_dado_espectador.py"""
+"""Navegador: quem assiste a rolagem de outro jogador (aqui, um bot) não vê modal:
+o resultado aparece no destaque da vez, com o retrato, e some depois. Uso: python3 tools/teste_dado_espectador.py"""
 import json, os, subprocess, tempfile, time, urllib.request
 from playwright.sync_api import sync_playwright
 RAIZ = "/var/www/html/admin.janeri.com.br/4everrpg"; BASE = "http://127.0.0.1:3495/"
@@ -27,16 +27,16 @@ try:
         pg.wait_for_selector("#btn-iniciar-aventura:not(.escondido):not([disabled])", timeout=15000); pg.wait_for_timeout(800)
         pg.click("#btn-iniciar-aventura"); pg.wait_for_selector("#tela-jogo .msg.mestre", timeout=20000); pg.wait_for_timeout(800)
         pg.fill("#input-acao", "Eu sigo pela trilha"); pg.press("#input-acao", "Enter")
-        # o bot ataca -> teste -> rola: modal abre aqui como espectador
-        pg.wait_for_selector("#modal-dado:not(.escondido)", timeout=20000)
-        t0 = time.time()
-        pg.wait_for_function("document.getElementById('btn-fechar-dado').textContent === 'Fechar'", timeout=10000)
-        print("espectador vê:", pg.text_content("#modal-dado-pausa"), "| botão:", pg.text_content("#btn-fechar-dado"))
+        # o bot ataca -> teste -> rola: aqui (espectador) não abre modal, só o destaque com o retrato
+        pg.wait_for_selector("#destaque-vez.com-rolagem", timeout=20000)
+        if pg.is_visible("#modal-dado"): raise SystemExit("FALHA: o modal do dado abriu para o espectador")
+        pg.wait_for_function("/SUCESSO|FALHA/.test(document.querySelector('#destaque-vez .destaque-dado')?.textContent || '')", timeout=10000)
+        print("espectador vê no destaque:", pg.text_content("#destaque-vez .destaque-texto"))
         pg.screenshot(path=os.path.join(tmp, "espectador.png"))
-        pg.wait_for_selector("#modal-dado.escondido", state="attached", timeout=15000)
-        dt = time.time() - t0
-        print(f"modal fechou sozinho após {dt:.1f}s (o Mestre leva 15 s para narrar; o bot continua ~6 s após rolar)")
-        if dt > 10: raise SystemExit("FALHA: o modal esperou a narração do Mestre")
+        if pg.is_visible("#modal-dado"): raise SystemExit("FALHA: o modal do dado abriu para o espectador")
+        t0 = time.time()
+        pg.wait_for_selector("#destaque-vez:not(.com-rolagem)", state="attached", timeout=20000)
+        print(f"destaque voltou ao normal após {time.time() - t0:.1f}s")
         print("Tudo certo.")
         b.close()
 finally:

@@ -2,6 +2,11 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.22.2 — 2026-11-15
+- **Dado dos outros sem modal:** quando outro jogador (ou bot) rola o dado, o modal não abre mais para quem está assistindo, para não atrapalhar a leitura. O destaque do canto inferior direito mostra o retrato de quem rolou, o dado girando e depois o resultado (número, total e SUCESSO/FALHA, com brilho no crítico e tremor na falha crítica). O destaque some alguns segundos depois e volta a mostrar de quem é a vez.
+- Quem rola o próprio dado continua vendo o modal, como antes.
+- Testes no navegador atualizados: `teste_dado_espectador.py` e `teste_retratos.py`.
+
 ## v0.22.1 — 2026-11-15
 - **Monitor do gateway sonda os modelos de texto:** a cada hora manda um pedido de 1 token para cada modelo de texto da lista e também para o principal e o reserva do Mestre, mesmo que tenham saído da lista. O log passa a mostrar, hora a hora, quais respondem e em quanto tempo, e o histórico registra quando cada um parou (`fora (503)`, `indisponível`) e voltou.
 - **Alerta "o Mestre ficou SEM IA" / "voltou a ter IA":** quando nem o principal nem o reserva respondem, o assunto do e-mail avisa; e avisa de novo quando um deles volta. Um 429 (gateway ocupado) não conta como queda.

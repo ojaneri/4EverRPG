@@ -1353,6 +1353,14 @@ function renderDestaqueVez(rs) {
     $('chat-log').parentNode.appendChild(el);
     el.addEventListener('click', () => el.classList.toggle('compacto'));
   }
+  el.classList.remove('com-rolagem', 'critico_sucesso', 'critico_falha', 'sucesso', 'falha');
+  // Rolagem de outro jogador: fica no destaque enquanto o dado gira, alguns segundos
+  // depois e enquanto a mesa estiver pausada esperando quem rolou continuar.
+  if (rolagemOutro && (rs.status !== 'em_jogo' || (Date.now() >= rolagemOutro.ate && !rs.pausadoPorDado))) {
+    rolagemOutro = null;
+    destaqueAtual = null; // volta ao destaque da vez com a animação de entrada
+  }
+  if (rolagemOutro) return renderRolagemNoDestaque(el, rs);
   const nome = rs.status === 'em_jogo' ? (rs.pendingTest ? rs.pendingTest.nomePersonagem : rs.turnoAtual) : null;
   const c = nome ? personagemPorNome(nome) : null;
   el.parentNode.classList.toggle('com-destaque', !!c);
@@ -1376,6 +1384,60 @@ function renderDestaqueVez(rs) {
     el.classList.add('entrando');
     clearTimeout(destaqueTimer);
     destaqueTimer = setTimeout(() => el.classList.add('compacto'), DESTAQUE_GRANDE_MS);
+  }
+}
+
+// Rolagem de outro jogador: sem modal, para não atrapalhar quem está lendo.
+// O destaque da vez mostra o retrato de quem rolou, o dado girando e o resultado.
+let rolagemOutro = null;
+const ROLAGEM_OUTRO_MS = 7000;
+const GIRO_OUTRO_MS = 1300;
+
+function mostrarRolagemDeOutro(r) {
+  rolagemOutro = { r, revelado: false, ate: Date.now() + ROLAGEM_OUTRO_MS };
+  Musica.efeito('dado-lancar', 0.5);
+  setTimeout(() => {
+    if (rolagemOutro?.r !== r) return;
+    rolagemOutro.revelado = true;
+    if (r.resultado === 'critico_sucesso') Musica.efeito('critico', 0.6);
+    else if (r.resultado === 'critico_falha') Musica.efeito('derrota', 0.6);
+    const mini = $('dado-visual');
+    if (mini) {
+      mini.textContent = r.die;
+      mini.classList.toggle('critico-sucesso', r.resultado === 'critico_sucesso');
+      mini.classList.toggle('critico-falha', r.resultado === 'critico_falha');
+    }
+    if (estado.roomState) renderDestaqueVez(estado.roomState);
+  }, GIRO_OUTRO_MS);
+  setTimeout(() => {
+    if (rolagemOutro?.r === r && estado.roomState) renderDestaqueVez(estado.roomState);
+  }, ROLAGEM_OUTRO_MS + 50);
+  if (estado.roomState) renderDestaqueVez(estado.roomState);
+}
+
+function renderRolagemNoDestaque(el, rs) {
+  const { r, revelado } = rolagemOutro;
+  const c = personagemPorNome(r.personagem) || { nome: r.personagem };
+  const veredito =
+    r.resultado === 'critico_sucesso' ? '✨ SUCESSO CRÍTICO!' :
+    r.resultado === 'critico_falha' ? '💥 FALHA CRÍTICA!' :
+    r.sucesso ? 'SUCESSO' : 'FALHA';
+  const linha = revelado
+    ? `<span class="destaque-dado"><b>${r.die}</b> → ${r.total} · ${veredito}</span>`
+    : '<span class="destaque-dado rolando"><b class="d20-mini">🎲</b> rolando...</span>';
+  el.parentNode.classList.add('com-destaque');
+  el.dataset.pers = slugPers(c.nome);
+  el.innerHTML = `${avatarHtml(c.avatar, c.cor || c.corTema, retratoDe(c, rs))}<div class="destaque-texto"><small>🎲 teste de ${esc(r.atributo)} · precisa ${r.dc}+</small><strong>${esc(c.nome)}</strong>${linha}</div>`;
+  el.classList.remove('escondido', 'compacto', 'minha');
+  el.classList.add('com-rolagem');
+  if (revelado) el.classList.add(r.resultado, r.sucesso ? 'sucesso' : 'falha');
+  const chave = `rolagem|${r.personagem}|${r.die}|${r.total}`;
+  if (chave !== destaqueAtual) {
+    destaqueAtual = chave;
+    clearTimeout(destaqueTimer);
+    el.classList.remove('entrando');
+    void el.offsetWidth;
+    el.classList.add('entrando');
   }
 }
 
@@ -2726,6 +2788,7 @@ $('btn-fechar-dado').addEventListener('click', fecharModalDado);
 // Rolagem anunciada pelo servidor (a minha ou a de outro jogador).
 function receberRolagem(r) {
   const souEu = r.jogadorId === estado.meuId;
+  if (!souEu) return mostrarRolagemDeOutro(r); // sem modal para quem só assiste
   if (!(modalDado.aberto && modalDado.souEu && souEu && !modalDado.rolagem)) {
     abrirModalDado({ titulo: `Teste de ${r.atributo}`, sub: `${r.personagem} — dificuldade ${r.dificuldade} (precisa ${r.dc}+)`, souEu, personagem: r.personagem });
   }

@@ -1375,6 +1375,18 @@ body.tela-tremendo > .topo-site, body.tela-tremendo > #app { animation: tremer-t
   .destaque-vez .avatar { width: 64px; height: 64px; }
   .destaque-vez strong { font-size: 1rem; }
 }
+/* Rolagem de outro jogador no destaque (sem modal) */
+.destaque-vez .destaque-dado { font-size: .85rem; color: var(--texto); margin-top: 2px; }
+.destaque-vez .destaque-dado b { font-size: 1.25rem; color: var(--cor-p, #fff); }
+.destaque-vez .destaque-dado.rolando .d20-mini { display: inline-block; animation: d20-mini-gira .45s linear infinite; }
+@keyframes d20-mini-gira { to { transform: rotate(360deg); } }
+.destaque-vez.com-rolagem.sucesso .destaque-dado { color: #7ee0a1; font-weight: 700; }
+.destaque-vez.com-rolagem.falha .destaque-dado { color: #ff8a8a; font-weight: 700; }
+.destaque-vez.com-rolagem.critico_sucesso .avatar { box-shadow: 0 0 0 2px #ffd166, 0 0 18px 4px rgba(255, 209, 102, .7); }
+.destaque-vez.com-rolagem.critico_sucesso .destaque-dado { color: #ffd166; }
+.destaque-vez.com-rolagem.critico_falha .avatar { animation: tremor-retrato .4s ease-in-out 2; }
+@keyframes tremor-retrato { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@media (prefers-reduced-motion: reduce) { .destaque-vez .d20-mini, .destaque-vez.com-rolagem .avatar { animation: none !important; } }
 @media (prefers-reduced-motion: reduce) { .destaque-vez.entrando, .destaque-vez .avatar.com-retrato { animation: none !important; } }
 
 /* Com o destaque na tela, a narração ganha folga embaixo para ele não cobrir a última mensagem. */
