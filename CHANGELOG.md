@@ -2,6 +2,12 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.22.1 — 2026-11-15
+- **Monitor do gateway sonda os modelos de texto:** a cada hora manda um pedido de 1 token para cada modelo de texto da lista e também para o principal e o reserva do Mestre, mesmo que tenham saído da lista. O log passa a mostrar, hora a hora, quais respondem e em quanto tempo, e o histórico registra quando cada um parou (`fora (503)`, `indisponível`) e voltou.
+- **Alerta "o Mestre ficou SEM IA" / "voltou a ter IA":** quando nem o principal nem o reserva respondem, o assunto do e-mail avisa; e avisa de novo quando um deles volta. Um 429 (gateway ocupado) não conta como queda.
+- Uma sonda de texto nova vira linha de base, sem alerta na primeira leitura.
+- Testes: `tools/teste_monitor.js` agora com 10 verificações.
+
 ## v0.22.0 — 2026-11-14
 - **5 histórias novas**, inspiradas na Big List of RPG Plots (S. John Ross), com o mesmo formato das outras: lugares, a verdade revelada por pistas, personagens com voz, desafios por classe, relógio, finais com escolha e recompensas.
   - **A Estalagem do Último Inverno** (fantasia): nevasca, sete hóspedes e uma criatura do inverno entre eles.

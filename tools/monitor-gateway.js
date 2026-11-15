@@ -9,6 +9,11 @@
 // prompt — "modelo não disponível" (404) vs. erro de validação (400) já diz se
 // o modelo foi liberado, sem gastar créditos.
 //
+// Os modelos de texto (os da lista + o principal e o reserva do Mestre, mesmo
+// que tenham saído da lista) recebem um pedido de 1 token: assim o log mostra,
+// hora a hora, quando cada um parou e voltou. Se o Mestre ficar sem nenhum
+// modelo que responda (ou voltar a ter), o email avisa no assunto.
+//
 // Uso: node tools/monitor-gateway.js [--forcar-email]
 // ---------------------------------------------------------------------------
 
@@ -25,6 +30,9 @@ const DESTINO = process.env.MONITOR_EMAIL || '';
 const PASTA_DADOS = process.env.RPG_DATA_DIR || path.join(__dirname, '..', 'data');
 const ARQUIVO = path.join(PASTA_DADOS, 'monitor-gateway.json');
 const PUBLIC_URL = (process.env.PUBLIC_URL || 'https://4ever.janeri.com.br').replace(/\/+$/, '');
+const MODELO_PRINCIPAL = process.env.RPG_AI_MODEL || '';
+const MODELO_RESERVA = process.env.RPG_AI_MODEL_RESERVA || '';
+const RE_MIDIA = /image|imagen|banana|dall|flux|stable|diffusion|veo|sora|kling|video|tts|audio|embed|whisper/i;
 
 // Modelos de imagem/vídeo que já apareceram ou são prováveis no gateway.
 const SONDAS_IMAGEM = ['gemini-3-pro-image', 'gpt-image-2.6-flare', 'gpt-image-2.6-sunburst', 'gpt-image-2', 'gpt-image-1.5', 'nano-banana', 'imagen-4'];
@@ -72,6 +80,34 @@ function situacao(r) {
   return `LIBERADO? (HTTP ${r.status})`;
 }
 
+// Classifica a resposta de uma sonda de texto (pedido de 1 token). Aqui o 503 é
+// justamente o que se quer registrar (o modelo parou), então não é "passageiro".
+function situacaoTexto(r) {
+  if (r.status === 200) return 'responde';
+  if (r.status === 0) return 'sem conexão';
+  if (r.status === 429) return 'ocupado (429)';
+  if (r.status === 404 || /não está disponível|nao esta disponivel|not available/i.test(r.texto)) return 'indisponível';
+  if ([502, 503, 504].includes(r.status)) return `fora (${r.status})`;
+  if (r.status === 401 || r.status === 402 || r.status === 403) return `chave recusada (${r.status})`;
+  return `erro (HTTP ${r.status})`;
+}
+
+// Modelos de texto a sondar: os da lista (menos imagem/vídeo) + os do Mestre.
+function modelosTexto(lista) {
+  const todos = [...lista.filter((m) => !RE_MIDIA.test(m)), MODELO_PRINCIPAL, MODELO_RESERVA].filter(Boolean);
+  return [...new Set(todos)];
+}
+
+// O Mestre tem IA se o principal ou o reserva responde. null = não deu para saber
+// (só instabilidade passageira nos dois).
+function estadoMestre(sondas, principal = MODELO_PRINCIPAL, reserva = MODELO_RESERVA) {
+  const vs = [principal, reserva].filter(Boolean).map((m) => sondas[`texto:${m}`]).filter(Boolean);
+  if (!vs.length) return null;
+  if (vs.includes('responde')) return 'com IA';
+  if (vs.every((v) => passageiro(v))) return null;
+  return 'sem IA';
+}
+
 // Gateway ocupado (429), fora do ar (502/503/504) ou sem conexão: diz nada sobre
 // o modelo estar liberado, então não conta como mudança.
 const passageiro = (v) => /^(ocupado|instável|sem conexão)/.test(v || '');
@@ -105,6 +141,13 @@ async function ler() {
   }
   for (const modelo of SONDAS_IMAGEM) leitura.sondas[`imagem:${modelo}`] = situacao(await requisitar('POST', '/images/generations', { model: modelo }));
   for (const modelo of SONDAS_VIDEO) leitura.sondas[`video:${modelo}`] = situacao(await requisitar('POST', '/videos', { model: modelo }));
+  leitura.tempos = {};
+  for (const modelo of modelosTexto(leitura.modelos)) {
+    const t0 = Date.now();
+    const r = await requisitar('POST', '/messages', { model: modelo, max_tokens: 1, messages: [{ role: 'user', content: 'OK' }] });
+    leitura.sondas[`texto:${modelo}`] = situacaoTexto(r);
+    leitura.tempos[modelo] = Date.now() - t0;
+  }
   return leitura;
 }
 
@@ -118,6 +161,7 @@ function diferencas(antes, agora) {
   for (const [k, v] of Object.entries(agora.rotas)) if (antes.rotas[k] !== v) linhas.push(`🔀 Rota ${k}: ${antes.rotas[k] || '?'} → ${v}`);
   for (const [k, v] of Object.entries(agora.sondas)) {
     const a = antes.sondas[k];
+    if (a === undefined && k.startsWith('texto:')) continue; // primeira sonda do modelo: vira linha de base
     if (a !== v && !passageiro(v) && !passageiro(a)) linhas.push(`🔀 ${k}: ${a || '?'} → ${v}`);
   }
   return linhas;
@@ -169,6 +213,13 @@ async function main() {
   }
   manterSituacaoFirme(antes, agora);
   const mudou = diferencas(antes, agora);
+  agora.mestre = estadoMestre(agora.sondas) || (antes && antes.mestre) || null;
+  const mestreMudou = antes && antes.mestre && agora.mestre && antes.mestre !== agora.mestre;
+  if (mestreMudou) {
+    mudou.unshift(agora.mestre === 'sem IA'
+      ? `🚨 O MESTRE FICOU SEM IA: nem o principal (${MODELO_PRINCIPAL || '—'}) nem o reserva (${MODELO_RESERVA || '—'}) respondem.`
+      : `✅ O Mestre voltou a ter IA (${[MODELO_PRINCIPAL, MODELO_RESERVA].filter((m) => agora.sondas[`texto:${m}`] === 'responde').join(', ')} responde).`);
+  }
   const ativacao = await tentarAtivarImagens(agora, antes);
   if (ativacao && ativacao.ok) {
     mudou.unshift(`🖼️ GERAÇÃO DE IMAGENS ATIVADA no 4Ever com o modelo "${ativacao.modelo}". Imagem de teste: ${ativacao.url}`);
@@ -180,6 +231,9 @@ async function main() {
   const resumo = `modelos: ${agora.modelos.join(', ') || '(nenhum)'}`;
   console.log(`${agora.quando} ${antes ? (mudou.length ? 'MUDOU' : 'sem mudanças') : 'linha de base'} — ${resumo}`);
   mudou.forEach((l) => console.log('   ', l));
+  const textos = Object.entries(agora.sondas).filter(([k]) => k.startsWith('texto:'))
+    .map(([k, v]) => `${k.slice(6)} ${v === 'responde' ? `ok ${((agora.tempos || {})[k.slice(6)] / 1000).toFixed(1)}s` : (agora.passageiras || {})[k] || v}`);
+  if (textos.length) console.log(`    texto (Mestre ${agora.mestre || '?'}): ${textos.join(' · ')}`);
   if (agora.passageiras) console.log('    (instável agora, ignorado:', Object.entries(agora.passageiras).map(([k, v]) => `${k} ${v}`).join(', ') + ')');
 
   const forcar = process.argv.includes('--forcar-email');
@@ -191,14 +245,17 @@ async function main() {
       '',
       `Modelos liberados agora (${agora.modelos.length}): ${agora.modelos.join(', ') || '(nenhum)'}`,
       `Rotas: ${Object.entries(agora.rotas).map(([k, v]) => `${k} ${v}`).join(' · ')}`,
-      'Sondas de imagem/vídeo:',
+      `Mestre: ${agora.mestre || '?'} (principal ${MODELO_PRINCIPAL || '—'}, reserva ${MODELO_RESERVA || '—'})`,
+      'Sondas (texto: pedido de 1 token; imagem/vídeo: pedido sem prompt):',
       ...Object.entries(agora.sondas).map(([k, v]) => `  - ${k}: ${v}`),
       '',
       `Leitura: ${agora.quando} (verificado de hora em hora pelo servidor do 4Ever).`,
     ].join('\n');
     await enviarEmail({
       to: DESTINO,
-      subject: ativacao && ativacao.ok
+      subject: mestreMudou
+        ? (agora.mestre === 'sem IA' ? '4Ever: o Mestre ficou SEM IA (gateway)' : '4Ever: o Mestre voltou a ter IA')
+        : ativacao && ativacao.ok
         ? `4Ever: imagens de cena ATIVADAS (${ativacao.modelo})`
         : mudou.length ? '4Ever: o gateway da IA mudou (modelos/rotas)' : '4Ever: teste do monitor do gateway',
       text: corpo,
@@ -215,4 +272,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { situacao, passageiro, manterSituacaoFirme, diferencas };
+module.exports = { situacao, situacaoTexto, modelosTexto, estadoMestre, passageiro, manterSituacaoFirme, diferencas };

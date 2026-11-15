@@ -2,7 +2,7 @@
 // Testes do monitor do gateway: instabilidade (429/503/sem conexão) não vira alerta.
 // Uso: node tools/teste_monitor.js
 const assert = require('assert');
-const { situacao, manterSituacaoFirme, diferencas } = require('./monitor-gateway');
+const { situacao, situacaoTexto, modelosTexto, estadoMestre, manterSituacaoFirme, diferencas } = require('./monitor-gateway');
 
 let ok = 0;
 const teste = (nome, fn) => {
@@ -59,6 +59,34 @@ teste('sonda nova que já nasce instável fica como está (sem alerta)', () => {
   const agora = leitura({ 'imagem:novo': 'ocupado (429)' });
   assert.deepStrictEqual(hora(leitura({}), agora), []);
   assert.strictEqual(agora.sondas['imagem:novo'], 'ocupado (429)');
+});
+
+teste('sonda de texto: 503 é queda (registrada), 429 é passageiro', () => {
+  assert.strictEqual(situacaoTexto({ status: 200, texto: '{}' }), 'responde');
+  assert.strictEqual(situacaoTexto({ status: 503, texto: 'temporariamente indisponível' }), 'fora (503)');
+  assert.strictEqual(situacaoTexto({ status: 404, texto: 'Este modelo não está disponível' }), 'indisponível');
+  assert.strictEqual(situacaoTexto({ status: 429, texto: '' }), 'ocupado (429)');
+  assert.strictEqual(situacaoTexto({ status: 401, texto: 'chave desativada' }), 'chave recusada (401)');
+  const linhas = hora(leitura({ 'texto:opus': 'responde' }), leitura({ 'texto:opus': 'fora (503)' }));
+  assert.deepStrictEqual(linhas, ['🔀 texto:opus: responde → fora (503)']);
+  assert.deepStrictEqual(hora(leitura({ 'texto:opus': 'responde' }), leitura({ 'texto:opus': 'ocupado (429)' })), []);
+});
+teste('sonda de texto nova vira linha de base, sem alerta', () => {
+  assert.deepStrictEqual(hora(leitura({}), leitura({ 'texto:opus': 'responde' })), []);
+});
+teste('sonda os modelos de texto da lista e os do Mestre, sem os de imagem', () => {
+  const lista = ['argon-4', 'claude-opus-5.5', 'gemini-3-pro-image', 'gpt-image-2.6-flare', 'gpt-6-astra'];
+  const m = modelosTexto(lista);
+  assert.ok(m.includes('argon-4') && m.includes('claude-opus-5.5') && m.includes('gpt-6-astra'));
+  assert.ok(!m.some((x) => /image/.test(x)));
+});
+teste('Mestre com IA se o principal ou o reserva responde', () => {
+  const s = (p, r) => ({ 'texto:fable': p, 'texto:opus': r });
+  assert.strictEqual(estadoMestre(s('responde', 'fora (503)'), 'fable', 'opus'), 'com IA');
+  assert.strictEqual(estadoMestre(s('indisponível', 'responde'), 'fable', 'opus'), 'com IA');
+  assert.strictEqual(estadoMestre(s('indisponível', 'fora (503)'), 'fable', 'opus'), 'sem IA');
+  assert.strictEqual(estadoMestre(s('ocupado (429)', 'sem conexão'), 'fable', 'opus'), null);
+  assert.strictEqual(estadoMestre({}, 'fable', 'opus'), null);
 });
 
 console.log(`OK: ${ok} testes do monitor do gateway.`);
