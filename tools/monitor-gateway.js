@@ -10,7 +10,7 @@
 // o modelo foi liberado, sem gastar créditos.
 //
 // Os modelos de texto (os da lista + o principal e o reserva do Mestre, mesmo
-// que tenham saído da lista) recebem um pedido de 1 token: assim o log mostra,
+// que tenham saído da lista) recebem um pedido curto (16 tokens; o gpt-6-astra recusa menos): assim o log mostra,
 // hora a hora, quando cada um parou e voltou. Se o Mestre ficar sem nenhum
 // modelo que responda (ou voltar a ter), o email avisa no assunto.
 //
@@ -144,7 +144,7 @@ async function ler() {
   leitura.tempos = {};
   for (const modelo of modelosTexto(leitura.modelos)) {
     const t0 = Date.now();
-    const r = await requisitar('POST', '/messages', { model: modelo, max_tokens: 1, messages: [{ role: 'user', content: 'OK' }] });
+    const r = await requisitar('POST', '/messages', { model: modelo, max_tokens: 16, messages: [{ role: 'user', content: 'OK' }] });
     leitura.sondas[`texto:${modelo}`] = situacaoTexto(r);
     leitura.tempos[modelo] = Date.now() - t0;
   }

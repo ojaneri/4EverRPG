@@ -2,6 +2,9 @@
 
 Versões do 4Ever (versionamento semântico). Cada versão tem uma tag `vX.Y.Z` no git.
 
+## v0.22.3 — 2026-11-15
+- Monitor do gateway: a sonda de texto pede 16 tokens em vez de 1. O `gpt-6-astra` recusa `max_tokens: 1` (HTTP 400), e o monitor o marcava como "erro" mesmo com o modelo funcionando.
+
 ## v0.22.2 — 2026-11-15
 - **Dado dos outros sem modal:** quando outro jogador (ou bot) rola o dado, o modal não abre mais para quem está assistindo, para não atrapalhar a leitura. O destaque do canto inferior direito mostra o retrato de quem rolou, o dado girando e depois o resultado (número, total e SUCESSO/FALHA, com brilho no crítico e tremor na falha crítica). O destaque some alguns segundos depois e volta a mostrar de quem é a vez.
 - Quem rola o próprio dado continua vendo o modal, como antes.
